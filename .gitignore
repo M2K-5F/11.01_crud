@@ -1,10 +1,11 @@
 # Nestjs specific
 /dist
-/node_modules
+client/node_modules
+server/node_modules
 /build
 /tmp
-
-# Logs
+/node_modules
+# Logs 
 logs
 *.log
 npm-debug.log*
@@ -22,3 +23,4 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+*.pem

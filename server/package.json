@@ -1,0 +1,26 @@
+{
+  "name": "championship_b_module",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/pg": "^8.16.0",
+    "tsx": "^4.21.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@elysiajs/cors": "^1.4.1",
+    "@elysiajs/static": "^1.4.7",
+    "@elysiajs/swagger": "^1.3.1",
+    "@m2k-5f/pgtx": "^1.3.1",
+    "@types/jsonwebtoken": "^9.0.10",
+    "dotenv": "^17.3.1",
+    "elysia": "^1.4.25",
+    "jose": "^6.2.2",
+    "pg": "^8.18.0"
+  }
+}

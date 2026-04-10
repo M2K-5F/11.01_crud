@@ -1,0 +1,1 @@
+export const NotFoundResponse = new Response("Resourse not found", {status: 404})

@@ -1,0 +1,10 @@
+create table if not exists users (
+    id uuid not null primary key,
+    name varchar(64) not null,
+    password_hash varchar(255) not null,
+    telegram_link varchar(255) not null
+);
+
+create index users_id_idx on users (id);
+
+create index users_name_idx on users (name);
