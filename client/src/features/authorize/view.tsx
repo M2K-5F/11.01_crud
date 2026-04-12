@@ -40,7 +40,7 @@ const LoginForm = () => {
                 </CardContent>
 
                 <CardContent>
-                    <Button type="submit" variant='default' className="w-full">
+                    <Button type="submit" variant='default' disabled={isPending} className="w-full">
                         {isPending ? <Spinner /> : "Войти"}
                     </Button>
                     <ErrorMessage error={errors.root}/>

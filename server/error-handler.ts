@@ -1,7 +1,9 @@
+import { t } from "elysia";
 import { DomainError, ForbiddenError, NotFoundError, UnauthorizedError, ValidationError } from "./shared/error";
 import type Elysia from "elysia";
+import { retrieveRootparameters } from "elysia/sucrose";
 
-export const errorHandle = (app: Elysia) => app.onError(({error, set}) => {
+export const errorHandle = (app: Elysia) => app.onError(({code, error, set}) => {
     if (error instanceof DomainError) {
         set.status = 400
 
@@ -30,6 +32,12 @@ export const errorHandle = (app: Elysia) => app.onError(({error, set}) => {
         set.status = 422
 
         return {code: "ERR_VALIDATION", message: error.message}
+    }
+
+    if (code === 'VALIDATION') {
+        set.status = 422
+
+        return {code: "ERR_VALIDATION", message: error.all.map(err => {return `${err.path}:  ${err.message}`})}
     }
 
     set.status = 500

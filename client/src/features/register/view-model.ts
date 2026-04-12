@@ -33,7 +33,7 @@ export const useRegisterFormMV = () => {
         repeatPassword: register('password_repeat', {
             required: "Это поле обязательно",
             minLength: {value: 8, message: "Слишком короткий пароль"},
-            validate: (val) => val !== getValues('password') && "Пароли не совпадают"
+            validate: (val) => val === getValues('password') || "Пароли не совпадают"
         })
     }
 

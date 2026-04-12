@@ -8,5 +8,5 @@ export type RegisterData = {
 }
 
 export const registerApi = {
-    register: (data: RegisterData) => api.post<User>('/identity/register', data)
+    register: (data: RegisterData) => api.post<User>('/identity/register', {name: data.name, password: data.password, telegram_link: data.talegramLink})
 }

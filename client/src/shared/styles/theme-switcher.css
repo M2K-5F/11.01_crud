@@ -1,0 +1,15 @@
+html.dark .theme__switcher {
+    & img.theme__image__dark {
+        display: block
+    };
+
+    & img.theme__image__light {
+        display: none
+    };
+
+    & div.theme__switcher__cursor {
+        margin-left: 0.5rem;
+        background-color: var(--color-gray-300);
+        border-color: var(--color-amber-300);
+    }
+}
