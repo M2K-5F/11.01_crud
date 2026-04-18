@@ -13,10 +13,10 @@ export class TransactionManager implements ITransactionManager {
     async begin<T>(func: (ctx: ITransactionWorkUnit) => Promise<T>): Promise<T> {
         return await this.db.begin(async tx => {
             const uow = new TransactionWorkUnit(
-                new UserRepository(tx, "users"),
-                new CourseRepository(tx, "courses"),
-                new TopicRepository(tx, "topics"),
-                new QuestionRepository(tx, "questions_with_answers")
+                new UserRepository(tx),
+                new CourseRepository(tx),
+                new TopicRepository(tx),
+                new QuestionRepository(tx)
             )
             
             return await func(uow) 

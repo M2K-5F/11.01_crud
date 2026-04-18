@@ -17,10 +17,10 @@ export const authRoutes = new Elysia()
         userService,
         device,
     }) => {
-        const userId = await userService.authorize(body)
+        const [userId, roles] = await userService.authorize(body)
 
         const {refresh, access} = await sessionService.newSession(
-            userId, device, ["user", 'admin']
+            userId, device, roles
         )
 
         refresh_token!.set({
@@ -45,12 +45,17 @@ export const authRoutes = new Elysia()
 .post('/refresh',
     async ({
         sessionService,
-        cookie: { refresh_token }
+        cookie: { refresh_token },
+        qs
     }) => {
         if (!refresh_token.value) throw ErrUnauthorized
 
-        const {access, refresh} = await sessionService.refreshTokens(
-            refresh_token.value, ["user", 'admin']
+        const session = await sessionService.verifyRefresh(refresh_token.value)
+
+        const roles = await qs.user.getRolesByID(session.userId)
+
+        const {access, refresh} = await sessionService.refreshTokensForSession(
+            session, roles
         )
 
         refresh_token.set({

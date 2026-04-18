@@ -2,8 +2,8 @@ import { Pool, sql } from "@m2k-5f/pgtx"
 
 export abstract class Querier<View extends Record<string, any>, Params extends Record<string, any> = View> {
     constructor(
-        private pool: Pool,
-        private tablename: string
+        protected pool: Pool,
+        protected tablename: string
     ) {}
 
     async firstBy(params: Partial<Params>, offset: number = 0) {

@@ -1,6 +1,4 @@
-
 import type { FieldError, Message } from "react-hook-form";
-import { Label } from "./label";
 
 export const ErrorMessage = (
     {error}: {

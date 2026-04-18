@@ -4,16 +4,18 @@ import { Text as QuestionText } from "@domain/contexts/content/value-objects/que
 import { Text as AnswerText } from "@domain/contexts/content/value-objects/answer-text";
 import { AbstractRepository } from "@persistense/commands/common/abstract_repository";
 import { sql } from "@m2k-5f/pgtx";
-import type { AnswerRow, QuestionRow, QuestionWithAnswersView } from "@persistense/shemas/content/shema";
 import { CorrectStatus } from "@domain/contexts/content/value-objects/answer-correct-status";
 import { AnswerID } from "@domain/contexts/content/value-objects/answer-id";
 import { QuestionID } from "@domain/contexts/content/value-objects/question-id";
 import { TopicID } from "@domain/contexts/content/value-objects/topic-id";
 import { UserID } from "@domain/contexts/identity/value_objects/user-id";
 import hydrate from "@persistense/commands/common/hydrator";
+import type { QuestionW } from "@persistense/shemas/content/shema";
 
-export class QuestionRepository extends AbstractRepository<Question, QuestionWithAnswersView> implements IQuestionRepository {
-    toRow(q: Question): QuestionWithAnswersView {
+export class QuestionRepository extends AbstractRepository<Question, QuestionW> implements IQuestionRepository {
+    override table: any = sql.ident("v_questions_w")
+    
+    toRow(q: Question): QuestionW {
         return {
             id: q['_id']['_value'],
             text: q['_text']['_value'],
@@ -29,7 +31,7 @@ export class QuestionRepository extends AbstractRepository<Question, QuestionWit
         }
     }
 
-    fromRow(row: QuestionWithAnswersView) {
+    fromRow(row: QuestionW) {
         return hydrate(Question, {
             _id: hydrate(QuestionID, row.id),
             _text: hydrate(QuestionText, row.text),
@@ -48,19 +50,15 @@ export class QuestionRepository extends AbstractRepository<Question, QuestionWit
 
         await this.tx.query`
         insert into questions ${sql.insert(question)} 
-        on conflict (id) do update set ${sql.excluded(["text", "by_topic", "created_by"])}`
+        on conflict (id) do update 
+        set ${sql.excluded(["text", "by_topic", "created_by"])}`
+
+        await this.tx.query`
+        delete from answers where question_id = ${question.id}`
 
         if (answers.length) {
             await this.tx.query`
-            insert into answers ${sql.insert(...answers)} 
-            on conflict (id) do update set ${sql.excluded(['text', 'is_correct', 'question_id'])}`
-
-            await this.tx.query`
-            delete from answers where question_id = ${question.id} and id not in (${sql.array(answers.map(a=>a.id))})`
-        } 
-        else {
-            await this.tx.query`
-            delete from answers where question_id = ${question.id}`
+            insert into answers ${sql.insert(...answers)}`
         }
     }
 

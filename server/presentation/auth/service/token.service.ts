@@ -3,6 +3,7 @@ import { UserID } from "@domain/contexts/identity/value_objects/user-id";
 import { TokenSigner } from "./token.signer";
 import { ErrRefreshTokenInvalid, ErrSessionNotFound, ErrTokenExpired } from "../errors";
 import { Session, type Device } from "../entities";
+import type { UserRole, UserRoleValue } from "@domain/contexts/identity/value_objects/user-role";
 
 
 export class SessionService {
@@ -11,7 +12,7 @@ export class SessionService {
         private signer: TokenSigner,
     ) {}
 
-    async newSession(user_id: UserID, device: Device, permissions: string[]) {
+    async newSession(user_id: UserID, device: Device, roles: UserRole[]) {
         const session = Session.new(user_id, device)
 
         const refresh = await this.signer.signRefresh(
@@ -21,7 +22,7 @@ export class SessionService {
         session.updateToken(refresh)
 
         const access = await this.signer.signAccess(
-            user_id, permissions
+            user_id, roles
         )
 
         await this.storage.saveSession(session)
@@ -29,31 +30,35 @@ export class SessionService {
         return {refresh, access}
     }
 
-    async refreshTokens(old_refresh: string, permissions: string[]) {
+    async verifyRefresh(refresh: string) {
         let pl
         try {
-            pl = await this.signer.verifyRefresh(old_refresh)
+            pl = await this.signer.verifyRefresh(refresh)
         } catch {
             throw ErrRefreshTokenInvalid
         }
 
-        const {session_id, user_id} = pl
+        const {session_id} = pl
 
         const session = await this.storage.getByID(session_id)
         if (!session) throw ErrSessionNotFound
 
-        if (session.currentToken !== old_refresh) throw ErrRefreshTokenInvalid
+        if (session.currentToken !== refresh) throw ErrRefreshTokenInvalid
 
+        return session
+    }
+
+    async refreshTokensForSession(session: Session, roles: UserRole[]) {
         session.updateActivity()
 
         const refresh = await this.signer.signRefresh(
-            user_id, session_id
+            session.userId, session.id
         )
 
         session.updateToken(refresh)
 
         const access = await this.signer.signAccess(
-            user_id, permissions
+            session.userId, roles
         )
 
         await this.storage.saveSession(session)

@@ -1,6 +1,8 @@
 import { UserID } from "@domain/contexts/identity/value_objects/user-id"
 import { importPKCS8, importSPKI, jwtVerify, SignJWT } from "jose"
 import { SessionID } from "../entities"
+import { UserRole, type UserRoleValue } from "@domain/contexts/identity/value_objects/user-role"
+import hydrate from "@persistense/commands/common/hydrator"
 
 export class TokenSigner {
     private constructor(
@@ -26,8 +28,8 @@ export class TokenSigner {
         )
     }
 
-    async signAccess(user_id: UserID, permissions: string[]) {
-        const token = await new SignJWT({permissions})
+    async signAccess(user_id: UserID, roles: UserRole[]) {
+        const token = await new SignJWT({roles: roles.map(r => r['_value'])})
         .setProtectedHeader({ alg: 'ES256' })
         .setSubject(user_id.id)
         .setExpirationTime(Bun.env.ACCESS_TTL)
@@ -49,8 +51,9 @@ export class TokenSigner {
     }
 
     async verifyAccess(access: string) {
-        const {sub, permissions} = (await jwtVerify(access, this.access_pub)).payload as {sub: string, permissions: string[]}
-        return {user_id: UserID.fromString(sub), permissions}
+        const {sub, roles} = (await jwtVerify(access, this.access_pub)).payload as {sub: string, roles: UserRoleValue[]}
+    
+        return {user_id: UserID.fromString(sub), roles: roles.map(r => hydrate(UserRole, r))}
     }
 
     async verifyRefresh(refresh: string) {

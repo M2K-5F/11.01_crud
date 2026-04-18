@@ -2,8 +2,9 @@ import type { SessionService } from "../service/token.service";
 import { ErrForbidden, ErrUnauthorized } from "../../../shared/error";
 import Elysia from "elysia";
 import { dependencies } from "@index/injection";
+import type { UserRole, UserRoleValue } from "@domain/contexts/identity/value_objects/user-role";
 
-export function authFilter(...permissionsRequired: string[]) { 
+export function authFilter(...rolesRequired: UserRole[]) { 
     return (app: Elysia) => app
         .use(dependencies)
         .derive(async ({sessionService, headers}: {headers: Record<string, string | undefined>, sessionService: SessionService}) => {
@@ -14,14 +15,14 @@ export function authFilter(...permissionsRequired: string[]) {
             
             if (!token) throw ErrUnauthorized
 
-            const {permissions, user_id} = await sessionService.verifyAccess(token)
+            const {roles, user_id} = await sessionService.verifyAccess(token)
 
-            if (permissionsRequired.length === 0) {
-                return {currentUser: {id: user_id, permissions}}
+            if (rolesRequired.length === 0) {
+                return {currentUser: {id: user_id, roles}}
             }
 
-            if (permissions.some(p => permissionsRequired.includes(p))) {
-                return {currentUser: {id: user_id, permissions}}
+            if (roles.some(p => rolesRequired.some(pr => pr.equal(p)))) {
+                return {currentUser: {id: user_id, roles}}
             }
 
             throw ErrForbidden

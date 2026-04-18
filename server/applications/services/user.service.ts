@@ -5,7 +5,6 @@ import { ErrAuthorization, ErrUserNameExists } from "@domain/contexts/identity/e
 import { RawUserPassword } from "@domain/contexts/identity/value_objects/user-raw-password"
 import { TelegramLink } from "@domain/contexts/identity/value_objects/user-telegram-link"
 import { Username } from "@domain/contexts/identity/value_objects/user-username"
-import { ErrNotFound, ErrUnauthorized } from "../../shared/error"
 
 export type RegisterUserCMD = {
     name: string,
@@ -46,11 +45,10 @@ export class UserService {
         return await this.txmanager.begin(async uow => {
             const user = await uow.users.getByName(cmd.name)
             if (!user) throw ErrAuthorization
-            console.log('pipisi');
             
             if (!await user.authenticate(cmd.password, this.HashStrategy)) throw ErrAuthorization
 
-            return user.id
+            return [user.id, user.roles] as const
         })
     }
 }

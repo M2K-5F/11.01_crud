@@ -4,6 +4,7 @@ import { HashedPassword } from "../value_objects/user-hashed-password";
 import { Username } from "../value_objects/user-username";
 import type { PasswordHashStrategy } from "../abstractions";
 import { AggregateRoot } from "@domain/common/abstractions/abstract-aggregate";
+import { UserRole } from "../value_objects/user-role";
 
 export class User extends AggregateRoot<UserID> {
     private constructor(
@@ -11,6 +12,7 @@ export class User extends AggregateRoot<UserID> {
         private _username: Username,
         private _telegramLink: TelegramLink,
         private _hashedPassword: HashedPassword,
+        private _roles: UserRole[]
     ) {super(id)}
 
     static register(username: Username, telegramLink: TelegramLink, hashedPassword: HashedPassword) {
@@ -18,11 +20,16 @@ export class User extends AggregateRoot<UserID> {
             UserID.generate(),
             username,
             telegramLink,
-            hashedPassword
+            hashedPassword,
+            [UserRole.student()]
         )
     }
     
     async authenticate(password: string, strategy: PasswordHashStrategy) {
         return await this._hashedPassword.verify(password, strategy)
+    }
+
+    public get roles(): UserRole[] {
+        return this._roles;
     }
 }

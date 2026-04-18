@@ -6,29 +6,54 @@ import hydrate from "@persistense/commands/common/hydrator";
 import { Username } from "@domain/contexts/identity/value_objects/user-username";
 import { TelegramLink } from "@domain/contexts/identity/value_objects/user-telegram-link";
 import { HashedPassword } from "@domain/contexts/identity/value_objects/user-hashed-password";
-import type { UserRow } from "@persistense/shemas/identity/shema";
+import { UserRole } from "@domain/contexts/identity/value_objects/user-role";
+import { sql } from "@m2k-5f/pgtx";
+import type { UserW } from "@persistense/shemas/identity/shema";
 
-export class UserRepository extends AbstractRepository<User, UserRow> implements IUserRepository {
-    override fromRow(row: UserRow): User {
+export class UserRepository extends AbstractRepository<User, UserW> implements IUserRepository {
+    override table = sql.ident('v_users_w')
+
+    fromRow(row: UserW): User {
         return hydrate(User, {
             "_id": hydrate(UserID, row.id),
             "_username": hydrate(Username, row.name),
             "_telegramLink": hydrate(TelegramLink, row.telegram_link),
-            "_hashedPassword": hydrate(HashedPassword, row.password_hash)
+            "_hashedPassword": hydrate(HashedPassword, row.password_hash),
+            "_roles": row.roles.map(role => hydrate(UserRole, role))
         })
     }
 
-    override toRow(agg: User): UserRow {
+    toRow(agg: User): UserW {
         return {
             id: agg['_id']['_value'],
             name: agg["_username"]["_value"],
             password_hash: agg["_hashedPassword"]["_value"],
-            telegram_link: agg["_telegramLink"]["_value"]
+            telegram_link: agg["_telegramLink"]["_value"],
+            roles: agg["_roles"].map(role => role['_value'])
+        }
+    }
+
+    override async save(agg: User): Promise<void> {
+        const {roles, id: user_id, ...user} = this.toRow(agg)
+
+        await this.tx.query`
+        insert into users ${sql.insert({...user, id: user_id})}
+        on conflict (id) do update set ${sql.excluded(Object.keys(user))};
+        `
+
+
+        await this.tx.query`
+        delete from user_roles
+        where user_id = ${user_id}`
+
+        if (roles.length) {
+            await this.tx.query`
+            insert into user_roles ${sql.insert(...roles.map(name => ({user_id, name})))}`
         }
     }
 
     async getByName(name: string): Promise<User | null> {
-        const [row] = await this.tx.query<UserRow>`select * from users where name = ${name} limit 1;`
+        const [row] = await this.tx.query<UserW>`select * from ${this.table} where name = ${name} limit 1;`
         return row ? this.fromRow(row) : null
     }
 

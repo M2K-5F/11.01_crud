@@ -2,15 +2,15 @@ import type { IRepository } from "@applications/interfaces/itransaction-manager"
 import type { AggregateRoot } from "@domain/common/abstractions/abstract-aggregate"
 import type { ID } from "@domain/common/abstractions/abstract-identificator"
 import { Pool, sql, Transaction } from "@m2k-5f/pgtx" 
+import type { Identifier } from "typescript"
 
 
 type GetID<T> = T extends AggregateRoot<infer Tid> ? Tid : never
 
 export abstract class AbstractRepository<TAgg extends AggregateRoot<any>, TRow extends Record<string, any>> implements IRepository<TAgg, GetID<TAgg>>  {
+    abstract table: any 
     constructor(
         readonly tx: Transaction,
-        tablename: string,
-        readonly table = sql.ident(tablename)
     ) {}
 
     abstract toRow(agg: TAgg): TRow

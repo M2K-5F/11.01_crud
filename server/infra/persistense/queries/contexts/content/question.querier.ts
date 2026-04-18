@@ -1,7 +1,7 @@
 import type { Pool } from "@m2k-5f/pgtx";
 import { Querier } from "@persistense/queries/common/abstract.querier";
-import type { QuestionRow, QuestionWithAnswersView } from "@persistense/shemas/content/shema";
+import type { QuestionR } from "@persistense/shemas/content/shema";
 
-export class QuestionQuerier extends Querier<QuestionWithAnswersView, QuestionRow> {
-    constructor(pool: Pool) {super(pool, "questions_with_answers")}
+export class QuestionQuerier extends Querier<QuestionR> {
+    constructor(pool: Pool) {super(pool, "v_questions_r")}
 }

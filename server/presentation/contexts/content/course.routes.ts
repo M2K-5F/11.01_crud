@@ -2,10 +2,11 @@ import Elysia, { t } from "elysia";
 import { authFilter } from "../../auth/middlewares/auth.middleware";
 import { CourseID } from "@domain/contexts/content/value-objects/course-id";
 import { dependencies } from "@index/injection";
+import { UserRole } from "@domain/contexts/identity/value_objects/user-role";
 
 export const courseRoutes = new Elysia()
 .use(dependencies)
-.use(authFilter('admin'))
+.use(authFilter(UserRole.teacher()))
 
 .post('/courses', 
     async ({

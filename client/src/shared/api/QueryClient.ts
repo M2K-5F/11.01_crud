@@ -3,8 +3,6 @@ import { Err, Ok, Result } from "../lib/result"
 
 export type QueryParams = RequestInit & {queries?: Record<string, number | string>}
 
-export type QueryResult<T> = Promise<{data: T, err: null} | {data: null, err: ApiError}>
-
 export class ApiClient {
     private ROOT_PATH = 'http://localhost:8000'
 

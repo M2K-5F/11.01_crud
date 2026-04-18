@@ -5,6 +5,11 @@ create table if not exists users (
     telegram_link varchar(255) not null
 );
 
+create table if not exists user_roles (
+    name text,
+    user_id uuid references users (id)
+);
+
 create index users_id_idx on users (id);
 
 create index users_name_idx on users (name);

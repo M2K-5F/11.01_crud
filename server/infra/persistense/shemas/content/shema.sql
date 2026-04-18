@@ -6,6 +6,8 @@ create table if not exists courses (
     created_by uuid references users (id)
 );
 
+create index if not exists courses_id_idx on courses (id);
+
 create table if not exists topics (
     id uuid not null primary key,
     title varchar(64) not null,
@@ -29,14 +31,3 @@ create table if not exists answers (
     is_correct boolean not null,
     question_id uuid references questions (id)
 );
-
-CREATE VIEW if not exists questions_with_answers AS
-SELECT 
-    q.*, 
-    COALESCE(
-        jsonb_agg(a ORDER BY a.id) FILTER (WHERE a.id IS NOT NULL), 
-        '[]'
-    ) AS answers
-FROM questions q
-LEFT JOIN answers a ON q.id = a.question_id
-GROUP BY q.id;

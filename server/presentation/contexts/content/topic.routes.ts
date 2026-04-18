@@ -3,10 +3,11 @@ import { dependencies } from "@index/injection";
 import { authFilter } from "../../auth/middlewares/auth.middleware";
 import { CourseID } from "@domain/contexts/content/value-objects/course-id";
 import { TopicID } from "@domain/contexts/content/value-objects/topic-id";
+import { UserRole } from "@domain/contexts/identity/value_objects/user-role";
 
 export const topicRoutes = new Elysia()
 .use(dependencies)
-.use(authFilter('admin'))
+.use(authFilter(UserRole.teacher()))
 
 
 .post("/courses/:course_id/topics", 
