@@ -53,6 +53,7 @@ export default class Topic extends AggregateRoot<TopicID> {
         private _status: Status
     ) {super(id)}
 
+
     static create(byCourse: CourseID, title: TopicTitle, description: TopicDescription, createdBy: UserID) {
         return new Topic(
             TopicID.generate(),
@@ -64,11 +65,13 @@ export default class Topic extends AggregateRoot<TopicID> {
         )
     }
 
+
     archive() {
         if (this._status.equal(Status.archived)) throw ErrTopicArchived
         
         this._status = Status.archived
     }
+
 
     activate() {
         if (this._status.equal(Status.active)) throw ErrTopicActive
@@ -76,6 +79,8 @@ export default class Topic extends AggregateRoot<TopicID> {
         this._status = Status.active
     }
 
+
+    get courseID() {return this._byCourse}
     get createdBy() { return this._createdBy }
 }
 // #endregion

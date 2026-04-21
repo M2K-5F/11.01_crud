@@ -1,11 +1,9 @@
-import type { ITransactionManager } from "@applications/interfaces/itransaction-manager"
-import type { PasswordHashStrategy } from "@domain/contexts/identity/abstractions"
-import { User } from "@domain/contexts/identity/aggregates/user"
-import { ErrAuthorization, ErrUserNameExists } from "@domain/contexts/identity/errors"
-import { RawUserPassword } from "@domain/contexts/identity/value_objects/user-raw-password"
-import { TelegramLink } from "@domain/contexts/identity/value_objects/user-telegram-link"
-import { Username } from "@domain/contexts/identity/value_objects/user-username"
+import type { ITransactionManager, Mutable } from "@applications/interfaces/itransaction-manager"
+import TelegramLink from "@domain/common/value-objects/telegram-link"
+import User, { UserRawPassword, UserUsername, type PasswordHashStrategy } from "@domain/contexts/identity/user"
+import { DomainError } from "@shared/error"
 
+// #region Commands
 export type RegisterUserCMD = {
     name: string,
     telegram_link: string,
@@ -16,8 +14,16 @@ export type AuthUserCMD = {
     name: string,
     password: string,
 }
+// #endregion
 
 
+// #region Errors
+const ErrUserNameExists = new DomainError("USER_NAME_EXISTS")
+const ErrAuthorization = new DomainError("AUTH_FAILED")
+// #endregion
+
+
+// #region Service
 export class UserService {
     constructor(
         readonly txmanager: ITransactionManager,
@@ -30,10 +36,10 @@ export class UserService {
             if (await uow.users.checkNameExists(cmd.name)) throw ErrUserNameExists
             
             const user = User.register(
-                Username.create(cmd.name),
+                UserUsername.create(cmd.name),
                 TelegramLink.create(cmd.telegram_link),
-                await RawUserPassword.create(cmd.password).hash(this.HashStrategy)
-            )
+                await UserRawPassword.create(cmd.password).hash(this.HashStrategy)
+            ) as Mutable<User>
 
             await uow.users.save(user)
 
@@ -52,3 +58,4 @@ export class UserService {
         })
     }
 }
+// #endregion

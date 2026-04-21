@@ -3,8 +3,9 @@ import { ID } from "@domain/common/abstractions/abstract-identificator"
 import { ValueObject } from "@domain/common/abstractions/abstract-value-object"
 import { DomainError } from "@shared/error"
 import type { TopicID } from "../topic"
-import { AnswerCorrectStatus, type ChoiceAnswer } from "./answer"
+import { AnswerCorrectStatus, AnswerID, type ChoiceAnswer } from "./answer"
 import type { UserID } from "@domain/contexts/identity/user"
+import { ObjectFlags } from "typescript"
 
 
 // #region Errors
@@ -37,8 +38,9 @@ export default class Question extends AggregateRoot<QuestionID> {
         private _text: QuestionText,
         private _byTopic: TopicID,
         private _createdBy: UserID,
-        private _answers: ChoiceAnswer[]
+        private _answers: Map<AnswerID, ChoiceAnswer>
     ) {super(id)}
+
 
     static create(text: QuestionText, createdBy: UserID, byTopic: TopicID, answers: ChoiceAnswer[]) {
         if (answers.length < 2) throw ErrQuestionAnswersCount
@@ -49,8 +51,24 @@ export default class Question extends AggregateRoot<QuestionID> {
 
         return new this(
             QuestionID.generate(),
-            text, byTopic, createdBy, answers
+            text, 
+            byTopic, 
+            createdBy, 
+            new Map(answers.map(a => [a.id, a]))
         )
+    }
+
+
+    checkAnswers(selectedAnswerIDs: Array<AnswerID>) {
+        const correctAnswers = this._answers
+            .values()
+            .filter(answer => answer.isCorrect.equal(AnswerCorrectStatus.correct))
+            .map(a => a.id)
+            .toArray()
+
+        if (selectedAnswerIDs.length !== correctAnswers.length) return false
+
+        return correctAnswers.every(correct => selectedAnswerIDs.some(selected => selected.equal(correct)))
     }
 }
 // #endregion

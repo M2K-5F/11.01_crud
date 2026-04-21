@@ -1,7 +1,7 @@
 import { AggregateRoot } from "@domain/common/abstractions/abstract-aggregate";
 import { ID } from "@domain/common/abstractions/abstract-identificator";
 import { ValueObject } from "@domain/common/abstractions/abstract-value-object";
-import { TopicEnrollment, type TopicEnrollmentAttempt } from "./topic-enrollment";
+import { TopicEnrollment, TopicEnrollmentAttempt } from "./topic-enrollment";
 import type { UserID } from "@domain/contexts/identity/user";
 import type { CourseID } from "@domain/contexts/content/course";
 import type { TopicID } from "@domain/contexts/content/topic";
@@ -17,22 +17,22 @@ export class EnrollmentProgress extends ValueObject<{
     completedTopics: number,
     topicsCount: number
 }> {
-    static create(completed: number, count: number) {
-        return new EnrollmentProgress({completedTopics: completed, topicsCount: count})
+    static createNullish(topicsCount: number) {
+        return new EnrollmentProgress({completedTopics: 0, topicsCount})
     }
 
     updateCompletedTopics(completedCount: number) {
-        return EnrollmentProgress.create(
-            completedCount,
-            this._value.topicsCount
-        )
+        return new EnrollmentProgress({
+            completedTopics: completedCount,
+            topicsCount: this._value.topicsCount
+        })
     }
 
     onTopicAdd() {
-        return EnrollmentProgress.create(
-            this._value.completedTopics,
-            this._value.topicsCount + 1
-        )
+        return new EnrollmentProgress({
+            completedTopics: this._value.completedTopics,
+            topicsCount: this._value.topicsCount + 1
+        })
     }
 
     get topicCount() {return this._value.topicsCount}
@@ -51,6 +51,18 @@ export class Enrollment extends AggregateRoot<EnrollmentID> {
         private _progress: EnrollmentProgress,
         private _topicEnrollments: Map<TopicID, TopicEnrollment>
     ) { super(id) }
+
+
+    static create(userID: UserID, courseID: CourseID, progress: EnrollmentProgress) {
+        return new Enrollment(
+            EnrollmentID.generate(),
+            userID,
+            courseID,
+            progress,
+            new Map()
+        )
+    }
+
 
     public registerAttempt(attempt: TopicEnrollmentAttempt, topicID: TopicID) {
         if (!this._topicEnrollments.has(topicID)) {
@@ -75,7 +87,15 @@ export class Enrollment extends AggregateRoot<EnrollmentID> {
         )
     }
 
-    onTopicAdd() {
+    public canStartNextTopic(previousTopicID?: TopicID) {
+        if (!previousTopicID) return true
+
+        const topicEnrollment = this._topicEnrollments.get(previousTopicID)
+
+        return topicEnrollment?.isCompleted ?? false
+    }
+
+    public onTopicAdd() {
         this._progress = this._progress.onTopicAdd()
     }
 

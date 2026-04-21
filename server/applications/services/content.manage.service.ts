@@ -1,13 +1,13 @@
-import type { ITransactionManager } from "@applications/interfaces/itransaction-manager";
-import { ErrCourseNotCreatedBy, ErrCourseTitleExist, ErrTopicNotCreatedBy } from "@domain/contexts/content";
+import { ForMutate, type ITransactionManager, type Mutable } from "@applications/interfaces/itransaction-manager";
 import Course, { CourseDescription, CourseID, CourseTitle } from "@domain/contexts/content/course";
 import Question, { AnswerCorrectStatus, AnswerText, ChoiceAnswer, QuestionText } from "@domain/contexts/content/question";
 import type { TopicID } from "@domain/contexts/content/topic";
 import Topic, { TopicDescription, TopicTitle } from "@domain/contexts/content/topic";
-import type { UserID } from "@domain/contexts/identity/value_objects/user-id";
-import { ErrNotFound } from "@shared/error";
+import type { UserID } from "@domain/contexts/identity/user";
+import { DomainError, ErrNotFound } from "@shared/error";
 
 
+// #region Commands
 type CreateCourseCMD = {
     userID: UserID,
     title: string,
@@ -35,12 +35,22 @@ type CreateQuestionCMD = {
     userID: UserID,
     topicID: TopicID,
     text: string,
-    answers: {
+    answers: Array<{
         text: string,
         is_correct: boolean
-    }[]
+    }>
 }
+// #endregion
 
+
+// #region Errors
+const ErrCourseTitleExist = new DomainError("COURSE_TITLE_EXISTS")
+const ErrCourseNotCreatedBy = new DomainError("COURSE_NOT_CREATED_BY")
+const ErrTopicNotCreatedBy = new DomainError("TOPIC_NOT_CREATED_BY")
+// #endregion
+
+
+// #region Service
 export class CourseManagementService {
     constructor (
         readonly txmanager: ITransactionManager
@@ -54,7 +64,7 @@ export class CourseManagementService {
                 CourseTitle.create(cmd.title),
                 CourseDescription.create(cmd.description),
                 cmd.userID
-            )
+            ) as Mutable<Course>
 
             await uow.courses.save(course)
 
@@ -64,9 +74,7 @@ export class CourseManagementService {
 
     async archiveCourse(cmd: CourseArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            await uow.courses.lock(cmd.courseID)
-
-            const course = await uow.courses.getByID(cmd.courseID)
+            const course = await uow.courses.getByID(cmd.courseID, ForMutate)
             if (!course) throw ErrNotFound
 
             if (!course.createdBy.equal(cmd.userID)) throw ErrCourseNotCreatedBy
@@ -81,9 +89,7 @@ export class CourseManagementService {
 
     async activateCourse(cmd: CourseArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            await uow.courses.lock(cmd.courseID)
-
-            const course = await uow.courses.getByID(cmd.courseID)
+            const course = await uow.courses.getByID(cmd.courseID, ForMutate)
             if (!course) throw ErrNotFound
 
             if (!course.createdBy.equal(cmd.userID)) throw ErrCourseNotCreatedBy
@@ -108,7 +114,7 @@ export class CourseManagementService {
                 TopicTitle.create(cmd.title),
                 TopicDescription.create(cmd.description),
                 cmd.userID
-            )
+            ) as Mutable<Topic>
 
             await uow.topics.save(topic)
 
@@ -118,9 +124,7 @@ export class CourseManagementService {
 
     async archiveTopic(cmd: TopicArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            await uow.topics.lock(cmd.topicID)
-
-            const topic = await uow.topics.getByID(cmd.topicID)
+            const topic = await uow.topics.getByID(cmd.topicID, ForMutate)
             if (!topic) throw ErrNotFound
 
             if (!topic.createdBy.equal(cmd.userID)) throw ErrTopicNotCreatedBy
@@ -135,9 +139,7 @@ export class CourseManagementService {
 
     async activateTopic(cmd: TopicArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            await uow.topics.lock(cmd.topicID)
-
-            const topic = await uow.topics.getByID(cmd.topicID)
+            const topic = await uow.topics.getByID(cmd.topicID, ForMutate)
             if (!topic) throw ErrNotFound
 
             if (!topic.createdBy.equal(cmd.userID)) throw ErrTopicNotCreatedBy
@@ -167,7 +169,7 @@ export class CourseManagementService {
                         a.is_correct ? AnswerCorrectStatus.correct : AnswerCorrectStatus.uncorrect
                     )
                 )
-            )
+            ) as Mutable<Question>
 
             await uow.questions.save(question)
 
@@ -175,3 +177,4 @@ export class CourseManagementService {
         })
     }
 }
+// #endregion
