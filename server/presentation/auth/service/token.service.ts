@@ -1,9 +1,8 @@
 import type { TokenStorage } from "../store/token.storage";
-import { UserID } from "@domain/contexts/identity/value_objects/user-id";
 import { TokenSigner } from "./token.signer";
 import { ErrRefreshTokenInvalid, ErrSessionNotFound, ErrTokenExpired } from "../errors";
 import { Session, type Device } from "../entities";
-import type { UserRole, UserRoleValue } from "@domain/contexts/identity/value_objects/user-role";
+import type { UserID, UserRole } from "@domain/contexts/identity/user";
 
 
 export class SessionService {

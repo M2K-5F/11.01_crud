@@ -11,7 +11,9 @@
   "peerDependencies": {
     "typescript": "^5"
   },
-  "scripts": {},
+  "scripts": {
+    "start": "tsc --noEmit && bun run --hot index.ts"
+  },
   "dependencies": {
     "@elysiajs/cors": "^1.4.1",
     "@elysiajs/static": "^1.4.7",

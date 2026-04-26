@@ -1,1 +1,0 @@
-create type archive_status as enum ("archived", "active")

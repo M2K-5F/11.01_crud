@@ -61,9 +61,9 @@ export type UserRoleValue =
     | "Teacher"
 
 export class UserRole extends ValueObject<UserRoleValue> {
-    static teacher() { return new this("Teacher") }
+    static get Teacher() { return new this("Teacher") }
 
-    static student() { return new this("Student") }
+    static get Student() { return new this("Student") }
 }
 // #endregion
 
@@ -84,7 +84,7 @@ export default class User extends AggregateRoot<UserID> {
             username,
             telegramLink,
             hashedPassword,
-            [UserRole.student()]
+            [UserRole.Student]
         )
     }
     

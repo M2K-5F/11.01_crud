@@ -6,6 +6,7 @@ create table if not exists users (
 );
 
 create table if not exists user_roles (
+    id serial primary key,
     name text,
     user_id uuid references users (id)
 );

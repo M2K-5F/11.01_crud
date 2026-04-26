@@ -22,7 +22,7 @@ export interface ITransactionWorkUnit {
 
 
 class ExecuteParam {}
-class ForMutateParam extends ExecuteParam {}
+export class ForMutateParam extends ExecuteParam {}
 
 export const ForMutate = new ForMutateParam()
 

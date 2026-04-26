@@ -2,7 +2,7 @@ import type { SessionService } from "../service/token.service";
 import { ErrForbidden, ErrUnauthorized } from "../../../shared/error";
 import Elysia from "elysia";
 import { dependencies } from "@index/injection";
-import type { UserRole, UserRoleValue } from "@domain/contexts/identity/value_objects/user-role";
+import type { UserRole } from "@domain/contexts/identity/user";
 
 export function authFilter(...rolesRequired: UserRole[]) { 
     return (app: Elysia) => app

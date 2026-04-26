@@ -8,12 +8,13 @@ import { CourseManagementService } from "@applications/services/content.manage.s
 import { TokenStorage } from "./presentation/auth/store/token.storage";
 import { SessionService } from "./presentation/auth/service/token.service";
 import { QueryService } from "@persistense/queries/common/query-service";
+import LearningService from "@applications/services/learning.service";
 
 const getDependencies = async () => {
     const persistensePool = new Pool({
         connectionString: Bun.env.PERSISTENSE_DSN,
         max: 10,
-        enableLogs: true
+        // enableLogs: true
     })
 
     const sessionsPool = new Pool({
@@ -25,7 +26,7 @@ const getDependencies = async () => {
     const queriesPool = new Pool({
         connectionString: Bun.env.QUERY_DB_DSN,
         max: 40,
-        enableLogs: true
+        // enableLogs: true
     })
 
     const txm = new TransactionManager(persistensePool)
@@ -33,6 +34,7 @@ const getDependencies = async () => {
 
     const userService = new UserService(txm, new BCryptHashStrategy())
     const courseManagementService = new CourseManagementService(txm)
+    const learningService = new LearningService(txm)
 
     const sessionStorage = new TokenStorage(sessionsPool)
     const signer = await TokenSigner.newWithKeys()
@@ -46,6 +48,7 @@ const getDependencies = async () => {
         userService,
         courseManagementService,
         sessionService,
+        learningService,
         qs
     }
 };

@@ -38,7 +38,7 @@ export default class Question extends AggregateRoot<QuestionID> {
         private _text: QuestionText,
         private _byTopic: TopicID,
         private _createdBy: UserID,
-        private _answers: Map<AnswerID, ChoiceAnswer>
+        private _answers: Map<string, ChoiceAnswer>
     ) {super(id)}
 
 
@@ -54,18 +54,25 @@ export default class Question extends AggregateRoot<QuestionID> {
             text, 
             byTopic, 
             createdBy, 
-            new Map(answers.map(a => [a.id, a]))
+            new Map(answers.map(a => [a.id.id, a]))
         )
     }
 
 
     checkAnswers(selectedAnswerIDs: Array<AnswerID>) {
+
+        console.log(this._answers);
+        
         const correctAnswers = this._answers
             .values()
             .filter(answer => answer.isCorrect.equal(AnswerCorrectStatus.correct))
             .map(a => a.id)
             .toArray()
 
+        console.log(correctAnswers);
+        console.log(selectedAnswerIDs);
+        
+        
         if (selectedAnswerIDs.length !== correctAnswers.length) return false
 
         return correctAnswers.every(correct => selectedAnswerIDs.some(selected => selected.equal(correct)))

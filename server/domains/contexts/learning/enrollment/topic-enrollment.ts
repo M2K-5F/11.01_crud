@@ -2,14 +2,15 @@ import { AggregateRoot } from "@domain/common/abstractions/abstract-aggregate"
 import { Entity } from "@domain/common/abstractions/abstract-entity"
 import { ID } from "@domain/common/abstractions/abstract-identificator"
 import { ValueObject } from "@domain/common/abstractions/abstract-value-object"
-import type { TopicID } from "@domain/contexts/content/value-objects/topic-id"
+import type { TopicID } from "@domain/contexts/content/topic"
 
 
 // #region ID
-class TopicEnrollmentID extends ID {}
+export class TopicEnrollmentID extends ID {}
 // #endregion
 
 
+// #region Progress
 export class TopicEnrollmentProgress extends ValueObject<{
     completedQuestions: number,
     questionCount: number,
@@ -22,7 +23,7 @@ export class TopicEnrollmentProgress extends ValueObject<{
     }
     
     get questionCount() {return this._value.questionCount}
-    get ratio() {return this._value.completedQuestions / this._value.questionCount}
+    get ratio() {return this._value.completedQuestions / this._value.questionCount || 0}
     get isCompleted() { return this.ratio >= 0.8 }
 }
 // #endregion
@@ -44,7 +45,7 @@ export class TopicEnrollmentAttempt extends ValueObject<{
 
     get questionCount() {return this._value.questionCount}
     get completedQuestions() {return this._value.completedQuestions}
-    get ratio() {return this._value.completedQuestions / this._value.questionCount}
+    get ratio() {return this._value.completedQuestions / this._value.questionCount || 0}
     get isSuccess() {return this.ratio >= 0.8}
 }
 // #endregion
@@ -75,6 +76,8 @@ export class TopicEnrollment extends Entity<TopicEnrollmentID> {
     registerAttempt(attempt: TopicEnrollmentAttempt) {
         this._attempts.push(attempt)
 
+        console.log(attempt, attempt.ratio, attempt.isSuccess, this._progress.ratio, attempt.isSuccess && attempt.ratio >= this._progress.ratio);
+        
         if (attempt.isSuccess && attempt.ratio >= this._progress.ratio) {
             this._progress = TopicEnrollmentProgress.create(attempt.completedQuestions, attempt.questionCount)
         }

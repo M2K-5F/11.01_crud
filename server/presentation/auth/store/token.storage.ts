@@ -1,7 +1,7 @@
 import { DeviceID, Session, SessionID } from "../entities";
 import { sql, type Pool } from "@m2k-5f/pgtx";
 import type { SessionRow } from "./shema";
-import { UserID } from "@domain/contexts/identity/value_objects/user-id";
+import { UserID } from "@domain/contexts/identity/user";
 
 export class TokenStorage {
     mapper = TokenMapper

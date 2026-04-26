@@ -1,29 +1,25 @@
-import { User } from "@domain/contexts/identity/aggregates/user";
 import { AbstractRepository } from "@persistense/commands/common/abstract_repository";
-import type { IUserRepository } from "@applications/interfaces/itransaction-manager";
-import { UserID } from "@domain/contexts/identity/value_objects/user-id";
+import type { ForMutateParam, IUserRepository, Mutable } from "@applications/interfaces/itransaction-manager";
 import hydrate from "@persistense/commands/common/hydrator";
-import { Username } from "@domain/contexts/identity/value_objects/user-username";
-import { TelegramLink } from "@domain/contexts/identity/value_objects/user-telegram-link";
-import { HashedPassword } from "@domain/contexts/identity/value_objects/user-hashed-password";
-import { UserRole } from "@domain/contexts/identity/value_objects/user-role";
 import { sql } from "@m2k-5f/pgtx";
-import type { UserW } from "@persistense/shemas/identity/shema";
+import User, { UserHashedPassword, UserID, UserRole, UserUsername } from "@domain/contexts/identity/user";
+import TelegramLink from "@domain/common/value-objects/telegram-link";
+import type { Database } from "@persistense/shemas";
 
-export class UserRepository extends AbstractRepository<User, UserW> implements IUserRepository {
+export class UserRepository extends AbstractRepository<User, Database['v_users_w']> implements IUserRepository {
     override table = sql.ident('v_users_w')
 
-    fromRow(row: UserW): User {
+    fromRow(row: Database['v_users_w']): User {
         return hydrate(User, {
             "_id": hydrate(UserID, row.id),
-            "_username": hydrate(Username, row.name),
+            "_username": hydrate(UserUsername, row.name),
             "_telegramLink": hydrate(TelegramLink, row.telegram_link),
-            "_hashedPassword": hydrate(HashedPassword, row.password_hash),
+            "_hashedPassword": hydrate(UserHashedPassword, row.password_hash),
             "_roles": row.roles.map(role => hydrate(UserRole, role))
         })
     }
 
-    toRow(agg: User): UserW {
+    toRow(agg: User): Database['v_users_w'] {
         return {
             id: agg['_id']['_value'],
             name: agg["_username"]["_value"],
@@ -52,9 +48,9 @@ export class UserRepository extends AbstractRepository<User, UserW> implements I
         }
     }
 
-    async getByName(name: string): Promise<User | null> {
-        const [row] = await this.tx.query<UserW>`select * from ${this.table} where name = ${name} limit 1;`
-        return row ? this.fromRow(row) : null
+    async getByName(name: string, forMutate?: ForMutateParam) {
+        const [row] = await this.tx.query<Database['v_users_w']>`select * from ${this.table} where name = ${name} limit 1 ${forMutate ? sql.fragment`for update` : sql.empty};`
+        return row ? this.fromRow(row) as Mutable<User> : null
     }
 
     async checkNameExists(name: string): Promise<boolean> {

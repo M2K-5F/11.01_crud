@@ -1,14 +1,16 @@
-export type UserW = {
+import type { UserRoleValue } from "@domain/contexts/identity/user"
+
+// #region User
+export interface UserRow {
     id: string,
     name: string,
-    telegram_link: string,
     password_hash: string,
-    roles: Array<"Student" | "Teacher">
+    telegram_link: string,
 }
 
-export type UserR = {
-    id: string,
-    name: string,
-    telegram_link: string,
-    roles: Array<"Student" | "Teacher">
+export interface UserRoleRow {
+    id: number,
+    name: UserRoleValue,
+    user_id: string,
 }
+// #endregion

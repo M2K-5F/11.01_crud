@@ -3,5 +3,5 @@ create table sessions (
     user_id uuid references users (id),
     device jsonb not null,
     current_token text not null,
-    last_activity datetimetz not null
+    last_activity timestamptz not null
 );

@@ -1,12 +1,12 @@
 import Elysia, { t } from "elysia";
 import { authFilter } from "../../auth/middlewares/auth.middleware";
-import { CourseID } from "@domain/contexts/content/value-objects/course-id";
 import { dependencies } from "@index/injection";
-import { UserRole } from "@domain/contexts/identity/value_objects/user-role";
+import { UserRole } from "@domain/contexts/identity/user";
+import { CourseID } from "@domain/contexts/content/course";
 
 export const courseRoutes = new Elysia()
 .use(dependencies)
-.use(authFilter(UserRole.teacher()))
+.use(authFilter(UserRole.Teacher))
 
 .post('/courses', 
     async ({
@@ -68,6 +68,6 @@ export const courseRoutes = new Elysia()
         currentUser: {id},
         qs
     }) => {
-        return await qs.course.allBy({created_by: id.id})
+        return await qs.course.allBy({created_by_id: id.id})
     }
 )

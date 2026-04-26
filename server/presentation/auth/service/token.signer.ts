@@ -1,8 +1,7 @@
-import { UserID } from "@domain/contexts/identity/value_objects/user-id"
 import { importPKCS8, importSPKI, jwtVerify, SignJWT } from "jose"
 import { SessionID } from "../entities"
-import { UserRole, type UserRoleValue } from "@domain/contexts/identity/value_objects/user-role"
 import hydrate from "@persistense/commands/common/hydrator"
+import { UserID, UserRole, type UserRoleValue } from "@domain/contexts/identity/user"
 
 export class TokenSigner {
     private constructor(

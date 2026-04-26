@@ -5,6 +5,7 @@ import { identityRoutes } from "./presentation/contexts/identity";
 import { AppError, DomainError, ForbiddenError, NotFoundError, UnauthorizedError, ValidationError } from "./shared/error";
 import { errorHandle } from "./error-handler";
 import {cors} from "@elysiajs/cors"
+import { learningRoutes } from "@presentation/contexts/learning";
 
 const app = new Elysia()
 .use(cors({}))
@@ -26,6 +27,7 @@ const app = new Elysia()
 }))
 .use(identityRoutes)
 .use(contentRoutes)
+.use(learningRoutes)
 .listen(8000)
 
 console.log("Bun served");

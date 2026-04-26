@@ -1,11 +1,10 @@
-import type { UserID } from "@domain/contexts/identity/value_objects/user-id";
-import { UserRole, type UserRoleValue } from "@domain/contexts/identity/value_objects/user-role";
+import { UserRole, type UserID, type UserRoleValue } from "@domain/contexts/identity/user";
 import type { Pool } from "@m2k-5f/pgtx";
 import hydrate from "@persistense/commands/common/hydrator";
 import { Querier } from "@persistense/queries/common/abstract.querier";
-import type { UserR } from "@persistense/shemas/identity/shema";
+import type { Database } from "@persistense/shemas";
 
-export class UserQuerier extends Querier<UserR> {
+export class UserQuerier extends Querier<Database['v_users_r']> {
     constructor(pool: Pool) {super(pool, "v_users_r")}
 
     public async getRolesByID(id: UserID) {

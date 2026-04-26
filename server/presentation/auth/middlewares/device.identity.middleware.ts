@@ -1,4 +1,4 @@
-import { Elysia, t } from "elysia"; // Добавьте t для типизации кук
+import { Elysia, t } from "elysia";
 import { DeviceID, type Device } from "../entities";
 
 const deviceIdentity = new Elysia({ name: 'device-identity' })

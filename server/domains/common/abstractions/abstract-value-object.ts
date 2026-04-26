@@ -1,6 +1,6 @@
 export abstract class ValueObject<TValue> {
     protected constructor(
-        protected readonly _value: Readonly<TValue>
+        protected readonly _value: TValue
     ) {}
 
     equal(other: this) {

@@ -42,6 +42,15 @@ export class TopicDescription extends ValueObject<string> {
 // #endregion
 
 
+// #region Number
+export class TopicNumber extends ValueObject<number> {
+    static create(number: number) {
+        return new TopicNumber(number)
+    }
+}
+// #endregion
+
+
 // #region Topic
 export default class Topic extends AggregateRoot<TopicID> {
     private constructor(
@@ -50,33 +59,35 @@ export default class Topic extends AggregateRoot<TopicID> {
         private _description: TopicDescription ,
         private _byCourse: CourseID,
         private _createdBy: UserID,
-        private _status: Status
+        private _status: Status,
+        private _number: TopicNumber
     ) {super(id)}
 
 
-    static create(byCourse: CourseID, title: TopicTitle, description: TopicDescription, createdBy: UserID) {
+    static create(byCourse: CourseID, title: TopicTitle, description: TopicDescription, createdBy: UserID, number: TopicNumber) {
         return new Topic(
             TopicID.generate(),
             title,
             description,
             byCourse,
             createdBy,
-            Status.active
+            Status.Active,
+            number
         )
     }
 
 
     archive() {
-        if (this._status.equal(Status.archived)) throw ErrTopicArchived
+        if (this._status.equal(Status.Archived)) throw ErrTopicArchived
         
-        this._status = Status.archived
+        this._status = Status.Archived
     }
 
 
     activate() {
-        if (this._status.equal(Status.active)) throw ErrTopicActive
+        if (this._status.equal(Status.Active)) throw ErrTopicActive
 
-        this._status = Status.active
+        this._status = Status.Active
     }
 
 

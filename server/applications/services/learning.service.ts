@@ -22,7 +22,7 @@ export type StartTopicCMD = {
 export type CompleteTopicCMD = {
     topicID: TopicID,
     userID: UserID,
-    questionAnswers: Map<QuestionID, Array<AnswerID>>
+    questionAnswers: Map<string, Array<AnswerID>>
 }
 // #endregion
 
@@ -85,20 +85,24 @@ export default class LearningService {
 
             const enroll = await uow.enrolls.getByUserAndCourse(cmd.userID, topic.courseID, ForMutate)
             if(!enroll) throw ErrNotEnrolled
+            
 
             const previousTopic = await uow.topics.getPrevious(topic.id)
 
             if (!enroll.canStartNextTopic(previousTopic?.id)) throw ErrCanNotAnswer
 
             const questions = await uow.questions.listByTopic(topic.id)
+        
 
             if (cmd.questionAnswers.size !== questions.length) throw ErrQuestionCountMismatch
 
-            const completedQuestionCount = questions.filter(question => 
+            const completedQuestionCount = questions
+                .filter(question => 
                     question.checkAnswers(
-                        cmd.questionAnswers.get(question.id) || []
+                        cmd.questionAnswers.get(question.id.id) || []
                     )
-                ).length
+                )
+                .length
 
             const attempt = TopicEnrollmentAttempt.create(
                 completedQuestionCount,

@@ -2,7 +2,7 @@ import { ForMutate, type ITransactionManager, type Mutable } from "@applications
 import Course, { CourseDescription, CourseID, CourseTitle } from "@domain/contexts/content/course";
 import Question, { AnswerCorrectStatus, AnswerText, ChoiceAnswer, QuestionText } from "@domain/contexts/content/question";
 import type { TopicID } from "@domain/contexts/content/topic";
-import Topic, { TopicDescription, TopicTitle } from "@domain/contexts/content/topic";
+import Topic, { TopicDescription, TopicNumber, TopicTitle } from "@domain/contexts/content/topic";
 import type { UserID } from "@domain/contexts/identity/user";
 import { DomainError, ErrNotFound } from "@shared/error";
 
@@ -109,11 +109,14 @@ export class CourseManagementService {
 
             if (!course.createdBy.equal(cmd.userID)) throw ErrCourseNotCreatedBy
 
+            const count = await uow.topics.countByCourse(course.id)
+
             const topic = Topic.create(
                 cmd.courseID, 
                 TopicTitle.create(cmd.title),
                 TopicDescription.create(cmd.description),
-                cmd.userID
+                cmd.userID,
+                TopicNumber.create(count + 1)
             ) as Mutable<Topic>
 
             await uow.topics.save(topic)

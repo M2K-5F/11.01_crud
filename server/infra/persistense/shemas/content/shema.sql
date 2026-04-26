@@ -2,8 +2,8 @@ create table if not exists courses (
     id uuid not null primary key,
     title varchar(64) not null,
     description varchar(128) not null,
-    status archive_status,
-    created_by uuid references users (id)
+    status text,
+    created_by_id uuid references users (id)
 );
 
 create index if not exists courses_id_idx on courses (id);
@@ -12,16 +12,17 @@ create table if not exists topics (
     id uuid not null primary key,
     title varchar(64) not null,
     description varchar(128) NOT null,
-    status archive_status,
-    created_by uuid references users (id),
-    by_course uuid references courses (id)
+    status text,
+    number integer,
+    created_by_id uuid references users (id),
+    by_course_id uuid references courses (id)
 );
 
 create table if not exists questions (
     id uuid not null primary key,
     text text not null,
-    by_topic uuid references topics (id),
-    created_by uuid references users (id)
+    by_topic_id uuid references topics (id),
+    created_by_id uuid references users (id)
 );
 
 

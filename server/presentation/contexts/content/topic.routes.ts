@@ -1,13 +1,13 @@
 import Elysia, { t } from "elysia";
 import { dependencies } from "@index/injection";
 import { authFilter } from "../../auth/middlewares/auth.middleware";
-import { CourseID } from "@domain/contexts/content/value-objects/course-id";
-import { TopicID } from "@domain/contexts/content/value-objects/topic-id";
-import { UserRole } from "@domain/contexts/identity/value_objects/user-role";
+import { UserRole } from "@domain/contexts/identity/user";
+import { TopicID } from "@domain/contexts/content/topic";
+import { CourseID } from "@domain/contexts/content/course";
 
 export const topicRoutes = new Elysia()
 .use(dependencies)
-.use(authFilter(UserRole.teacher()))
+.use(authFilter(UserRole.Teacher))
 
 
 .post("/courses/:course_id/topics", 
@@ -73,6 +73,6 @@ export const topicRoutes = new Elysia()
         qs,
         params: {course_id}
     }) => {
-        return await qs.topics.allBy({by_course: course_id})
+        return await qs.topics.allBy({by_course_id: course_id})
     }
 )

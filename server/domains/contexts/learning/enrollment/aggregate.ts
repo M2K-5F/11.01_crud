@@ -5,10 +5,11 @@ import { TopicEnrollment, TopicEnrollmentAttempt } from "./topic-enrollment";
 import type { UserID } from "@domain/contexts/identity/user";
 import type { CourseID } from "@domain/contexts/content/course";
 import type { TopicID } from "@domain/contexts/content/topic";
+import type { Branded } from "@shared/lib";
 
 
 // #region ID
-class EnrollmentID extends ID {}
+export class EnrollmentID extends ID {}
 // #endregion
 
 
@@ -36,7 +37,7 @@ export class EnrollmentProgress extends ValueObject<{
     }
 
     get topicCount() {return this._value.topicsCount}
-    get ratio() {return this._value.completedTopics / this._value.topicsCount}
+    get ratio() {return this._value.completedTopics / this._value.topicsCount || 0}
     get isCompleted() {return this._value.completedTopics === this._value.topicsCount}
 }
 // #endregion
@@ -49,7 +50,7 @@ export class Enrollment extends AggregateRoot<EnrollmentID> {
         private _userID: UserID,
         private _courseID: CourseID,
         private _progress: EnrollmentProgress,
-        private _topicEnrollments: Map<TopicID, TopicEnrollment>
+        private _topicEnrollments: Map<string, TopicEnrollment>
     ) { super(id) }
 
 
@@ -65,17 +66,17 @@ export class Enrollment extends AggregateRoot<EnrollmentID> {
 
 
     public registerAttempt(attempt: TopicEnrollmentAttempt, topicID: TopicID) {
-        if (!this._topicEnrollments.has(topicID)) {
+        if (!this._topicEnrollments.has(topicID.id)) {
             const enroll = TopicEnrollment.create(attempt, topicID)
 
-            this._topicEnrollments.set(topicID, enroll)
+            this._topicEnrollments.set(topicID.id, enroll)
         }
         else {
-            const enroll = this._topicEnrollments.get(topicID)!
+            const enroll = this._topicEnrollments.get(topicID.id)!
 
             enroll.registerAttempt(attempt)
 
-            this._topicEnrollments.set(topicID, enroll)
+            this._topicEnrollments.set(topicID.id, enroll)
         }
 
         this._progress = this._progress.updateCompletedTopics(
@@ -90,7 +91,7 @@ export class Enrollment extends AggregateRoot<EnrollmentID> {
     public canStartNextTopic(previousTopicID?: TopicID) {
         if (!previousTopicID) return true
 
-        const topicEnrollment = this._topicEnrollments.get(previousTopicID)
+        const topicEnrollment = this._topicEnrollments.get(previousTopicID.id)
 
         return topicEnrollment?.isCompleted ?? false
     }

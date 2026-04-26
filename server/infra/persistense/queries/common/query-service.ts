@@ -3,6 +3,7 @@ import { UserQuerier } from "../contexts/identity/user.querier";
 import { CourseQuerier } from "../contexts/content/course.querier";
 import { TopicQuerier } from "../contexts/content/topic.querier";
 import { QuestionQuerier } from "../contexts/content/question.querier";
+import { EnrollmentQuerier } from "../contexts/learning/enrollment.querier";
 
 export class QueryService {
     constructor(
@@ -11,5 +12,6 @@ export class QueryService {
         readonly course = new CourseQuerier(pool),
         readonly topics = new TopicQuerier(pool),
         readonly question = new QuestionQuerier(pool),
+        readonly enroll = new EnrollmentQuerier(pool),
     ) {}
 }

@@ -1,4 +1,4 @@
-import type { PasswordHashStrategy } from "@domain/contexts/identity/abstractions";
+import type { PasswordHashStrategy } from "@domain/contexts/identity/user"
 
 export class BCryptHashStrategy implements PasswordHashStrategy {
     async hash(raw: string) {

@@ -56,21 +56,21 @@ export default class Course extends AggregateRoot<CourseID> {
             CourseID.generate(),
             title,
             description,
-            Status.active,
+            Status.Active,
             createdBy
         )
     }
 
     archive() {
-        if (this._status.equal(Status.archived)) throw ErrCourseArchived
+        if (this._status.equal(Status.Archived)) throw ErrCourseArchived
 
-        this._status = Status.archived
+        this._status = Status.Archived
     }
 
     activate() {
-        if (this._status.equal(Status.active)) throw ErrCourseActive
+        if (this._status.equal(Status.Active)) throw ErrCourseActive
 
-        this._status = Status.active
+        this._status = Status.Active
     }
 
     get createdBy() {return this._createdBy}

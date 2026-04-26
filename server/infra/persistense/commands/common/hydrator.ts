@@ -1,4 +1,5 @@
 import type { AggregateRoot } from "@domain/common/abstractions/abstract-aggregate"
+import type { Entity } from "@domain/common/abstractions/abstract-entity"
 import { ValueObject } from "@domain/common/abstractions/abstract-value-object"
 
 function hydrate<T extends ValueObject<any>>(
@@ -7,6 +8,11 @@ function hydrate<T extends ValueObject<any>>(
 ): T
 
 function hydrate<T extends AggregateRoot<any>>(
+    ClassRef: {prototype: T},
+    data: Partial<Record<string, any>>
+): T 
+
+function hydrate<T extends Entity<any>>(
     ClassRef: {prototype: T},
     data: Partial<Record<string, any>>
 ): T 
