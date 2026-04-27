@@ -8,9 +8,7 @@ import type Course from "@domain/contexts/content/course"
 import type Topic from "@domain/contexts/content/topic"
 import type { TopicID } from "@domain/contexts/content/topic"
 import type Question from "@domain/contexts/content/question"
-import type { QuestionID } from "@domain/contexts/content/question"
 import type { Enrollment } from "@domain/contexts/learning/enrollment/aggregate"
-import type { FreshableType } from "typescript"
 
 export interface ITransactionWorkUnit {
     readonly users: IUserRepository
@@ -34,15 +32,14 @@ export interface ITransactionManager {
 }
 
 export interface IRepository<Tentity extends AggregateRoot<TID>, TID extends ID = Tentity extends AggregateRoot<infer U> ? U : never> {
-    save(root: Mutable<Tentity>): Promise<void>
+    save(...root: Array<Mutable<Tentity>>): Promise<void>
 
-    getByID(id: TID, param: ForMutateParam): Promise<Mutable<Tentity> | null>
+    getByIDForMutate(id: TID): Promise<Mutable<Tentity> | null>
     getByID(id: TID): Promise<Tentity | null>
 }
 
 export interface IUserRepository extends IRepository<User> {
     checkNameExists(name: string): Promise<boolean>
-    getByName(name: string, param: ForMutateParam): Promise<Mutable<User> | null>
     getByName(name: string): Promise<User | null>
 }
 
@@ -62,6 +59,9 @@ export interface IQuestionRepository extends IRepository<Question> {
 export interface IEnrollmentRepository extends IRepository<Enrollment> {
     isUserEnrolled(userID: UserID, courseID: CourseID): Promise<boolean>
     
-    getByUserAndCourse(userID: UserID, courseID: CourseID, param: ForMutateParam): Promise<Mutable<Enrollment> | null>
+
+    getByUserAndCourseForMutate(userID: UserID, courseID: CourseID): Promise<Mutable<Enrollment> | null>
     getByUserAndCourse(userID: UserID, courseID: CourseID): Promise<Enrollment | null>
+
+    listByCourseForMutate(courseID: CourseID): Promise<Array<Mutable<Enrollment>>>
 }

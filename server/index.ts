@@ -7,7 +7,7 @@ import { errorHandle } from "./error-handler";
 import {cors} from "@elysiajs/cors"
 import { learningRoutes } from "@presentation/contexts/learning";
 
-const app = new Elysia()
+const app = new Elysia({})
 .use(cors({}))
 .use(errorHandle)
 .use(swagger({
@@ -25,9 +25,10 @@ const app = new Elysia()
         },
     }
 }))
+.get('/ping', () => 'pong')
 .use(identityRoutes)
 .use(contentRoutes)
 .use(learningRoutes)
-.listen(8000)
+.listen({port: 8000, reusePort: true})
 
 console.log("Bun served");

@@ -13,7 +13,7 @@ export class TopicRepository extends AbstractRepository<Topic, Database['v_topic
     override table: any = sql.ident("v_topics_w")
 
 
-    override toRow(agg: Topic): Database['v_topics_w'] {
+    override toRow(agg: Topic): Database['v_topics_w'] {        
         return {
             id: agg['_id']['_value'],
             title: agg['_title']['_value'],
@@ -42,6 +42,7 @@ export class TopicRepository extends AbstractRepository<Topic, Database['v_topic
         const [res] = await this.tx.query<{count: number}>`
         select count(*) as count from topics 
         where by_course_id = ${courseID.id}`
+        
         return res!.count
     }
 

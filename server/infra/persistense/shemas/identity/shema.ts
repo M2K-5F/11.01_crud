@@ -9,7 +9,6 @@ export interface UserRow {
 }
 
 export interface UserRoleRow {
-    id: number,
     name: UserRoleValue,
     user_id: string,
 }

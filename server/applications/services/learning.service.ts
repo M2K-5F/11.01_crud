@@ -24,6 +24,10 @@ export type CompleteTopicCMD = {
     userID: UserID,
     questionAnswers: Map<string, Array<AnswerID>>
 }
+
+export type OnTopicCreateCMD = {
+    courseID: CourseID
+}
 // #endregion
 
 
@@ -83,7 +87,7 @@ export default class LearningService {
             const topic = await uow.topics.getByID(cmd.topicID)
             if (!topic) throw ErrNotFound
 
-            const enroll = await uow.enrolls.getByUserAndCourse(cmd.userID, topic.courseID, ForMutate)
+            const enroll = await uow.enrolls.getByUserAndCourseForMutate(cmd.userID, topic.courseID)
             if(!enroll) throw ErrNotEnrolled
             
 
@@ -114,6 +118,16 @@ export default class LearningService {
             await uow.enrolls.save(enroll)
 
             return enroll.id
+        })
+    }
+
+    $onTopicCreate(cmd: OnTopicCreateCMD) {
+        return this.txmanager.begin(async uow => {
+            const enrollmentsToUpdate = await uow.enrolls.listByCourseForMutate(cmd.courseID)
+
+            enrollmentsToUpdate.forEach(enroll => enroll.onTopicAdd())
+
+            uow.enrolls.save(...enrollmentsToUpdate)
         })
     }
 }

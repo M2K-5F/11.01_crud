@@ -13,16 +13,20 @@ export const topicRoutes = new Elysia()
 .post("/courses/:course_id/topics", 
     async ({
         courseManagementService,
+        learningService,
         currentUser: { id },
         qs,
         params: {course_id},
         body
     }) => {
-        const topicID = await courseManagementService.createTopic({
+        const {topicID, courseID} = await courseManagementService.createTopic({
             userID: id,
             ...body,
             courseID: CourseID.fromString(course_id),
         })
+
+        void learningService.$onTopicCreate({courseID})
+            .catch(err => console.error("Error in $onTopicCreate:", err));
 
         return await qs.topics.firstBy({id: topicID.id})
     }, {

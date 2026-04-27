@@ -78,33 +78,33 @@ export class EnrollRepository extends AbstractRepository<Enrollment, Database['v
         })
     }
 
-    override async save(agg: Enrollment): Promise<void> {
-        const { topics, ...enroll } = this.toRow(agg)
-        
-        await this.tx.query`
-        delete from topic_enrollments
-        where enrollment_id = ${enroll.id}`
+    override async save(...aggs: Array<Mutable<Enrollment>>): Promise<void> {
+        const rows = aggs.map(this.toRow)
+        const ids = rows.map(r => r.id)
+        const topics = rows.flatMap(r => r.topics)
+
+        const enrolls = rows.map(r => {const {topics, ...tmp}=r; return tmp})
+        const topicEnrolls = topics.map(t => t.topic)
+        const attempts = topics.flatMap(t => t.attempts)
 
 
-        await this.tx.query`
-        insert into course_enrollments 
-        ${sql.insert<CourseEnrollmentRow>(enroll)}
+        enrolls.length && await this.tx.query
+        `insert into course_enrollments 
+        ${sql.insert<CourseEnrollmentRow>(...enrolls)}
         on conflict (id) do update set
-        ${sql.excluded(Object.keys(enroll).filter(k => k!=='id'))}`
+        ${sql.excluded(Object.keys(enrolls[0]!))}`
 
-        if (topics.length) {
-            await this.tx.query`
-            insert into topic_enrollments 
-            ${sql.insert<TopicEnrollmentRow>(...topics.map(t => t.topic))};`
+        await this.tx.query
+        `delete from topic_enrollments
+        where enrollment_id in (${sql.array(ids)})`
 
-            const attempts = topics.flatMap(t => t.attempts)
+        topicEnrolls.length && await this.tx.query
+        `insert into topic_enrollments
+        ${sql.insert<TopicEnrollmentRow>(...topicEnrolls)}`
 
-            if (attempts.length) {
-                await this.tx.query`
-                insert into topic_attempts 
-                ${sql.insert<TopicAttemptRow>(...attempts)};`
-            }
-        } 
+        attempts.length && await this.tx.query
+        `insert into topic_attempts
+        ${sql.insert<TopicAttemptRow>(...attempts)}`
     }
 
     
@@ -118,18 +118,34 @@ export class EnrollRepository extends AbstractRepository<Enrollment, Database['v
         return !!res
     }
 
+    async listByCourseForMutate(courseID: CourseID): Promise<Array<Mutable<Enrollment>>> {
+        const res = await this.tx.query<EnrollmentW>
+        `select * from ${this.table}
+        where course_id = ${courseID.id}`
 
-    async getByUserAndCourse(userID: UserID, courseID: CourseID, param: ForMutateParam): Promise<Mutable<Enrollment> | null>;
-    async getByUserAndCourse(userID: UserID, courseID: CourseID): Promise<Enrollment | null>;
-    async getByUserAndCourse(userID: UserID, courseID: CourseID, param?: ForMutateParam): Promise<any> {
-        const [res] = await this.tx.query<EnrollmentW>`
-        select * from ${this.table}
-        where user_id = ${userID.id} and course_id = ${courseID.id} 
-        limit 1 
-        ${param 
-            ? sql.fragment`for update`
-            : sql.empty
-        };`
+        return res.map(this.fromRow) as Array<Mutable<Enrollment>>
+    }
+
+    async getByUserAndCourseForMutate(userID: UserID, courseID: CourseID): Promise<Mutable<Enrollment> | null> {
+        const [res] = await this.tx.query<EnrollmentW>
+        `select * from ${this.table}
+        where 
+            user_id = ${userID.id} 
+            and 
+            course_id = ${courseID.id} 
+        limit 1 for update;`
+
+        return res ? this.fromRow(res) as Mutable<Enrollment> : null
+    }
+
+    async getByUserAndCourse(userID: UserID, courseID: CourseID): Promise<Enrollment | null> {
+        const [res] = await this.tx.query<EnrollmentW>
+        `select * from ${this.table}
+        where 
+            user_id = ${userID.id} 
+            and 
+            course_id = ${courseID.id} 
+        limit 1 ;`
 
         return res ? this.fromRow(res) : null
     }   

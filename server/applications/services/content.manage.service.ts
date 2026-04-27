@@ -74,7 +74,7 @@ export class CourseManagementService {
 
     async archiveCourse(cmd: CourseArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            const course = await uow.courses.getByID(cmd.courseID, ForMutate)
+            const course = await uow.courses.getByIDForMutate(cmd.courseID)
             if (!course) throw ErrNotFound
 
             if (!course.createdBy.equal(cmd.userID)) throw ErrCourseNotCreatedBy
@@ -89,7 +89,7 @@ export class CourseManagementService {
 
     async activateCourse(cmd: CourseArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            const course = await uow.courses.getByID(cmd.courseID, ForMutate)
+            const course = await uow.courses.getByIDForMutate(cmd.courseID)
             if (!course) throw ErrNotFound
 
             if (!course.createdBy.equal(cmd.userID)) throw ErrCourseNotCreatedBy
@@ -121,13 +121,16 @@ export class CourseManagementService {
 
             await uow.topics.save(topic)
 
-            return topic.id
+            return {
+                topicID: topic.id,
+                courseID: course.id,
+            }
         })
     }
 
     async archiveTopic(cmd: TopicArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            const topic = await uow.topics.getByID(cmd.topicID, ForMutate)
+            const topic = await uow.topics.getByIDForMutate(cmd.topicID)
             if (!topic) throw ErrNotFound
 
             if (!topic.createdBy.equal(cmd.userID)) throw ErrTopicNotCreatedBy
@@ -142,7 +145,7 @@ export class CourseManagementService {
 
     async activateTopic(cmd: TopicArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            const topic = await uow.topics.getByID(cmd.topicID, ForMutate)
+            const topic = await uow.topics.getByIDForMutate(cmd.topicID)
             if (!topic) throw ErrNotFound
 
             if (!topic.createdBy.equal(cmd.userID)) throw ErrTopicNotCreatedBy

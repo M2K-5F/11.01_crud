@@ -13,62 +13,80 @@ export const enrollmentRoutes = new Elysia()
 .use(authFilter(UserRole.Student))
 
 
-.post('/enroll' , async ({
-    body: {course_id},
-    currentUser: {id: userId},
-    learningService,
-    qs
-}) => {
-    const enrID = await learningService.enrollCourse({
-        courseID: CourseID.fromString(course_id),
-        userID: userId
-    })
+.post('/enrollments' , 
+    async ({
+        body: {course_id},
+        currentUser: {id: userId},
+        learningService,
+        qs
+    }) => {
+        const enrID = await learningService.enrollCourse({
+            courseID: CourseID.fromString(course_id),
+            userID: userId
+        })
 
-    return qs.enroll.firstBy({id: enrID.id})!
-}, {
-    body: t.Object({
-        course_id: t.String(),
-    })
-})
-
-
-.post('/start/:topic_id', async ({
-    learningService,
-    currentUser: {id: userID},
-    params: {topic_id},
-    qs
-}) => {
-    const topicID  = await learningService.startTopic({
-        userID: userID,
-        topicID: TopicID.fromString(topic_id)
-    })
-
-    return qs.question.allBy({by_topic_id: topicID.id})
-})
+        return qs.enroll.firstBy({id: enrID.id})!
+    }, 
+    {
+        body: t.Object({
+            course_id: t.String(),
+        })
+    }
+)
 
 
-.post('/complete/:topic_id', async ({
-    learningService,
-    qs,
-    body,
-    currentUser: {id: userID},
-    params: {topic_id}
-}) => {
-    const enrollmentID = await learningService.completeTopic({
-        topicID: TopicID.fromString(topic_id),
-        userID: userID,
-        questionAnswers: new Map(body.questions.map(q => [
-            q.id,
-            q.selected_answers.map(a => AnswerID.fromString(a))
-        ]))
-    })
+.post('/start/:topic_id', 
+    async ({
+        learningService,
+        currentUser: {id: userID},
+        params: {topic_id},
+        qs
+    }) => {
+        const topicID  = await learningService.startTopic({
+            userID: userID,
+            topicID: TopicID.fromString(topic_id)
+        })
 
-    return qs.enroll.firstBy({id: enrollmentID.id})
-}, {
-    body: t.Object({
-        questions: t.Array(t.Object({
-            id: t.String(),
-            selected_answers: t.Array(t.String())
-        }))
-    })
-})
+        return qs.question.allBy({by_topic_id: topicID.id})
+    }
+)
+
+
+.post('/complete/:topic_id', 
+    async ({
+        learningService,
+        qs,
+        body,
+        currentUser: {id: userID},
+        params: {topic_id}
+    }) => {
+        const enrollmentID = await learningService.completeTopic({
+            topicID: TopicID.fromString(topic_id),
+            userID: userID,
+            questionAnswers: new Map(body.questions.map(q => [
+                q.id,
+                q.selected_answers.map(a => AnswerID.fromString(a))
+            ]))
+        })
+
+        return qs.enroll.firstBy({id: enrollmentID.id})
+    }, 
+    {
+        body: t.Object({
+            questions: t.Array(t.Object({
+                id: t.String(),
+                selected_answers: t.Array(t.String())
+            }))
+        })
+    }
+)
+
+
+.get('/enrollments/me', 
+    async ({
+        currentUser: {id},
+        qs,
+    }) => {
+        return qs.enroll.allBy({user_id: id.id})
+    }
+)

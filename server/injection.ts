@@ -9,8 +9,11 @@ import { TokenStorage } from "./presentation/auth/store/token.storage";
 import { SessionService } from "./presentation/auth/service/token.service";
 import { QueryService } from "@persistense/queries/common/query-service";
 import LearningService from "@applications/services/learning.service";
+import { types } from "pg";
 
 const getDependencies = async () => {
+    types.setTypeParser(20, (val) => parseInt(val, 10))
+
     const persistensePool = new Pool({
         connectionString: Bun.env.PERSISTENSE_DSN,
         max: 10,
@@ -25,7 +28,8 @@ const getDependencies = async () => {
 
     const queriesPool = new Pool({
         connectionString: Bun.env.QUERY_DB_DSN,
-        max: 40,
+        max: 100,
+        
         // enableLogs: true
     })
 

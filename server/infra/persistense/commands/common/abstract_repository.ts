@@ -7,7 +7,7 @@ import type { Identifier } from "typescript"
 
 type GetID<T> = T extends AggregateRoot<infer Tid> ? Tid : never
 
-export abstract class AbstractRepository<TAgg extends AggregateRoot<any>, TRow extends Record<string, any>> implements IRepository<TAgg, GetID<TAgg>>  {
+export abstract class AbstractRepository<TAgg extends AggregateRoot<any>, TRow extends {id: string}> implements IRepository<TAgg, GetID<TAgg>>  {
     abstract table: any 
     constructor(
         readonly tx: Transaction,
@@ -16,20 +16,31 @@ export abstract class AbstractRepository<TAgg extends AggregateRoot<any>, TRow e
     abstract toRow(agg: TAgg): TRow
     abstract fromRow(row: TRow): TAgg
     
-    async save(agg: TAgg) {
-        const row = this.toRow(agg)
+    async save(...aggs: Array<Mutable<TAgg>>) {
+        const rows = aggs.map(agg => this.toRow(agg))
+        const ids = rows.map(r => r.id)
 
-        const {id, ...updateRow} = row
-
-        await this.tx.query`
-        insert into ${this.table} ${sql.insert(row)}
-        on conflict (id) do update set ${sql.update(updateRow)}
+        rows.length && await this.tx.query
+        `insert into ${this.table} 
+        ${sql.insert<TRow>(...rows)}
+        on conflict (id) do update set 
+        ${sql.excluded(Object.keys(rows[0]!))}
         `
     }
 
-    async getByID(id: GetID<TAgg>, param?: ForMutateParam) {
-        const [row] = await this.tx.query<TRow>`select * from ${this.table} where id = ${id.id} limit 1 ${param ? sql.fragment`for update` : sql.empty};`
-        if (!row) return null
-        return this.fromRow(row) as Mutable<TAgg>
+    async getByID(id: GetID<TAgg>) {
+        const [row] = await this.tx.query<TRow>
+        `select * from ${this.table} 
+        where id = ${id.id} limit 1;`
+
+        return row ? this.fromRow(row) : null
+    }
+
+    async getByIDForMutate(id: GetID<TAgg>): Promise<Mutable<TAgg> | null> {
+        const [row] = await this.tx.query<TRow>
+        `select * from ${this.table} 
+        where id = ${id.id} for update limit 1;` 
+
+        return row ? this.fromRow(row) as Mutable<TAgg> : null
     }
 }

@@ -30,5 +30,5 @@ create table if not exists answers (
     id uuid not null primary key,
     text varchar(255) not null,
     is_correct boolean not null,
-    question_id uuid references questions (id)
+    question_id uuid references questions (id) on delete cascade
 );

@@ -1,4 +1,4 @@
-import type { IQuestionRepository } from "@applications/interfaces/itransaction-manager";
+import type { IQuestionRepository, Mutable } from "@applications/interfaces/itransaction-manager";
 import { AbstractRepository } from "@persistense/commands/common/abstract_repository";
 import { sql } from "@m2k-5f/pgtx";
 import hydrate from "@persistense/commands/common/hydrator";
@@ -6,11 +6,14 @@ import Question, { AnswerCorrectStatus, AnswerID, AnswerText, ChoiceAnswer, Ques
 import { TopicID } from "@domain/contexts/content/topic";
 import { UserID } from "@domain/contexts/identity/user";
 import type { Database } from "@persistense/shemas";
+import type { AnswerRow, QuestionRow } from "@persistense/shemas/content/shema";
+import { t } from "elysia";
+import type { QuestionW } from "@persistense/shemas/content/view";
 
-export class QuestionRepository extends AbstractRepository<Question, Database['v_questions_w']> implements IQuestionRepository {
+export class QuestionRepository extends AbstractRepository<Question, QuestionW> implements IQuestionRepository {
     override table: any = sql.ident("v_questions_w")
     
-    toRow(q: Question): Database['v_questions_w'] {
+    toRow(q: Question): QuestionW {
         return {
             id: q['_id']['_value'],
             text: q['_text']['_value'],
@@ -26,7 +29,7 @@ export class QuestionRepository extends AbstractRepository<Question, Database['v
         }
     }
 
-    fromRow(row: Database['v_questions_w']) {
+    fromRow(row: QuestionW) {
         return hydrate(Question, {
             _id: hydrate(QuestionID, row.id),
             _text: hydrate(QuestionText, row.text),
@@ -43,25 +46,32 @@ export class QuestionRepository extends AbstractRepository<Question, Database['v
         })
     }
 
-    override async save(root: Question): Promise<void> {
-        const {answers, ...question} = this.toRow(root)
+    override async save(...aggs: Array<Mutable<Question>>): Promise<void> {
+        const rows = aggs.map(this.toRow)
+        const ids = rows.map(r => r.id)
 
-        await this.tx.query`
-        insert into questions ${sql.insert(question)} 
-        on conflict (id) do update 
-        set ${sql.excluded(["text", "by_topic_id", "created_by_id"])}`
+        const answers: Array<AnswerRow> = rows.flatMap(r => r.answers)
 
-        await this.tx.query`
-        delete from answers where question_id = ${question.id}`
+        const questions: Array<QuestionRow> = rows.map(({answers, ...question}) => question)
 
-        if (answers.length) {
-            await this.tx.query`
-            insert into answers ${sql.insert(...answers)}`
-        }
+        questions.length && await this.tx.query
+        `insert into questions
+        ${sql.insert<QuestionRow>(...questions)}
+        on conflict (id) do update set 
+        ${sql.excluded(Object.keys(questions[0]!))}` 
+
+        
+        await this.tx.query
+        `delete from answers
+        where question_id in (${sql.array(ids)})`
+
+        answers.length && await this.tx.query
+        `insert into answers
+        ${sql.insert<AnswerRow>(...answers)}`
     }
 
     async listByTopic(topicID: TopicID): Promise<Array<Question>> {
-        const res = await this.tx.query<Database['v_questions_w']>`
+        const res = await this.tx.query<QuestionW>`
         select * from ${this.table}
         where by_topic_id = ${topicID.id};`
 

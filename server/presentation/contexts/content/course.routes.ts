@@ -23,7 +23,8 @@ export const courseRoutes = new Elysia()
 
 
         return qs.course.firstBy({id: courseID.id})
-    }, {
+    }, 
+    {
         body: t.Object({
             title: t.String(),
             description: t.String()

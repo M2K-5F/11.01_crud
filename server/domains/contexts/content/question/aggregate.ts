@@ -60,18 +60,11 @@ export default class Question extends AggregateRoot<QuestionID> {
 
 
     checkAnswers(selectedAnswerIDs: Array<AnswerID>) {
-
-        console.log(this._answers);
-        
         const correctAnswers = this._answers
             .values()
             .filter(answer => answer.isCorrect.equal(AnswerCorrectStatus.correct))
             .map(a => a.id)
             .toArray()
-
-        console.log(correctAnswers);
-        console.log(selectedAnswerIDs);
-        
         
         if (selectedAnswerIDs.length !== correctAnswers.length) return false
 
