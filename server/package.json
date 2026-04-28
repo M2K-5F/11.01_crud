@@ -1,12 +1,13 @@
 {
-  "name": "championship_b_module",
+  "name": "server",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
     "@types/pg": "^8.16.0",
-    "tsx": "^4.21.0"
+    "tsx": "^4.21.0",
+    "@my-project/shared": "*"
   },
   "peerDependencies": {
     "typescript": "^5"

@@ -1,11 +1,11 @@
 import {create} from 'zustand'
-import type { User } from './model'
+import type { UserRead } from "@contracts"
 
 
 export type CurrentUserStoreShema = {
-    currentUser: User | null
+    currentUser: UserRead | null
 
-    setCurrentUser: (user: User) => void
+    setCurrentUser: (user: UserRead) => void
 
 }
 

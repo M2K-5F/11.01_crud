@@ -1,6 +1,6 @@
 import { api } from "@/shared/api/QueryClient";
-import type { User } from "./model";
+import type { UserRead } from "@contracts";
 
 export const userApi = {
-    getCurrent: () => api.get<User>('/identity/me')
+    getCurrent: () => api.get<UserRead>('/identity/me')
 }

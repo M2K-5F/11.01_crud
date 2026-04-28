@@ -1,5 +1,4 @@
 import Elysia, { type Context } from "elysia";
-import { TransactionManager } from "./infra/persistense/commands/common/transaction-manager";
 import { TokenSigner } from "./presentation/auth/service/token.signer";
 import { Pool } from "@m2k-5f/pgtx";
 import { UserService } from "@applications/services/identity.service";
@@ -7,9 +6,10 @@ import { BCryptHashStrategy } from "./infra/security/bcrypt-hash-strategy";
 import { CourseManagementService } from "@applications/services/content.manage.service";
 import { TokenStorage } from "./presentation/auth/store/token.storage";
 import { SessionService } from "./presentation/auth/service/token.service";
-import { QueryService } from "@persistense/queries/common/query-service";
 import LearningService from "@applications/services/learning.service";
 import { types } from "pg";
+import { TransactionManager } from "@infra/write";
+import { ReadService } from "./infra/read";
 
 const getDependencies = async () => {
     types.setTypeParser(20, (val) => parseInt(val, 10))
@@ -45,7 +45,7 @@ const getDependencies = async () => {
 
     const sessionService = new SessionService(sessionStorage, signer)
 
-    const qs = new QueryService(queriesPool)
+    const readService = new ReadService(queriesPool)
     
     return {
         querier: queriesPool,
@@ -53,7 +53,7 @@ const getDependencies = async () => {
         courseManagementService,
         sessionService,
         learningService,
-        qs
+        readService
     }
 };
 
