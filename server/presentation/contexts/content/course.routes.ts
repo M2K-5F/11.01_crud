@@ -13,7 +13,7 @@ export const courseRoutes = new Elysia()
         courseManagementService,
         currentUser: {id},
         body,
-        qs
+        readService
     }) => {
         const courseID = await courseManagementService.createCourse({
             userID: id,
@@ -22,7 +22,7 @@ export const courseRoutes = new Elysia()
         })
 
 
-        return qs.course.firstBy({id: courseID.id})
+        return readService.course.firstBy({id: courseID.id})
     }, 
     {
         body: t.Object({
@@ -37,14 +37,14 @@ export const courseRoutes = new Elysia()
         params: {course_id},
         currentUser: { id },
         courseManagementService,
-        qs
+        readService
     }) => {
         const courseID = await courseManagementService.activateCourse({
             userID: id,
             courseID: CourseID.fromString(course_id)
         })
 
-        return await qs.course.firstBy({id: courseID.id})
+        return await readService.course.firstBy({id: courseID.id})
     }
 )
 
@@ -53,22 +53,22 @@ export const courseRoutes = new Elysia()
         params: {course_id},
         currentUser: {id},
         courseManagementService,
-        qs
+        readService
     }) => {
         const courseID = await courseManagementService.archiveCourse({
             userID: id,
             courseID: CourseID.fromString(course_id)
         })
 
-        return await qs.course.firstBy({id: courseID.id})
+        return await readService.course.firstBy({id: courseID.id})
     }
 )
 
 .get('courses/me', 
     async ({
         currentUser: {id},
-        qs
+        readService
     }) => {
-        return await qs.course.allBy({created_by_id: id.id})
+        return await readService.course.allBy({created_by_id: id.id})
     }
 )

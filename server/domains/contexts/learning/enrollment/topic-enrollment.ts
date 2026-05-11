@@ -6,7 +6,7 @@ import type { TopicID } from "@domain/contexts/content/topic"
 
 
 // #region ID
-export class TopicEnrollmentID extends ID {}
+export class TopicEnrollmentID extends ID<TopicEnrollment> {}
 // #endregion
 
 

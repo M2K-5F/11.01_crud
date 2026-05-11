@@ -12,7 +12,7 @@ export const ErrPasswordLength = new DomainError("PASSWORD_LENGTH", "Парол�
 
 
 // #region ID
-export class UserID extends ID {}
+export class UserID extends ID<User> {}
 // #endregion
 
 

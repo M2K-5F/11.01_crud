@@ -16,7 +16,7 @@ export const ErrTopicDescriptionLength = new DomainError("TOPIC_DESCRIPTION_LENG
 
 
 // #region ID
-export class TopicID extends ID {}
+export class TopicID extends ID<Topic> {}
 // #endregion
 
 

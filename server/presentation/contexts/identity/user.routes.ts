@@ -8,11 +8,11 @@ export const userRoutes = new Elysia()
     async ({
         body,
         userService,
-        qs
+        readService
     }) => {
         const userID = await userService.register(body)
 
-        return await qs.user.firstBy({id: userID.id})
+        return await readService.user.firstBy({id: userID.id})
     }, {
         body: t.Object({
             name: t.String(),

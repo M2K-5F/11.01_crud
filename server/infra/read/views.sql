@@ -1,10 +1,14 @@
 -- #region User
-create VIEW v_users_r as
-select u.name, u.telegram_link, u.id, coalesce(array_agg(ur.name) filter (where ur.name is not null), Array[]::text[]) as roles 
+create view v_users_r as
+select 
+    u.id,
+    u.name, 
+    u.telegram_link,
+    coalesce(
+        (select array_agg(ur.name) from user_roles ur where ur.user_id = u.id),
+        Array[]::text[]
+    ) as roles
 from users u
-left join user_roles ur 
-on u.id = ur.user_id
-group by u.id;
 -- #endregion
 
 
@@ -20,22 +24,23 @@ from courses c
 
 
 -- #region Question
-create view v_questions_r as 
+CREATE VIEW v_questions_r AS 
 SELECT 
-    q.*, 
+    q.*,
     COALESCE(
-        jsonb_agg(a) FILTER (WHERE a.id IS NOT NULL), 
-        '[]'
+        (SELECT jsonb_agg(a) FROM answers a WHERE a.question_id = q.id),
+        '[]'::jsonb
     ) AS answers
 FROM questions q
-LEFT JOIN answers a ON q.id = a.question_id
-GROUP BY q.id;
 -- #endregion
 
 
 -- #region Topic
 create view v_topics_r as
-SELECT * from topics;
+SELECT 
+    t.*, 
+    (select count(DISTINCT id) from questions where by_topic_id = t.id) as questions_count
+from topics t;
 -- #endregion
 
 

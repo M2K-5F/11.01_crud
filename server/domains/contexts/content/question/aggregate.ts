@@ -16,7 +16,7 @@ export const ErrQuestionNoCorrectAnswer = new DomainError("QUESTION_NO_CORRECT_A
 
 
 // #region ID
-export class QuestionID extends ID {}
+export class QuestionID extends ID<Question> {}
 // #endregion
 
 

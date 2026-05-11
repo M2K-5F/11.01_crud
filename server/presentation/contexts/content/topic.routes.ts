@@ -15,7 +15,7 @@ export const topicRoutes = new Elysia()
         courseManagementService,
         learningService,
         currentUser: { id },
-        qs,
+        readService,
         params: {course_id},
         body
     }) => {
@@ -28,7 +28,7 @@ export const topicRoutes = new Elysia()
         void learningService.$onTopicCreate({courseID})
             .catch(err => console.error("Error in $onTopicCreate:", err));
 
-        return await qs.topics.firstBy({id: topicID.id})
+        return await readService.topics.firstBy({id: topicID.id})
     }, {
         body: t.Object({
             title: t.String(),
@@ -43,14 +43,14 @@ export const topicRoutes = new Elysia()
         params: {topic_id},
         courseManagementService,
         currentUser: {id},
-        qs
+        readService
     }) => {
         const topicID = await courseManagementService.activateTopic({
             userID: id,
             topicID: TopicID.fromString(topic_id)
         })
 
-        return await qs.topics.firstBy({id: topicID.id})
+        return await readService.topics.firstBy({id: topicID.id})
     }
 )
 
@@ -60,23 +60,23 @@ export const topicRoutes = new Elysia()
         params: {topic_id},
         courseManagementService,
         currentUser: {id},
-        qs
+        readService
     }) => {
         const topicID = await courseManagementService.archiveTopic({
             userID: id,
             topicID: TopicID.fromString(topic_id)
         })
 
-        return await qs.topics.firstBy({id: topicID.id})
+        return await readService.topics.firstBy({id: topicID.id})
     }
 )
 
 
 .get("/courses/:course_id/topics/me", 
     async ({
-        qs,
+        readService,
         params: {course_id}
     }) => {
-        return await qs.topics.allBy({by_course_id: course_id})
+        return await readService.topics.allBy({by_course_id: course_id})
     }
 )

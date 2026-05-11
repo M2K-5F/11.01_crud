@@ -15,14 +15,16 @@ type CourseCardProps = {
 }
 
 export const CourseCard: FC<CourseCardProps> = ({course, onActivate, onArchive, onOpen}) => {
-    const isActive = course.status === 'Active'
+    const isActive = course.status === 'active'
 
+    console.log(isActive);
+    
     return (
         <div className={clsx(
             `border border-foreground/20 overflow-hidden`,
             'rounded-xl shadow-sm p-5 bg-card h-fit transition-all',
             'hover:shadow-md hover:border-foreground/30',
-            course.status === 'Active'  &&  'opacity-70 bg-muted/50'
+            course.status === 'archived' && 'opacity-70 bg-muted/50'
         )}>
             <div className="flex justify-between items-start mb-3">
                 <div className="flex items-start gap-3">
@@ -45,8 +47,8 @@ export const CourseCard: FC<CourseCardProps> = ({course, onActivate, onArchive, 
                     size="sm"
                     onClick={
                         isActive 
-                            ?   onArchive
-                            :   onActivate
+                            ?   () => onArchive()
+                            :   () => onActivate()
                     }
                     title={isActive ? 'Архивировать' : 'Разархивировать'}
                     className="h-8 w-8 p-0"

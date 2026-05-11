@@ -1,4 +1,4 @@
-import type { UserRoleValue } from "@domain/contexts/identity/user"
+import type { UserRoleValue } from "../../../../domains/contexts/identity/user"
 
 // #region User
 export interface UserRow {

@@ -6,6 +6,8 @@ import { AppError, DomainError, ForbiddenError, NotFoundError, UnauthorizedError
 import { errorHandle } from "./error-handler";
 import {cors} from "@elysiajs/cors"
 import { learningRoutes } from "@presentation/contexts/learning";
+import { CourseID } from "@domain/contexts/content/course";
+import { UserID } from "@domain/contexts/identity/user";
 
 const app = new Elysia({})
 .use(cors({}))
@@ -31,4 +33,4 @@ const app = new Elysia({})
 .use(learningRoutes)
 .listen({port: 8000, reusePort: true})
 
-console.log("Bun served");
+console.log("Bun served")

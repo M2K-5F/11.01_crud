@@ -1,6 +1,6 @@
 import type { ID } from "./abstract-identificator";
 
-export abstract class AggregateRoot<Tid extends ID> {
+export abstract class AggregateRoot<Tid extends ID<any>> {
     protected constructor(
         protected readonly _id: Tid,
     ) {}

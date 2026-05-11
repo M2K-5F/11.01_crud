@@ -8,7 +8,7 @@ import type { UserRoleRow, UserRow, UserWrite } from "@index/infra/write/context
 
 
 export class UserRepository extends AbstractRepository<User, UserWrite> implements IUserRepository {
-    override table = sql.ident('v_users_w')
+    table: any = sql.ident('v_users_w')
 
     fromRow(row: UserWrite): User {
         return hydrate(User, {

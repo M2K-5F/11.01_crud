@@ -31,7 +31,7 @@ export interface ITransactionManager {
     begin<T>(func: (ctx: ITransactionWorkUnit) => Promise<T>): Promise<T>
 }
 
-export interface IRepository<Tentity extends AggregateRoot<TID>, TID extends ID = Tentity extends AggregateRoot<infer U> ? U : never> {
+export interface IRepository<Tentity extends AggregateRoot<TID>, TID extends ID<any> = Tentity extends AggregateRoot<infer U> ? U : never> {
     save(...root: Array<Mutable<Tentity>>): Promise<void>
 
     getByIDForMutate(id: TID): Promise<Mutable<Tentity> | null>

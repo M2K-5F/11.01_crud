@@ -46,13 +46,13 @@ export const authRoutes = new Elysia()
     async ({
         sessionService,
         cookie: { refresh_token },
-        qs
+        readService
     }) => {
         if (!refresh_token.value) throw ErrUnauthorized
 
         const session = await sessionService.verifyRefresh(refresh_token.value)
 
-        const roles = await qs.user.getRolesByID(session.userId)
+        const roles = await readService.user.getRolesByID(session.userId)
 
         const {access, refresh} = await sessionService.refreshTokensForSession(
             session, roles
@@ -97,9 +97,9 @@ export const authRoutes = new Elysia()
     .get("/me", 
         async ({
             currentUser: {id},
-            qs
+            readService
         }) => {
-            return await qs.user.firstBy({id: id.id}) 
+            return await readService.user.firstBy({id: id.id}) 
         },
     )
 )

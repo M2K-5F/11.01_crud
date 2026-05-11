@@ -13,7 +13,7 @@ export const questionRoutes = new Elysia()
     async ({
         currentUser: { id },
         params: { topic_id },
-        qs,
+        readService,
         body,
         courseManagementService
     }) => {
@@ -23,7 +23,7 @@ export const questionRoutes = new Elysia()
             ...body
         })
 
-        return await qs.question.firstBy({id: questionID.id})
+        return await readService.question.firstBy({id: questionID.id})
     }, {
         body: t.Object({
             text: t.String(),

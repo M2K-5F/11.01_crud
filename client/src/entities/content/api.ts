@@ -10,16 +10,27 @@ export type CreateQuestionDTO = {
     }>
 }
 
+type CreateCourseDTO = {
+    title: string,
+    description: string,
+}
+
+type CreateTopicDTO = {
+    title: string,
+    description: string,
+    courseID: string
+}
+
 export const contentApi = {
     getCreatedCourses:  () => api.get<CourseRead[]>('/content/courses/me'),
-    getCreatedTopicsByCourse: (courseID: string) => api.get<TopicRead[]>(`content/courses/${courseID}/topics/me`),
+    getCreatedTopicsByCourse: (courseID: string) => api.get<TopicRead[]>(`/content/courses/${courseID}/topics/me`),
 
-    createCourse: (title: string, description: string) => api.post('/content/courses', {title, description}),
-    createTopic: (courseID: string, title: string, description: string) => api.post(`/content/courses/${courseID}/topics`, {title, description}),
+    createCourse: (data: CreateCourseDTO) => api.post('/content/courses', data),
+    createTopic: ({courseID, ...data}: CreateTopicDTO) => api.post(`/content/courses/${courseID}/topics`, data),
     createQuestion: ({topicID, ...question}: CreateQuestionDTO) => api.post(`/content/topics/${topicID}/questions`, question),
 
     archiveCourse: (courseID: string) => api.post(`/content/courses/${courseID}/archive`),
-    activateCourse: (courseID: string) => api.post(`content/courses/${courseID}/activate`),
+    activateCourse: (courseID: string) => api.post(`/content/courses/${courseID}/activate`),
 
     archiveTopic: (topicID: string) => api.post(`/content/topics/${topicID}/archive`),
     activateTopic: (topicID: string) => api.post(`/content/topics/${topicID}/activate`)

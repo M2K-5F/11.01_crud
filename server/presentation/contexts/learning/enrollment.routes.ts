@@ -6,7 +6,6 @@ import { UserRole } from "@domain/contexts/identity/user";
 import { dependencies } from "@index/injection";
 import { authFilter } from "@presentation/auth/middlewares/auth.middleware";
 import Elysia, { t } from "elysia";
-import { idText } from "typescript";
 
 export const enrollmentRoutes = new Elysia()
 .use(dependencies)
@@ -18,14 +17,14 @@ export const enrollmentRoutes = new Elysia()
         body: {course_id},
         currentUser: {id: userId},
         learningService,
-        qs
+        readService
     }) => {
         const enrID = await learningService.enrollCourse({
             courseID: CourseID.fromString(course_id),
             userID: userId
         })
 
-        return qs.enroll.firstBy({id: enrID.id})!
+        return readService.enroll.firstBy({id: enrID.id})!
     }, 
     {
         body: t.Object({
@@ -40,14 +39,14 @@ export const enrollmentRoutes = new Elysia()
         learningService,
         currentUser: {id: userID},
         params: {topic_id},
-        qs
+        readService
     }) => {
         const topicID  = await learningService.startTopic({
             userID: userID,
             topicID: TopicID.fromString(topic_id)
         })
 
-        return qs.question.allBy({by_topic_id: topicID.id})
+        return readService.question.allBy({by_topic_id: topicID.id})
     }
 )
 
@@ -55,7 +54,7 @@ export const enrollmentRoutes = new Elysia()
 .post('/complete/:topic_id', 
     async ({
         learningService,
-        qs,
+        readService,
         body,
         currentUser: {id: userID},
         params: {topic_id}
@@ -69,7 +68,7 @@ export const enrollmentRoutes = new Elysia()
             ]))
         })
 
-        return qs.enroll.firstBy({id: enrollmentID.id})
+        return readService.enroll.firstBy({id: enrollmentID.id})
     }, 
     {
         body: t.Object({
@@ -85,8 +84,8 @@ export const enrollmentRoutes = new Elysia()
 .get('/enrollments/me', 
     async ({
         currentUser: {id},
-        qs,
+        readService,
     }) => {
-        return qs.enroll.allBy({user_id: id.id})
+        return readService.enroll.allBy({user_id: id.id})
     }
 )

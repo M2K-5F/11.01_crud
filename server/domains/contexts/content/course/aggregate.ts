@@ -15,7 +15,7 @@ const ErrCourseActive = new DomainError("COURSE_ACTIVE")
 
 
 // #region ID
-export class CourseID extends ID {}
+export class CourseID extends ID<Course> {}
 // #endregion
 
 

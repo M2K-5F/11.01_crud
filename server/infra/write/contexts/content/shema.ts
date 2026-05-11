@@ -1,4 +1,4 @@
-import type { StatusValue } from "@domain/common/value-objects/active-status"
+import type { StatusValue } from "../../../../domains/common/value-objects/active-status"
 
 
 // #region Course

@@ -7,7 +7,7 @@ import type { UserRole } from "@domain/contexts/identity/user";
 export function authFilter(...rolesRequired: UserRole[]) { 
     return (app: Elysia) => app
         .use(dependencies)
-        .derive(async ({sessionService, headers}: {headers: Record<string, string | undefined>, sessionService: SessionService}) => {
+        .derive(async ({sessionService, headers}) => {
             const authHeader = headers['authorization']
             const token = authHeader?.startsWith('Bearer ') 
                 ? authHeader.slice(7) 

@@ -99,7 +99,7 @@ export class ApiClient {
         const init = {...params}
         queryUrl = this.ROOT_PATH + queryUrl
         if (params?.queries) {
-            queryUrl += new URLSearchParams(params.queries as any).toString()
+            queryUrl += "?" + new URLSearchParams(params.queries as any).toString()
         }
 
         init.credentials = 'include'
@@ -137,6 +137,7 @@ export class ApiClient {
                     return res
                 })
         )
+        .tapErr((err) => console.log(err))
         .mapErr(err => new ApiError(500, 'SERVER_ERROR', `Server unavailable: ${err.message}`))
 
         return result

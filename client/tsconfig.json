@@ -22,10 +22,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "rootDir": "../",
     "paths": {
       "@/*": ["./src/*"],
-      "@backend/*": ["../server/*"],
       "@contracts": ["../contracts.ts"]
     }
   }

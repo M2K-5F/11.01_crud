@@ -20,7 +20,9 @@ export interface CourseRead extends CourseRow {
 
 // #region Topic
 
-export interface TopicRead extends TopicRow {}
+export interface TopicRead extends TopicRow {
+    questions_count: number
+}
 // #endregion
 
 

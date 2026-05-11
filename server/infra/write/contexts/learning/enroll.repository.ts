@@ -11,7 +11,7 @@ import type { CourseEnrollmentRow, EnrollmentWrite, TopicAttemptRow, TopicEnroll
 
 
 export class EnrollRepository extends AbstractRepository<Enrollment, EnrollmentWrite> implements IEnrollmentRepository {
-    override table = sql.ident('v_enrollments_w')
+    override table: any = sql.ident('v_enrollments_w')
 
     override toRow(agg: Enrollment): EnrollmentWrite {
         return {

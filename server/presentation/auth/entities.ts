@@ -1,7 +1,8 @@
 import { ID } from "@domain/common/abstractions/abstract-identificator"
 import type { UserID } from "@domain/contexts/identity/user"
 
-export class SessionID extends ID {}
+export class SessionID extends ID<Session> {}
+
 
 export class Session {
     constructor(
@@ -31,7 +32,7 @@ export class Session {
     }
 }
 
-export class DeviceID extends ID {}
+export class DeviceID extends ID<Device> {}
 
 export type Device = {
     device_id: DeviceID,

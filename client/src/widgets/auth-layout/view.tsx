@@ -5,7 +5,6 @@ import { Outlet, useNavigate, useParams } from "react-router-dom"
 export const AuthWidget = () => {
     const navigate = useNavigate()
     const params = useParams()
-    console.log(params)
     
 
     return (

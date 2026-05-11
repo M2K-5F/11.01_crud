@@ -2,10 +2,9 @@ import  { useForm } from "react-hook-form"
 import { loginFormApi } from "./api"
 import { useMutation } from '@tanstack/react-query'
 import { api } from "@/shared/api/QueryClient"
-import { userApi } from "@/entities/identity/user/api"
-import { useCurrentUserStore } from "@/entities/identity/user/store"
 import type { ApiError } from "@/shared/errors"
 import {useNavigate} from 'react-router-dom'
+import { useCurrentUser } from "@/entities/identity/user/current-user-provider"
 
 export type LoginForm = {
     password: string,
@@ -13,7 +12,7 @@ export type LoginForm = {
 }
 
 export const useLoginFormVM = () => {
-    const currentUserStore = useCurrentUserStore()
+    const { fetchCurrentUser } = useCurrentUser()
     const navigate = useNavigate()
 
 
@@ -31,16 +30,14 @@ export const useLoginFormVM = () => {
     } = useMutation({
         mutationFn: (data: LoginForm) => {
             return loginFormApi.login(data)
-            .map(({access}) => access)
-            .andThen(access => {
-                api.setBearer(access)
+                .map(({access}) => access)
+                .andThen(access => {
+                    api.setBearer(access)
 
-                return userApi.getCurrent()
-            })
-            .unwrap()
+                    return fetchCurrentUser()
+                })
         },
         onSuccess: user => {
-            currentUserStore.setCurrentUser(user)
             navigate('/')
         },
         onError: (err: ApiError)  => {

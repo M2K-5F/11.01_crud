@@ -4,6 +4,8 @@ export type ResultType<T, E = Error> =
 
 
 export class Result<T, E = Error> {
+    readonly [Symbol.toStringTag] = 'Result'
+    
     constructor(private readonly result: Promise<ResultType<T, E>>) {}
 
     async isOk(): Promise<boolean> {
@@ -72,6 +74,22 @@ export class Result<T, E = Error> {
         return new Result(newPromise)
     }
 
+    tap(fn: (value: T) => any): Result<T, E> {
+        return new Result(this.result.then(async res => {
+            if (res.ok) await fn(res.value)
+            
+            return res
+        }))
+    }
+
+    tapErr(fn: (error: E) => any): Result<T, E> {
+        return new Result(this.result.then(async res => {
+            if (!res.ok) await fn(res.error)
+            
+            return res
+        }))
+    }
+
     async match<R>(patterns: {
         ok: (value: T) => R
         err: (error: E) => R
@@ -107,10 +125,20 @@ export class Result<T, E = Error> {
         
         return new Result(resultPromise)
     }
+
+    finally(fn: () => void): Result<T, E> {
+    return new Result(this.result.then(async res => {
+        fn()
+        return res
+    }))
+}
 }
 
-export const Ok = <T, E = Error>(value: T | Promise<T>): Result<T, E> => {
-    const promise = Promise.resolve(value).then(v => ({ ok: true, value: v } as const))
+export function Ok<E = Error>(): Result<void, E>
+export function Ok<T, E = Error>(value: T | Promise<T>): Result<T, E>
+export function Ok<T, E = Error>(value?: T | Promise<T>): Result<T | void, E> {
+    const val = value !== undefined ? value : (undefined as T)
+    const promise = Promise.resolve(val).then(v => ({ ok: true, value: v } as const))
     return new Result(promise)
 }
 

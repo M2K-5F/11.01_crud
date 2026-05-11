@@ -9,7 +9,7 @@ import type { Branded } from "@shared/lib";
 
 
 // #region ID
-export class EnrollmentID extends ID {}
+export class EnrollmentID extends ID<Enrollment> {}
 // #endregion
 
 

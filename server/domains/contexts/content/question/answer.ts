@@ -10,7 +10,7 @@ export const ErrAnswerLength = new DomainError("ANSWER_TEXT_LENGTH")
 
 
 // #region ID
-export class AnswerID extends ID {}
+export class AnswerID extends ID<ChoiceAnswer> {}
 // #endregion
 
 
