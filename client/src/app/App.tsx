@@ -3,19 +3,24 @@ import { BrowserRouter } from "react-router-dom"
 import { RegisteredRoutes } from "./routes"
 import { Toaster } from "sonner"
 import { CurrentUserProvider } from "@/entities/identity/user/current-user-provider"
+import { ThemeProvider } from "@/shared/providers/theme-provider"
 
 const queryClient = new QueryClient()
 
 export function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <CurrentUserProvider>
-          <RegisteredRoutes/>
-          <Toaster />
-        </CurrentUserProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <CurrentUserProvider>
+            <RegisteredRoutes/>
+            <Toaster position='top-right' />
+          </CurrentUserProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ThemeProvider>
+    // <HomePage />
   )
 }
 

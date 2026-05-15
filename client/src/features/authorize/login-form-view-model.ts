@@ -1,10 +1,10 @@
 import  { useForm } from "react-hook-form"
-import { loginFormApi } from "./api"
 import { useMutation } from '@tanstack/react-query'
 import { api } from "@/shared/api/QueryClient"
 import type { ApiError } from "@/shared/errors"
 import {useNavigate} from 'react-router-dom'
 import { useCurrentUser } from "@/entities/identity/user/current-user-provider"
+import { userApi } from "@/entities/identity/user/api"
 
 export type LoginForm = {
     password: string,
@@ -28,16 +28,13 @@ export const useLoginFormVM = () => {
         mutate, 
         isPending
     } = useMutation({
-        mutationFn: (data: LoginForm) => {
-            return loginFormApi.login(data)
-                .map(({access}) => access)
-                .andThen(access => {
-                    api.setBearer(access)
-
-                    return fetchCurrentUser()
-                })
-        },
-        onSuccess: user => {
+        mutationFn: (data: LoginForm) => 
+            userApi.login(data)
+                .map (({access}) => access)
+                .tap (access => api.setBearer(access))
+                .andThen (() => fetchCurrentUser())
+        ,
+        onSuccess: () => {
             navigate('/')
         },
         onError: (err: ApiError)  => {

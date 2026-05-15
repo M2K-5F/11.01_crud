@@ -35,5 +35,9 @@ export interface QuestionRead extends QuestionRow {
 
 // #region Enrollment
 
-export interface EnrollmentRead extends CourseEnrollmentRow {}
+export interface EnrollmentRead extends CourseEnrollmentRow {
+    progress: number,
+    course_title: string,
+    course_description: string
+}
 // #endregion

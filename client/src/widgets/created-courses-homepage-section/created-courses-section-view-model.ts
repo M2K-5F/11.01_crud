@@ -1,44 +1,46 @@
 import { contentApi } from "@/entities/content/api"
-import { CacheKeys } from "@/shared/lib/cache-keys"
+import { useGuardedCurrentUser } from "@/entities/identity/user/current-user-provider"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
-export const useCreatedCoursesVM = () => {
+export const useCreatedCoursesSectionVM = () => {
+    const {user} = useGuardedCurrentUser()
     const client = useQueryClient()
     const navigate = useNavigate()
 
-    const {isLoading, data, isError} = useQuery({
+
+    const {data: courses, error} = useQuery({
         queryFn: contentApi.getCreatedCourses,
-        queryKey: [CacheKeys.createdCourses],
+        queryKey: ['createdCourses']
     })
 
-    const activateMUT = useMutation({
+
+    const {mutate: activate} = useMutation({
         mutationFn: contentApi.activateCourse,
         onSuccess() {
-            client.invalidateQueries({queryKey: [CacheKeys.createdCourses]})
+            client.invalidateQueries({queryKey: ['createdCourses']})
             toast('Успешно активировано')
         },
     })
 
 
-    const archiveMUT = useMutation({
+    const {mutate: archive} = useMutation({
         mutationFn: contentApi.archiveCourse,
         onSuccess() {
-            client.invalidateQueries({queryKey: [CacheKeys.createdCourses]})
+            client.invalidateQueries({queryKey: ['createdCourses']})
             toast("Успешно архивировано")
         },
     })
 
     const onCourseSelect = (courseID: string) => navigate(`/edit-course/${courseID}`)
 
-
     return {
-        isLoading,
-        data,
-        isError,
-        onCourseSelect,
-        onCourseActivate: activateMUT.mutate,
-        onCourseArchive: archiveMUT.mutate
+        courses, 
+        error, 
+        archive,
+        activate,
+        isTeacher: user.roles.includes('Teacher'),
+        onCourseSelect
     }
 }

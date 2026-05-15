@@ -46,5 +46,11 @@ from topics t;
 
 -- #region Enrollment
 create view v_enrollments_r as
-select * from course_enrollments;
+select 
+    ce.*,  
+    round(completed_topics::numeric / topics_count, 2) as progress,
+    c.title as course_title,
+    c.description as course_description
+from course_enrollments ce
+join courses c on ce.course_id = c.id;
 -- #endregion

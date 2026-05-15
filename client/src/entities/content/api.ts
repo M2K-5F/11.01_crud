@@ -24,6 +24,8 @@ type CreateTopicDTO = {
 export const contentApi = {
     getCreatedCourses:  () => api.get<CourseRead[]>('/content/courses/me'),
     getCreatedTopicsByCourse: (courseID: string) => api.get<TopicRead[]>(`/content/courses/${courseID}/topics/me`),
+    getCourseByID: (courseID: string) => api.get<CourseRead>(`/content/courses/me/${courseID}`),
+    getCreatedCoursesWithLimit: () => api.get<CourseRead[]>(`/content/courses/me?limit=5`),
 
     createCourse: (data: CreateCourseDTO) => api.post('/content/courses', data),
     createTopic: ({courseID, ...data}: CreateTopicDTO) => api.post(`/content/courses/${courseID}/topics`, data),

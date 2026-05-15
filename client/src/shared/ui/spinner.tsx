@@ -1,10 +1,21 @@
-import { cn } from "@/shared/lib/utils"
-import { SpinnerIcon } from "@phosphor-icons/react"
+import clsx from "clsx"
 
-function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
-  return (
-    <SpinnerIcon role="status" aria-label="Loading" className={cn("size-4 animate-spin", className)} {...props} />
-  )
+interface SpinnerProps {
+    className?: string
 }
 
-export { Spinner }
+export const Spinner = ({ className }: SpinnerProps) => {
+    return (
+        <div className={clsx("w-full h-full flex items-center justify-center", className)}>
+            <div
+                className={clsx(
+                    "w-8 h-8 border-4 rounded-full",
+                    "border-t-transparent border-green-500",
+                    "animate-spin"
+                )}
+                style={{ animationDuration: "0.8s" }}
+                aria-label="Loading"
+            />
+        </div>
+    )
+}

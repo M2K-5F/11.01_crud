@@ -1,7 +1,7 @@
 import { Button } from "@/shared/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Input } from "@/shared/ui/input"
-import { useRegisterFormMV } from "./view-model"
+import { useRegisterFormMV } from "./register-form-view-model"
 import { Label } from "@/shared/ui/label"
 import { ErrorMessage } from "@/shared/ui/form-error-message"
 import { Spinner } from "@/shared/ui/spinner"

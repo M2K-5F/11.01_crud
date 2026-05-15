@@ -3,6 +3,7 @@ import { authFilter } from "../../auth/middlewares/auth.middleware";
 import { dependencies } from "@index/injection";
 import { UserRole } from "@domain/contexts/identity/user";
 import { CourseID } from "@domain/contexts/content/course";
+import { ErrForbidden, ErrNotFound } from "@shared/error";
 
 export const courseRoutes = new Elysia()
 .use(dependencies)
@@ -64,11 +65,31 @@ export const courseRoutes = new Elysia()
     }
 )
 
-.get('courses/me', 
+
+.get('/courses/me/:courseID',
     async ({
-        currentUser: {id},
+        params: {courseID},
+        currentUser: {id: userID},
         readService
     }) => {
-        return await readService.course.allBy({created_by_id: id.id})
+        const course = await readService.course.firstBy({id: courseID, created_by_id: userID.id})
+        if (!course) throw ErrForbidden
+        return course
+    }
+)
+
+
+.get('/courses/me', 
+    async ({
+        currentUser: {id},
+        readService,
+        query: {limit}
+    }) => {
+        return await readService.course.allBy({created_by_id: id.id}, {limit})
+    },
+    {
+        query: t.Object({
+            limit: t.Optional(t.Integer())
+        })
     }
 )

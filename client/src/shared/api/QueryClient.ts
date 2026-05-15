@@ -1,5 +1,5 @@
+import { Future, Reject, Resolve } from "fluent-future"
 import { ApiError } from "../errors"
-import { Err, Ok, Result } from "../lib/result"
 
 export type QueryParams = RequestInit & {queries?: Record<string, number | string>}
 
@@ -15,11 +15,11 @@ export class ApiClient {
     }
 
     private get bearer(): string | null {
-        return localStorage.getItem('access')
+        return sessionStorage.getItem('access')
     }
 
     private set bearer(token: string) {
-        localStorage.setItem('access', token)
+        sessionStorage.setItem('access', token)
     }
 
     public setBearer(token: string) {
@@ -27,7 +27,7 @@ export class ApiClient {
     }
 
     public removeBearer() {
-        localStorage.removeItem('access')
+        sessionStorage.removeItem('access')
     }
 
     private async _refreshToken(): Promise<void> {
@@ -52,7 +52,7 @@ export class ApiClient {
             
             if (response.ok) {
                 const data = await response.json() as {access: string}
-                localStorage.setItem("access", data.access)
+                sessionStorage.setItem("access", data.access)
             } else {
                 this.removeBearer()
                 throw new Error("Session expired")
@@ -63,34 +63,30 @@ export class ApiClient {
         }
     }
 
-    get<T>(url: string, params?: Record<string, number | string>): Result<T, ApiError> {
+    get<T = void>(url: string, params?: Record<string, number | string>): Future<T, ApiError> {
         return this.query<T>(url, { queries: params })
     }
 
-    post<T>(url: string, body?: Record<string, any>): Result<T, ApiError> {
+    post<T = void>(url: string, body?: Record<string, any>): Future<T, ApiError> {
         return this.query<T>(url, { body: JSON.stringify(body), method: "POST" })
     }
 
-    query<T>(url: string, params: QueryParams): Result<T, ApiError> {
+    query<T = void>(url: string, params: QueryParams): Future<T, ApiError> {
         const { queryUrl, init } = this._prepareParams(url, params)
         
         return this._fetchWithRefresh(queryUrl, init)
-            .andThen(response => 
-                Result.fromPromise(
+            .andThen (response => 
+                Future.of(
                     response.json(),
                     () => new ApiError(response.status, 'PARSE_ERROR', 'Invalid JSON')
-                )
-                    .andThen(data => {
-                        if (response.ok) {
-                            return Ok(data)
-                        }
-
-                        const error = new ApiError(response.status, data.code, data.message)
+                )   
+                    .andThen (data => response.ok
+                        ?   Resolve(data)
+                        :   Reject(new ApiError(response.status, data.code, data.message))
+                    )
+                    .tapErr (err => {
                         const handler = this._errorHandlers.get(response.status)
-
-                        if (handler) handler(error)
-                        
-                        return Err(error)
+                        handler && handler(err)
                     })
             )
     }
@@ -118,7 +114,7 @@ export class ApiClient {
     }
 
     private _fetchWithRefresh(url: string, params: QueryParams) {
-        const result = Result.fromPromise(
+        const result = Future.of(
             fetch(url, params)
                 .then(async (res) => {
                     if (res.status === 401) {
@@ -137,8 +133,8 @@ export class ApiClient {
                     return res
                 })
         )
-        .tapErr((err) => console.log(err))
-        .mapErr(err => new ApiError(500, 'SERVER_ERROR', `Server unavailable: ${err.message}`))
+        .tapErr ((err) => console.log(err))
+        .mapErr (err => new ApiError(500, 'SERVER_ERROR', `Server unavailable: ${err.message}`))
 
         return result
     }

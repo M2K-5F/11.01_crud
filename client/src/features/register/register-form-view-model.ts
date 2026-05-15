@@ -1,7 +1,9 @@
 import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
-import { registerApi, type RegisterData } from "./api"
 import { toast } from "sonner"
+import type { ApiError } from "@/shared/errors"
+import { userApi } from "@/entities/identity/user/api"
+
 
 export type RegisterForm = {
     name: string,
@@ -9,6 +11,7 @@ export type RegisterForm = {
     password: string,
     password_repeat: string
 }
+
 
 export const useRegisterFormMV = () => {
     const {register, handleSubmit, setError, getValues, formState: {errors}} = useForm<RegisterForm>()
@@ -39,19 +42,17 @@ export const useRegisterFormMV = () => {
 
 
     const {isPending, mutate} = useMutation({
-        mutationFn: (data:RegisterData) => 
-            registerApi.register(data)
-            .match({
-                ok(user) {
-                    toast(`Пользователь с именем ${user.name} зарегистрирован.`)
-                },
-                err(error) {
-                    setError('root', {message: error.message})
-                },
-            })
+        mutationFn: ({password_repeat, ...data}: RegisterForm) => 
+            userApi.register(data),
+
+        onSuccess: (user) => 
+            toast(`Пользователь с именем ${user.name} зарегистрирован.`),
+
+        onError: (err: ApiError) => 
+            setError("root", {message: err.message})
     })
 
-    const handler = handleSubmit((data) => mutate({name: data.name, password: data.password, talegramLink: data.telegram_link}))
+    const handler = handleSubmit((data) => mutate(data))
 
     return {
         errors,

@@ -15,15 +15,15 @@ export abstract class AbstractReader<View extends Record<string, any>, Params ex
         return row
     }
     
-    async allBy(params: Partial<Params>, {limit, offset} = {limit: 0, offset: 0}) {
+    async allBy(params: Partial<Params>, {limit, offset}: Partial<{limit: number, offset: number}> = {limit: 0, offset: 0}) {
         return await this.pool.query<View>`
         select * from ${sql.ident(this.tablename)}
         where ${sql.where(params)}
-        ${limit 
-            ? sql.fragment`limit ${limit}` 
+        ${limit
+            ? sql.fragment`limit ${limit}`
             : sql.empty
         }
-        ${offset 
+        ${offset
             ?   sql.fragment`offset ${offset}`
             :   sql.empty
         };`

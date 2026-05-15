@@ -1,14 +1,15 @@
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
-import { Button } from "@/shared/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu"
-import { Navigate, useNavigate } from "react-router-dom"
-import { useCurrentUser } from "../current-user-provider"
+import { useNavigate } from "react-router-dom"
+import { useGuardedCurrentUser } from "../current-user-provider"
 import { Badge } from "@/shared/ui/badge"
-import { LogOut, Plane, Shield, User } from "lucide-react"
+import { LogOut, Shield, User } from "lucide-react"
+import { ThemeSwitcher } from "@/shared/ui/theme-switcher"
+import { CopyableSpan } from "@/shared/ui/copyable-span"
 
 export const UserProfile = () => {
     const navigate = useNavigate()
-    const { user, logout } = useCurrentUser()
+    const { user, logout } = useGuardedCurrentUser()
     
 
     const getInitials = (name: string) => {
@@ -20,21 +21,18 @@ export const UserProfile = () => {
             .slice(0, 2)
     }
 
-
-    if (!user) return <Navigate to='/identity/login' />
-
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-8 w-8">
-                        <AvatarFallback className="avatar-fallback text-amber-100">
-                            {getInitials(user.name)}
-                        </AvatarFallback>
-                    </Avatar>
-                </Button>
+            <DropdownMenuTrigger >
+                <Avatar className="h-8 w-8">
+                    <AvatarFallback className="avatar-fallback text-amber-100">
+                        {getInitials(user.name)}
+                    </AvatarFallback>
+                </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64" align="end">
+
+
+            <DropdownMenuContent className="w-64 " align="end">
                 <DropdownMenuLabel className="p-4">
                     <div className="flex items-center gap-3">
                         <Avatar className="h-12 w-12 border-2 border-blue-100">
@@ -42,47 +40,41 @@ export const UserProfile = () => {
                                 {getInitials(user.name)}
                             </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm truncate">{user.name}</p>
-                            <p className="text-xs text-gray-500 truncate">{user.telegram_link}</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                                {user.roles.map((role) => 
-                                    role === 'Student'
-                                        ?   <Badge 
-                                                key={role} 
-                                                variant='destructive'
-                                                className="text-xs"
-                                            >
-                                                <div className="flex items-center gap-1">
-                                                    <User className="w-4 h-4" />
-                                                    Студент
-                                                </div>
-                                            </Badge>
-                                        :   <Badge 
-                                                key={role} 
-                                                variant='default'
-                                                className="text-xs"
-                                            >
-                                                <div className="flex items-center gap-1">
-                                                    <Shield className="w-4 h-4" /> 
-                                                    Преподаватель
-                                                </div>
-                                            </Badge>
-                                )}
-                            </div>
-                        </div>
+                        
+                        <CopyableSpan value={user.name} className="text-lg" />
+                    </div>
+
+                    <CopyableSpan value={user.telegram_link} />
+
+                    <div className="flex flex-wrap gap-2 mt-1">
+                        {user.roles.map((role) => role === 'Student'
+                            ?   (<Badge 
+                                    key={role} 
+                                    variant='destructive'
+                                    className="text-xs"
+                                >
+                                    <div className="flex items-center gap-1">
+                                        <User className="w-4 h-4" />
+                                        Студент
+                                    </div>
+                                </Badge>
+                            )
+                            :  (<Badge 
+                                    key={role} 
+                                    variant='default'
+                                    className="text-xs"
+                                >
+                                    <div className="flex items-center gap-1">
+                                        <Shield className="w-4 h-4" /> 
+                                        Преподаватель
+                                    </div>
+                                </Badge>
+                            )
+                        )}
                     </div>
                 </DropdownMenuLabel>
 
                 <DropdownMenuSeparator />
-
-                <DropdownMenuItem 
-                className="cursor-pointer py-3"
-                onClick={() => navigate('/user/tickets')}
-                >
-                    <Plane className="w-4 h-4 mr-2" />
-                    <span>Мои бронирования</span>
-                </DropdownMenuItem>
 
                 <DropdownMenuItem 
                     className="cursor-pointer py-3 text-red-600 focus:text-red-600"
@@ -91,6 +83,12 @@ export const UserProfile = () => {
                     <LogOut className="w-4 h-4 mr-2" />
                     <span>Выйти</span>
                 </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuLabel>
+                    <ThemeSwitcher />
+                </DropdownMenuLabel>
             </DropdownMenuContent>
         </DropdownMenu>
     )

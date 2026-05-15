@@ -12,12 +12,12 @@ export const enrollmentRoutes = new Elysia()
 .use(authFilter(UserRole.Student))
 
 
-.post('/enrollments' , 
+.post('/enroll/:course_id' , 
     async ({
-        body: {course_id},
         currentUser: {id: userId},
         learningService,
-        readService
+        readService,
+        params: {course_id}
     }) => {
         const enrID = await learningService.enrollCourse({
             courseID: CourseID.fromString(course_id),
@@ -25,16 +25,11 @@ export const enrollmentRoutes = new Elysia()
         })
 
         return readService.enroll.firstBy({id: enrID.id})!
-    }, 
-    {
-        body: t.Object({
-            course_id: t.String(),
-        })
     }
 )
 
 
-.post('/start/:topic_id', 
+.post('/start-topic/:topic_id', 
     async ({
         learningService,
         currentUser: {id: userID},
@@ -51,7 +46,7 @@ export const enrollmentRoutes = new Elysia()
 )
 
 
-.post('/complete/:topic_id', 
+.post('/complete-topic/:topic_id', 
     async ({
         learningService,
         readService,
@@ -62,7 +57,7 @@ export const enrollmentRoutes = new Elysia()
         const enrollmentID = await learningService.completeTopic({
             topicID: TopicID.fromString(topic_id),
             userID: userID,
-            questionAnswers: new Map(body.questions.map(q => [
+            questionAnswers: new Map(body.map(q => [
                 q.id,
                 q.selected_answers.map(a => AnswerID.fromString(a))
             ]))
@@ -71,12 +66,12 @@ export const enrollmentRoutes = new Elysia()
         return readService.enroll.firstBy({id: enrollmentID.id})
     }, 
     {
-        body: t.Object({
-            questions: t.Array(t.Object({
+        body: t.Array(
+            t.Object({
                 id: t.String(),
                 selected_answers: t.Array(t.String())
-            }))
-        })
+            })
+        )
     }
 )
 

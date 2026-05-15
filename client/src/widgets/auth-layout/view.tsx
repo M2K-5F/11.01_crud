@@ -1,10 +1,9 @@
 import { ThemeSwitcher } from "@/shared/ui/theme-switcher"
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group"
-import { Outlet, useNavigate, useParams } from "react-router-dom"
+import { Outlet, useNavigate } from "react-router-dom"
 
 export const AuthWidget = () => {
     const navigate = useNavigate()
-    const params = useParams()
     
 
     return (
