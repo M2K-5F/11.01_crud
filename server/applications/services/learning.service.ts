@@ -4,7 +4,7 @@ import type { AnswerID, QuestionID } from "@domain/contexts/content/question";
 import type { TopicID } from "@domain/contexts/content/topic";
 import type { UserID } from "@domain/contexts/identity/user";
 import { Enrollment, EnrollmentProgress } from "@domain/contexts/learning/enrollment/aggregate";
-import { TopicEnrollmentAttempt } from "@domain/contexts/learning/enrollment/topic-enrollment";
+import { TopicEnrollment, TopicEnrollmentAttempt } from "@domain/contexts/learning/enrollment/topic-enrollment";
 import { DomainError, ErrNotFound } from "@shared/error";
 
 
@@ -24,10 +24,6 @@ export type CompleteTopicCMD = {
     userID: UserID,
     questionAnswers: Map<string, Array<AnswerID>>
 }
-
-export type OnTopicCreateCMD = {
-    courseID: CourseID
-}
 // #endregion
 
 
@@ -36,6 +32,7 @@ const ErrAlreadyEnroll = new DomainError("ALREADY_ENROLLED")
 const ErrNotEnrolled = new DomainError("NOT_ENROLLED_AT_COURSE")
 const ErrCanNotAnswer = new DomainError("CANNOT_ANSWER")
 const ErrQuestionCountMismatch = new DomainError("QUESTION_COUNT_MISMATCH")
+const ErrTopicAreEmpty = new DomainError("TOPIC_ARE_EMPTY")
 // #endregion
 
 
@@ -50,12 +47,20 @@ export default class LearningService {
         return this.txmanager.begin(async uow => {
             if (await uow.enrolls.isUserEnrolled(cmd.userID, cmd.courseID)) throw ErrAlreadyEnroll
 
-            const topicCount = await uow.topics.countByCourse(cmd.courseID)
+            const topics = await uow.topics.listByCourse(cmd.courseID)
+
+            const topicEnrollments: TopicEnrollment[] = []
+
+            for (const topic of topics) {
+                const totalQuestions = await uow.questions.countByTopic(topic.id)
+                topicEnrollments.push(TopicEnrollment.create(topic.id, totalQuestions))
+            }
 
             const enroll = Enrollment.create(
                 cmd.userID,
                 cmd.courseID,
-                EnrollmentProgress.createNullish(topicCount)
+                EnrollmentProgress.createNullish(topics.length),
+                topicEnrollments
             ) as Mutable<Enrollment>
 
             await uow.enrolls.save(enroll)
@@ -70,12 +75,15 @@ export default class LearningService {
             const topic =  await uow.topics.getByID(cmd.topicID)
             if (!topic) throw ErrNotFound
 
+            if (await uow.topics.isTopicEmpty(topic.id)) throw ErrTopicAreEmpty
+
+
             const enroll = await uow.enrolls.getByUserAndCourse(cmd.userID, topic.courseID)
             if(!enroll) throw ErrNotEnrolled
 
             const previousTopic = await uow.topics.getPrevious(topic.id)
-
-            if (!enroll.canStartNextTopic(previousTopic?.id)) throw ErrCanNotAnswer
+            
+            if (previousTopic && !enroll.canStartNextTopic(previousTopic.id)) throw ErrCanNotAnswer
 
             return topic.id
         })
@@ -87,13 +95,15 @@ export default class LearningService {
             const topic = await uow.topics.getByID(cmd.topicID)
             if (!topic) throw ErrNotFound
 
+            if (await uow.topics.isTopicEmpty(topic.id)) throw ErrTopicAreEmpty
+
             const enroll = await uow.enrolls.getByUserAndCourseForMutate(cmd.userID, topic.courseID)
             if(!enroll) throw ErrNotEnrolled
             
 
             const previousTopic = await uow.topics.getPrevious(topic.id)
 
-            if (!enroll.canStartNextTopic(previousTopic?.id)) throw ErrCanNotAnswer
+            if (previousTopic && !enroll.canStartNextTopic(previousTopic.id)) throw ErrCanNotAnswer
 
             const questions = await uow.questions.listByTopic(topic.id)
         
@@ -118,16 +128,6 @@ export default class LearningService {
             await uow.enrolls.save(enroll)
 
             return enroll.id
-        })
-    }
-
-    $onTopicCreate(cmd: OnTopicCreateCMD) {
-        return this.txmanager.begin(async uow => {
-            const enrollmentsToUpdate = await uow.enrolls.listByCourseForMutate(cmd.courseID)
-
-            enrollmentsToUpdate.forEach(enroll => enroll.onTopicAdd())
-
-            uow.enrolls.save(...enrollmentsToUpdate)
         })
     }
 }

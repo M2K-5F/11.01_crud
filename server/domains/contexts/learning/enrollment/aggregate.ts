@@ -6,6 +6,13 @@ import type { UserID } from "@domain/contexts/identity/user";
 import type { CourseID } from "@domain/contexts/content/course";
 import type { TopicID } from "@domain/contexts/content/topic";
 import type { Branded } from "@shared/lib";
+import { DomainError } from "@shared/error";
+import { isThisTypeNode } from "typescript";
+
+
+// #region Errors
+export const ErrTopicEnrollmentNotDefined = new DomainError('TOPIC_ENROLLMENT_NOT_DEFINED')
+// #endregion
 
 
 // #region ID
@@ -22,17 +29,17 @@ export class EnrollmentProgress extends ValueObject<{
         return new EnrollmentProgress({completedTopics: 0, topicsCount})
     }
 
-    updateCompletedTopics(completedCount: number) {
+    updateOnTopicComplete(totalConpletedTopics: number) {
         return new EnrollmentProgress({
-            completedTopics: completedCount,
+            completedTopics: totalConpletedTopics,
             topicsCount: this._value.topicsCount
         })
     }
 
-    onTopicAdd() {
+    updateOnTopicCreate(totalTopics: number) {
         return new EnrollmentProgress({
             completedTopics: this._value.completedTopics,
-            topicsCount: this._value.topicsCount + 1
+            topicsCount: totalTopics
         })
     }
 
@@ -54,51 +61,64 @@ export class Enrollment extends AggregateRoot<EnrollmentID> {
     ) { super(id) }
 
 
-    static create(userID: UserID, courseID: CourseID, progress: EnrollmentProgress) {
+    static create(userID: UserID, courseID: CourseID, progress: EnrollmentProgress, topicEnrollments: TopicEnrollment[]) {
         return new Enrollment(
             EnrollmentID.generate(),
             userID,
             courseID,
             progress,
-            new Map()
+            new Map(topicEnrollments.map(te => [te.topicID.id, te] as const))
         )
     }
 
 
     public registerAttempt(attempt: TopicEnrollmentAttempt, topicID: TopicID) {
-        if (!this._topicEnrollments.has(topicID.id)) {
-            const enroll = TopicEnrollment.create(attempt, topicID)
+        const topicEnrollment = this._topicEnrollments.get(topicID.id)
 
-            this._topicEnrollments.set(topicID.id, enroll)
-        }
-        else {
-            const enroll = this._topicEnrollments.get(topicID.id)!
+        if (!topicEnrollment) throw ErrTopicEnrollmentNotDefined
 
-            enroll.registerAttempt(attempt)
-
-            this._topicEnrollments.set(topicID.id, enroll)
+        if (topicEnrollment.isCompleted) {
+            topicEnrollment.registerAttempt(attempt)
+            return
         }
 
-        this._progress = this._progress.updateCompletedTopics(
-            this._topicEnrollments
-                .values()
-                .toArray()
-                .filter(enroll => enroll.isCompleted)
-                .length
-        )
+        topicEnrollment.registerAttempt(attempt)
+
+        if (topicEnrollment.isCompleted) this._updateProgress()
     }
 
-    public canStartNextTopic(previousTopicID?: TopicID) {
-        if (!previousTopicID) return true
 
+    public canStartNextTopic(previousTopicID: TopicID) {
         const topicEnrollment = this._topicEnrollments.get(previousTopicID.id)
 
         return topicEnrollment?.isCompleted ?? false
     }
 
-    public onTopicAdd() {
-        this._progress = this._progress.onTopicAdd()
+
+    public updateOnTopicCreate(topicID: TopicID, totalTopics: number) {
+        this._progress = this._progress.updateOnTopicCreate(totalTopics)
+
+        this._topicEnrollments.set(topicID.id, TopicEnrollment.create(topicID, 0))
     }
+
+
+    public updateOnQuestionCreate(topicID: TopicID, totalQuestions: number) {
+        const topicEnrollment = this._topicEnrollments.get(topicID.id)
+
+        if (!topicEnrollment) throw ErrTopicEnrollmentNotDefined
+
+        topicEnrollment.updateOnQuestionCreate(totalQuestions)
+    }
+
+
+    private _updateProgress() {
+        this._progress = this._progress.updateOnTopicComplete(
+            this._topicEnrollments.values().toArray()
+                .filter(te => te.isCompleted)
+                .length
+        )
+    }
+
 
     get isCompleted() {return this._progress.isCompleted}
 }

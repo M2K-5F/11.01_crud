@@ -1,10 +1,12 @@
 import { ID } from "@domain/common/abstractions/abstract-identificator";
-import { CourseID } from "@domain/contexts/content/course";
+import Course, { CourseID } from "@domain/contexts/content/course";
 import { AnswerID, QuestionID } from "@domain/contexts/content/question";
 import Topic, { TopicID } from "@domain/contexts/content/topic";
 import { UserRole } from "@domain/contexts/identity/user";
+import { EnrollmentID } from "@domain/contexts/learning/enrollment/aggregate";
 import { dependencies } from "@index/injection";
 import { authFilter } from "@presentation/auth/middlewares/auth.middleware";
+import { ErrNotFound } from "@shared/error";
 import Elysia, { t } from "elysia";
 
 export const enrollmentRoutes = new Elysia()
@@ -81,6 +83,68 @@ export const enrollmentRoutes = new Elysia()
         currentUser: {id},
         readService,
     }) => {
-        return readService.enroll.allBy({user_id: id.id})
+        return readService.enroll.allBy({
+            user_id: id.id,
+        })
+    }
+)
+
+
+.get("/enrollments/:enrollmentID",
+    async ({
+        params: {enrollmentID},
+        currentUser: {id: userID},
+        readService
+    }) => {
+        const enrollment = await readService.enroll.firstBy({
+            id: EnrollmentID.fromString(enrollmentID).id,
+            user_id: userID.id
+        })
+
+        if (!enrollment) throw ErrNotFound
+
+        return enrollment
+    }
+)
+
+
+.get('/enrollments/:enrollmentID/topics/me',
+    async ({
+        currentUser: {id: userID},
+        params: {enrollmentID},
+        readService,
+
+    }) => {
+        const enrollment = await readService.enroll.firstBy({
+            id: EnrollmentID.fromString(enrollmentID).id,
+            user_id: userID.id
+        })
+
+        if (!enrollment) throw ErrNotFound
+
+        return await readService.enroll.getEnrollmentTopics(
+            EnrollmentID.fromString(enrollment.id)
+        )
+    }
+)
+
+
+.get('/enrollments/is-enrolled',
+    async ({
+        query: {courseID},
+        currentUser: {id: userID},
+        readService
+    }) => {
+        const enrollment = await readService.enroll.firstBy({
+            course_id: CourseID.fromString(courseID).id,
+            user_id: userID.id
+        })
+
+        return !!enrollment
+    },
+    {
+        query: t.Object({
+            courseID: t.String()
+        })
     }
 )

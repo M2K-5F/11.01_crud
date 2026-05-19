@@ -15,6 +15,7 @@ import { Textarea } from '@/shared/ui/textarea';
 import { useForm } from 'react-hook-form';
 import type { ApiError } from '@/shared/errors';
 import { ErrorMessage } from '@/shared/ui/form-error-message';
+import { QueryKeys } from '@/shared/lib/query-keys';
 
 type CreateCourseDialogProps = {
     open: boolean,
@@ -41,7 +42,7 @@ export const useCreateCoursesDialogVM = ({onSuccess}: {onSuccess: () => void}) =
         onSuccess: () => {
             onSuccess()
             toast('Курс успешно создан')
-            client.invalidateQueries({queryKey: ['createdCourses']})
+            client.invalidateQueries({queryKey: QueryKeys.createdCourses})
         },
         onError: (error: ApiError) => {
             toast.error("Ошибка при создании курса", {description: error.message})

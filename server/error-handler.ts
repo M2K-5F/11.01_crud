@@ -4,6 +4,8 @@ import type Elysia from "elysia";
 import { retrieveRootparameters } from "elysia/sucrose";
 
 export const errorHandle = (app: Elysia) => app.onError(({code, error, set}) => {
+    console.log(error)
+    
     if (error instanceof DomainError) {
         set.status = 400
 

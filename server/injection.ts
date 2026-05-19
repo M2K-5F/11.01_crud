@@ -10,19 +10,20 @@ import LearningService from "@applications/services/learning.service";
 import { types } from "pg";
 import { TransactionManager } from "@infra/write";
 import { ReadService } from "./infra/read";
+import { ContentEventHandler } from "@applications/handlers/contentEventHandler";
 
 const getDependencies = async () => {
     types.setTypeParser(20, (val) => parseInt(val, 10))
 
     const persistensePool = new Pool({
         connectionString: Bun.env.PERSISTENSE_DSN,
-        max: 10,
+        max: 20,
         // enableLogs: true
     })
 
     const sessionsPool = new Pool({
         connectionString: Bun.env.SESSION_DB_DSN,
-        max: 10,
+        max: 3,
         enableLogs: true
     })
 
@@ -46,12 +47,15 @@ const getDependencies = async () => {
     const sessionService = new SessionService(sessionStorage, signer)
 
     const readService = new ReadService(queriesPool)
+
+    const contentEventHandler = new ContentEventHandler(txm)
     
     return {
         querier: queriesPool,
         userService,
         courseManagementService,
         sessionService,
+        contentEventHandler,
         learningService,
         readService
     }

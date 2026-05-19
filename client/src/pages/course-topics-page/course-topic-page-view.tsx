@@ -15,7 +15,7 @@ import { useCourseTopicsPageVM } from "./course-topis-page-view-model";
 export const CourseTopicsPage = () => {
     const [isTopicCreateDialogOpen, setTopicCreateDialogOpen] = useState<boolean>(false)
 
-    const {course, topics, isLoading, onTopicActivate, onTopicArchive} = useCourseTopicsPageVM()
+    const {course, topics, isLoading, onTopicActivate, onTopicArchive, onTopicSelect} = useCourseTopicsPageVM()
 
 
     if (isLoading) return <Spinner />
@@ -51,13 +51,13 @@ export const CourseTopicsPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <CreateTopicCard onClick={() => setTopicCreateDialogOpen(true)} />
                         
-                    {topics.map((topic) => (
+                    {topics.sort((a, b) => a.number - b.number).map((topic) => (
                         <TopicCard
                             key={topic.id}
                             topic={topic}
                             onActivate={() => onTopicActivate(topic.id)}
                             onArchive={() => onTopicArchive(topic.id)}
-                            onOpen={() => console.log('navtoedit')}
+                            onOpen={onTopicSelect(topic.id)}
                         />
                     ))}
                 </div>

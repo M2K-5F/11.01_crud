@@ -15,12 +15,28 @@ export class TopicEnrollmentProgress extends ValueObject<{
     completedQuestions: number,
     questionCount: number,
 }> {
-    static create(collected: number, questionCount: number) {
+    static createNullish(questionCount: number) {
         return new TopicEnrollmentProgress({
-            completedQuestions: collected,
+            completedQuestions: 0,
             questionCount: questionCount,
         })
     }
+
+    updateOnQuestionCreate(totalQuestions: number) {
+        return new TopicEnrollmentProgress({
+            completedQuestions: this._value.completedQuestions,
+            questionCount: totalQuestions
+        })
+    }
+
+
+    updateOnAttempt(totalCompletedQuestions: number) {
+        return new TopicEnrollmentProgress({
+            questionCount: this._value.questionCount,
+            completedQuestions: totalCompletedQuestions
+        })
+    }
+
     
     get questionCount() {return this._value.questionCount}
     get ratio() {return this._value.completedQuestions / this._value.questionCount || 0}
@@ -60,29 +76,30 @@ export class TopicEnrollment extends Entity<TopicEnrollmentID> {
         private _attempts: Array<TopicEnrollmentAttempt>
     ) { super(id) }
 
-    static create(firstAttempt: TopicEnrollmentAttempt, topicID: TopicID) {
-        const enroll = new TopicEnrollment(
+    static create(topicID: TopicID, questionCount: number) {
+        return new TopicEnrollment(
             TopicEnrollmentID.generate(),
             topicID,
-            TopicEnrollmentProgress.create(0, 0),
+            TopicEnrollmentProgress.createNullish(questionCount),
             []
         )
-
-        enroll.registerAttempt(firstAttempt)
-
-        return enroll
     }
 
     registerAttempt(attempt: TopicEnrollmentAttempt) {
         this._attempts.push(attempt)
-
-        console.log(attempt, attempt.ratio, attempt.isSuccess, this._progress.ratio, attempt.isSuccess && attempt.ratio >= this._progress.ratio);
         
-        if (attempt.isSuccess && attempt.ratio >= this._progress.ratio) {
-            this._progress = TopicEnrollmentProgress.create(attempt.completedQuestions, attempt.questionCount)
+        if (attempt.ratio >= this._progress.ratio) {
+            this._progress = this._progress.updateOnAttempt(attempt.completedQuestions)
         }
     }
 
+
+    updateOnQuestionCreate(totalQuestions: number) {
+        this._progress = this._progress.updateOnQuestionCreate(totalQuestions)
+    }
+
+
     get isCompleted() {return this._progress.isCompleted}
+    get topicID() { return this._topicID }
 }
 // #endregion

@@ -1,4 +1,5 @@
 import { UserProfile } from "@/entities/identity/user/ui/user-profile"
+import { CourseSearch } from "@/features/course-search/course-search-input"
 import { Input } from "@/shared/ui/input"
 import { Search } from "lucide-react"
 import { Link } from "react-router-dom"
@@ -16,8 +17,7 @@ export const Header = () => {
                 </Link>
 
                 <div className="hidden md:flex items-center relative w-80">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input type="text" placeholder="Поиск курсов..." className="pl-9 bg-muted" />
+                    <CourseSearch />
                 </div>
 
                 <div className="flex items-center gap-2">

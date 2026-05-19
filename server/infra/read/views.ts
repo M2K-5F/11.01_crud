@@ -1,6 +1,6 @@
 import type { AnswerRow, CourseRow, QuestionRow, TopicRow } from "../write/contexts/content/shema"
 import type { UserRoleRow, UserRow } from "../write/contexts/identity/shema"
-import type { CourseEnrollmentRow } from "../write/contexts/learning/shema"
+import type { CourseEnrollmentRow, TopicEnrollmentRow } from "../write/contexts/learning/shema"
 
 // #region User
 export interface UserRead extends Pick<UserRow, 'id' | "name" | "telegram_link"> {
@@ -40,4 +40,27 @@ export interface EnrollmentRead extends CourseEnrollmentRow {
     course_title: string,
     course_description: string
 }
+
+export type EnrollmentTopicWithStatus = 
+    Pick<
+        TopicEnrollmentRow, 
+        | 'id' 
+        | 'completed_questions' 
+        | "question_count" 
+    > &
+    Pick<
+        TopicRow,
+        | 'title'
+        | 'description'
+        | 'number'
+        | 'status'
+    > &
+    {
+        topic_id: TopicRow['id']
+        is_available: boolean
+        is_completed: boolean
+        is_attempted: boolean
+    }
 // #endregion
+
+

@@ -6,9 +6,7 @@ import { ErrorFallback } from "@/shared/ui/error-fallback"
 import { EnrollmentCard } from "@/entities/learning/ui/enrollment-card"
 
 export const EnrolledCoursesSection = () => {
-    const {enrollments, error, isStudent} = useEnrolledCoursesSectionVM()
-
-    if (!isStudent) return null
+    const {enrollments, error, onEnrollmentSelect} = useEnrolledCoursesSectionVM()
 
     if (!enrollments) {
         return error 
@@ -28,7 +26,13 @@ export const EnrolledCoursesSection = () => {
             </div>
             {enrollments.length
                 ?   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {enrollments.map(enrollment => <EnrollmentCard key={enrollment.id} enrollment={enrollment} />)}
+                        {enrollments.map(enrollment => 
+                            <EnrollmentCard 
+                                key={enrollment.id} 
+                                enrollment={enrollment} 
+                                onSelect={onEnrollmentSelect(enrollment.id)}
+                            />
+                        )}
                     </div>
                 :   <ErrorFallback message={'no enrollments'} />
             }

@@ -54,3 +54,5 @@ select
 from course_enrollments ce
 join courses c on ce.course_id = c.id;
 -- #endregion
+
+

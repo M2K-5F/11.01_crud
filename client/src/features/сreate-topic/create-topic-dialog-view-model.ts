@@ -1,5 +1,6 @@
 import { contentApi } from "@/entities/content/api";
 import type { ApiError } from "@/shared/errors";
+import { QueryKeys } from "@/shared/lib/query-keys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -28,9 +29,10 @@ export const useCreateTopicDialogVM = ({courseID, onSuccess}: CreateTopicDialogV
     const { mutate, isPending } = useMutation({
         mutationFn: (data: CreateTopicFormType) =>
             contentApi.createTopic({...data, courseID}),
+
         onSuccess: () => {
             toast.success('Тема успешно создана')
-            queryClient.invalidateQueries({ queryKey: ['createdTopics', courseID] })
+            queryClient.invalidateQueries({ queryKey: QueryKeys.createdTopics(courseID) })
             onSuccess?.()
         },
         onError: (error: ApiError) => {

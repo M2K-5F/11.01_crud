@@ -6,6 +6,7 @@ import Question, { AnswerCorrectStatus, AnswerID, AnswerText, ChoiceAnswer, Ques
 import { TopicID } from "@domain/contexts/content/topic";
 import { UserID } from "@domain/contexts/identity/user";
 import type { AnswerRow, QuestionRow, QuestionWrite } from "@index/infra/write/contexts/content/shema";
+import { resolve } from "bun";
 
 export class QuestionRepository extends AbstractRepository<Question, QuestionWrite> implements IQuestionRepository {
     override table: any = sql.ident("v_questions_w")
@@ -67,11 +68,22 @@ export class QuestionRepository extends AbstractRepository<Question, QuestionWri
         ${sql.insert<AnswerRow>(...answers)}`
     }
 
+
     async listByTopic(topicID: TopicID): Promise<Array<Question>> {
         const res = await this.tx.query<QuestionWrite>`
         select * from ${this.table}
         where by_topic_id = ${topicID.id};`
 
         return res.map(this.fromRow)
+    }
+
+
+    async countByTopic(topicID: TopicID): Promise<number> {
+        const [count] = await this.tx.query<{count: number}>`
+        select count(*) from questions
+        where by_topic_id = ${topicID.id}
+        `   
+
+        return count!.count
     }
 }

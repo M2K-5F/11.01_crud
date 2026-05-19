@@ -93,3 +93,16 @@ export const courseRoutes = new Elysia()
         })
     }
 )
+
+
+.get("/courses/search",
+    async ({
+        query: {q},
+        readService
+    }) => { 
+        return await readService.course.searchCourses(q)
+    },
+    {
+        query: t.Object({q: t.String()})
+    }
+)

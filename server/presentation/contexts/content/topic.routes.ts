@@ -4,6 +4,7 @@ import { authFilter } from "../../auth/middlewares/auth.middleware";
 import { UserRole } from "@domain/contexts/identity/user";
 import { TopicID } from "@domain/contexts/content/topic";
 import { CourseID } from "@domain/contexts/content/course";
+import { ErrNotFound } from "@shared/error";
 
 export const topicRoutes = new Elysia()
 .use(dependencies)
@@ -17,7 +18,8 @@ export const topicRoutes = new Elysia()
         currentUser: { id },
         readService,
         params: {course_id},
-        body
+        body,
+        contentEventHandler
     }) => {
         const {topicID, courseID} = await courseManagementService.createTopic({
             userID: id,
@@ -25,7 +27,7 @@ export const topicRoutes = new Elysia()
             courseID: CourseID.fromString(course_id),
         })
 
-        void learningService.$onTopicCreate({courseID})
+        void contentEventHandler.onTopicCreate({courseID, topicID})
             .catch(err => console.error("Error in $onTopicCreate:", err));
 
         return await readService.topics.firstBy({id: topicID.id})
@@ -78,5 +80,21 @@ export const topicRoutes = new Elysia()
         params: {course_id}
     }) => {
         return await readService.topics.allBy({by_course_id: course_id})
+    }
+)
+
+
+.get('/topics/:topicID',
+    async ({
+        params: {topicID},
+        readService
+    }) => {
+        const topic = await readService.topics.firstBy({
+            id: TopicID.fromString(topicID).id
+        })
+
+        if (!topic) throw ErrNotFound
+
+        return topic
     }
 )

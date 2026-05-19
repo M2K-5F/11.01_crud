@@ -56,4 +56,20 @@ export class TopicRepository extends AbstractRepository<Topic, TopicWrite> imple
         
         return res ? this.fromRow(res) : null
     }
+
+    async isTopicEmpty(topicID: TopicID): Promise<boolean> {
+        const [res] = await this.tx.query<{has_topics: boolean}>`
+        select count(*) > 0 as has_topics from questions 
+        where by_topic_id = ${topicID.id}
+        `   
+        return !res!.has_topics
+    }
+
+    async listByCourse(courseID: CourseID): Promise<Array<Topic>> {
+        const topics = await this.tx.query<TopicWrite>`
+        select * from ${this.table}
+        where by_course_id = ${courseID.id}`
+
+        return topics.map(this.fromRow)
+    }
 }

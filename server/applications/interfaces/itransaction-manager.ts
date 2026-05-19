@@ -50,10 +50,13 @@ export interface ICourseRepository extends IRepository<Course> {
 export interface ITopicRepository extends IRepository<Topic> {
     countByCourse(courseID: CourseID): Promise<number>
     getPrevious(topicID: TopicID): Promise<Topic | null>
+    isTopicEmpty(topicID: TopicID): Promise<boolean>
+    listByCourse(courseID: CourseID): Promise<Array<Topic>>
 }
 
 export interface IQuestionRepository extends IRepository<Question> {
     listByTopic(topicID: TopicID): Promise<Array<Question>>
+    countByTopic(topicID: TopicID): Promise<number>
 }
 
 export interface IEnrollmentRepository extends IRepository<Enrollment> {

@@ -1,18 +1,21 @@
-import { useGuardedCurrentUser } from "@/entities/identity/user/current-user-provider"
 import { learningApi } from "@/entities/learning/api"
+import { QueryKeys } from "@/shared/lib/query-keys"
 import { useQuery } from "@tanstack/react-query"
+import { useNavigate } from "react-router-dom"
 
 export const useEnrolledCoursesSectionVM = () => {
-    const {user} = useGuardedCurrentUser()
+    const navigate = useNavigate()
 
     const {data, error} = useQuery({
-        queryKey: ['enrolledCourses'],
+        queryKey: QueryKeys.enrollments,
         queryFn: learningApi.getMyEnrollments,
     })
+
+    const onEnrollmentSelect = (enrollmentID: string) => () => navigate(`/enrollment/${enrollmentID}`)
 
     return {
         enrollments: data,
         error,
-        isStudent: user.roles.includes('Student')
+        onEnrollmentSelect
     }
 }

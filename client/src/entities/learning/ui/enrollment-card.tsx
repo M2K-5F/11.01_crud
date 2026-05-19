@@ -5,7 +5,14 @@ import type { EnrollmentRead } from "@contracts";
 import { BookOpen } from "lucide-react";
 import type { FC } from "react";
 
-export const EnrollmentCard: FC<{enrollment: EnrollmentRead}> = ({enrollment}) => {
+
+type EnrollmentCardPropsType = {
+    enrollment: EnrollmentRead
+    onSelect: () => void
+}
+
+
+export const EnrollmentCard: FC<EnrollmentCardPropsType> = ({enrollment, onSelect}) => {
     return (
         <Card>
             <CardHeader className="pb-2">
@@ -15,15 +22,15 @@ export const EnrollmentCard: FC<{enrollment: EnrollmentRead}> = ({enrollment}) =
                     </div>
                     <div className="flex-1">
                         <CardTitle className="text-base">{enrollment.course_title}</CardTitle>
-                        <CardDescription className="text-xs mt-1">Прогресс: {enrollment.progress || 0}%</CardDescription>
+                        <CardDescription className="text-xs mt-1">Прогресс: {enrollment.progress * 100}%</CardDescription>
                     </div>
                 </div>
             </CardHeader>
             <CardContent className="pb-2">
-                <Progress value={enrollment.progress || 0} className="h-2" />
+                <Progress value={enrollment.progress * 100} className="h-2" />
             </CardContent>
             <CardFooter>
-                <Button variant="outline" size="sm" className="w-full">
+                <Button variant="outline" size="sm" onClick={onSelect} className="w-full">
                     Продолжить
                 </Button>
             </CardFooter>

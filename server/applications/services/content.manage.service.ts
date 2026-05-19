@@ -179,7 +179,11 @@ export class CourseManagementService {
 
             await uow.questions.save(question)
 
-            return question.id
+            return {
+                questionID: question.id,
+                topicID: topic.id
+            } 
+
         })
     }
 }

@@ -16,8 +16,6 @@ type CourseCardProps = {
 
 export const CourseCard: FC<CourseCardProps> = ({course, onActivate, onArchive, onOpen}) => {
     const isActive = course.status === 'active'
-
-    console.log(isActive);
     
     return (
         <div className={clsx(
