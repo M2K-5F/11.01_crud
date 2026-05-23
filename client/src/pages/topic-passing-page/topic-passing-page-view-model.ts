@@ -4,6 +4,7 @@ import { learningApi } from '@/entities/learning/api';
 import { QueryKeys } from '@/shared/lib/query-keys';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { composeKeys } from '@/shared/lib/composed-key';
 
 type TopicPassingPageVMProps = {
     topicID: string
@@ -13,30 +14,33 @@ export const useTopicPassingPageVM = ({ topicID }: TopicPassingPageVMProps) => {
     const navigate = useNavigate()
     const client = useQueryClient()
     
+
     const [answeredQuestions, setAnsweredQuestions] = useState<Record<string, string[]>>({})
 
+    
     const { data: questionsToAnswer, error } = useQuery({
-        queryKey: QueryKeys.topicStart(topicID),
+        queryKey: composeKeys(QueryKeys.topicQuestionsToPass(topicID)),
         queryFn: () => learningApi.startTopic(topicID),
     })
 
     const { mutate: completeTopic, isPending: isSubmitting } = useMutation({
         mutationFn: learningApi.completeTopic,
         onSuccess: (enrollment) => {
-            client.invalidateQueries({ queryKey: QueryKeys.enrollment(enrollment.id) })
-            client.invalidateQueries({ queryKey: QueryKeys.enrollmentTopics(enrollment.id) })
-            client.invalidateQueries({ queryKey: QueryKeys.enrollments })
+            client.invalidatePartial(
+                QueryKeys.enrollment(enrollment.id),
+                QueryKeys.enrollmentTopics(enrollment.id),
+                QueryKeys.enrollmentsMe
+            )
 
             navigate(`/enrollment/${enrollment.id}`)
         },
-        onError: (error) => {
-            console.error('Ошибка при завершении темы', error)
+        onError: () => {
             toast.error('Не удалось отправить ответы')
         },
     })
 
 
-    const handleAnswerChange = (questionId: string, answerId: string) => {
+    const handleAnswerChange = (questionId: string, answerId: string) => () => {
         setAnsweredQuestions(prev => {
             const currentAnswers = prev[questionId] || []
             

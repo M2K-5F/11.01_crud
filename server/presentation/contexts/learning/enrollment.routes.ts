@@ -129,9 +129,9 @@ export const enrollmentRoutes = new Elysia()
 )
 
 
-.get('/enrollments/is-enrolled',
+.get('/enrollment-by-course/:courseID',
     async ({
-        query: {courseID},
+        params: {courseID},
         currentUser: {id: userID},
         readService
     }) => {
@@ -140,11 +140,8 @@ export const enrollmentRoutes = new Elysia()
             user_id: userID.id
         })
 
-        return !!enrollment
-    },
-    {
-        query: t.Object({
-            courseID: t.String()
-        })
+        if (!enrollment) throw ErrNotFound
+
+        return enrollment
     }
 )

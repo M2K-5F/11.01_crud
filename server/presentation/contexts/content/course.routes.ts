@@ -7,7 +7,7 @@ import { ErrForbidden, ErrNotFound } from "@shared/error";
 
 export const courseRoutes = new Elysia()
 .use(dependencies)
-.use(authFilter(UserRole.Teacher))
+.use(authFilter())
 
 .post('/courses', 
     async ({
@@ -72,8 +72,10 @@ export const courseRoutes = new Elysia()
         currentUser: {id: userID},
         readService
     }) => {
-        const course = await readService.course.firstBy({id: courseID, created_by_id: userID.id})
-        if (!course) throw ErrForbidden
+        const course = await readService.course.firstBy({id: courseID})
+
+        if (!course) throw ErrNotFound
+
         return course
     }
 )

@@ -7,20 +7,23 @@ import { Spinner } from "@/shared/ui/spinner";
 import { BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { useCourseTopicsPageVM } from "./course-topis-page-view-model";
+import { useParams } from "react-router-dom";
 
 
 
 
 
 export const CourseTopicsPage = () => {
+    const {courseID} = useParams()
+
     const [isTopicCreateDialogOpen, setTopicCreateDialogOpen] = useState<boolean>(false)
 
-    const {course, topics, isLoading, onTopicActivate, onTopicArchive, onTopicSelect} = useCourseTopicsPageVM()
+    const {data, error, onTopicActivate, onTopicArchive, onTopicSelect} = useCourseTopicsPageVM({courseID: courseID!})
 
 
-    if (isLoading) return <Spinner />
-    if (!course) return <ErrorFallback message="Курс не найден" />
-    if (!topics) return <ErrorFallback message='Ошибка загрузки тем' />
+    if (!data) return error
+        ?   <ErrorFallback message={error.message} />
+        :   <Spinner />
 
 
     return (
@@ -28,12 +31,12 @@ export const CourseTopicsPage = () => {
             <CreateTopicDialog 
                 open={isTopicCreateDialogOpen} 
                 onOpenChange={setTopicCreateDialogOpen}
-                courseID={course.id}
+                courseID={data.course.id}
             />
 
             <div className="text-center">
-                <h1 className="text-2xl font-bold">{course.title}</h1>
-                <p className="text-muted-foreground mt-1">{course.description}</p>
+                <h1 className="text-2xl font-bold">{data.course.title}</h1>
+                <p className="text-muted-foreground mt-1">{data.course.description}</p>
             </div>
 
             <div className="flex justify-center gap-4">
@@ -51,12 +54,12 @@ export const CourseTopicsPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <CreateTopicCard onClick={() => setTopicCreateDialogOpen(true)} />
                         
-                    {topics.sort((a, b) => a.number - b.number).map((topic) => (
+                    {data.topics.sort((a, b) => a.number - b.number).map((topic) => (
                         <TopicCard
                             key={topic.id}
                             topic={topic}
-                            onActivate={() => onTopicActivate(topic.id)}
-                            onArchive={() => onTopicArchive(topic.id)}
+                            onActivate={onTopicActivate(topic.id)}
+                            onArchive={onTopicArchive(topic.id)}
                             onOpen={onTopicSelect(topic.id)}
                         />
                     ))}

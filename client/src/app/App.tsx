@@ -4,8 +4,10 @@ import { RegisteredRoutes } from "./routes"
 import { Toaster } from "sonner"
 import { CurrentUserProvider } from "@/entities/identity/user/current-user-provider"
 import { ThemeProvider } from "@/shared/providers/theme-provider"
+import { extendQueryClient } from "@/shared/lib/composed-key"
 
 const queryClient = new QueryClient()
+extendQueryClient(queryClient)
 
 export function App() {
   return (

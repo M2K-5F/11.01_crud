@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useCoursePageVM } from './course-page-view-model';
 import { Spinner } from '@/shared/ui/spinner';
 import { ErrorFallback } from '@/shared/ui/error-fallback';
@@ -9,15 +9,18 @@ import { List, LogIn } from 'lucide-react';
 
 export const CoursePage = () => {
     const { courseID } = useParams<{ courseID: string }>()
+    const navigate = useNavigate()
 
-    const {course, topics, isEnrolled, error, onCourseEnroll, isPending} = useCoursePageVM({courseID: courseID!})
+    const {data,  error, onCourseEnroll, isPending} = useCoursePageVM({courseID: courseID!})
 
-
-    if (!course || !topics || isEnrolled === undefined) {
+    if (!data) {
         return error
             ?   <ErrorFallback message={error.message} />
             :   <Spinner />
     }
+
+    const {course, topics, enrollment} = data
+
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -39,10 +42,10 @@ export const CoursePage = () => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {isEnrolled
-                        ?   <Badge>Вы записаны на этот курс</Badge>
+                    {enrollment
+                        ?   <Button onClick={() => navigate(`/enrollment/${enrollment.id}`)}>Перейти к прохождению</Button>
                         :   <Button
-                                onClick={() => onCourseEnroll()}
+                                onClick={onCourseEnroll}
                                 disabled={isPending}
                                 className="w-full md:w-auto"
                             >

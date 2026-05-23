@@ -1,4 +1,3 @@
-// pages/course-page/view-model.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { contentApi } from '@/entities/content/api';
 import { learningApi } from '@/entities/learning/api';
@@ -6,48 +5,53 @@ import { QueryKeys } from '@/shared/lib/query-keys';
 import type { ApiError } from '@/shared/errors';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { Bind } from 'fluent-future';
+import { composeKeys } from '@/shared/lib/composed-key';
 
 type CoursePageVMProps = {
     courseID: string
 }
 
+
 export const useCoursePageVM = ({ courseID }: CoursePageVMProps) => {
     const navigate = useNavigate()
     const client = useQueryClient()
 
-    const { data: course, error: courseError } = useQuery({
-        queryKey: QueryKeys.createdCourse(courseID),
-        queryFn: () => contentApi.getCourseByID(courseID),
+
+    const {data, error} = useQuery({
+        queryKey: composeKeys(
+            QueryKeys.enrollmentByCourse(courseID),
+            QueryKeys.course(courseID),
+            QueryKeys.courseTopics(courseID)
+        ),
+        queryFn: () => Bind({
+            course: contentApi.getCourseByID(courseID),
+            topics: contentApi.getCreatedTopicsByCourse(courseID),
+            enrollment: learningApi.getMyEnrollmentByCourseID(courseID)
+                            .recoverIf(err => err.status === 404, null)
+        }),
     })
 
-    const { data: isEnrolled, error: enrollmentError} = useQuery({
-        queryKey: QueryKeys.enrollmentByCourse(courseID),
-        queryFn: async () => learningApi.isEnrolled(courseID)
-    })
-
-    const { data: topics, error: topicsError } = useQuery({
-        queryKey: QueryKeys.topicsByCourse(courseID),
-        queryFn: () => contentApi.getCreatedTopicsByCourse(courseID),
-    })
 
     const {mutate: onCourseEnroll, isPending} = useMutation({
-        mutationFn: () => learningApi.enrollCourse(courseID),
+        mutationFn: learningApi.enrollCourse,
         onError: (err: ApiError) => toast(err.message),
         onSuccess: enrollment => {
-            client.invalidateQueries({queryKey: QueryKeys.enrollments})
+            client.invalidatePartial(
+                QueryKeys.enrollmentsMe,
+                QueryKeys.enrollmentByCourse(courseID)
+            ),
+
             toast.success('Вы подписались на курс')
             navigate(`/enrollment/${enrollment.id}`)
         }
     })
 
-    const error = courseError || topicsError || enrollmentError
 
     return {
-        onCourseEnroll,
+        onCourseEnroll: () => onCourseEnroll(courseID),
         isPending,
-        course,
-        topics,
-        isEnrolled,
+        data,
         error,
     }
 }

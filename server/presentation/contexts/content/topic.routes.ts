@@ -8,7 +8,7 @@ import { ErrNotFound } from "@shared/error";
 
 export const topicRoutes = new Elysia()
 .use(dependencies)
-.use(authFilter(UserRole.Teacher))
+.use(authFilter())
 
 
 .post("/courses/:course_id/topics", 

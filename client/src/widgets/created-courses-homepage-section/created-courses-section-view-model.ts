@@ -1,5 +1,7 @@
 import { contentApi } from "@/entities/content/api"
 import { useGuardedCurrentUser } from "@/entities/identity/user/current-user-provider"
+import { composeKeys } from "@/shared/lib/composed-key"
+import { QueryKeys } from "@/shared/lib/query-keys"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
@@ -12,14 +14,14 @@ export const useCreatedCoursesSectionVM = () => {
 
     const {data: courses, error} = useQuery({
         queryFn: contentApi.getCreatedCourses,
-        queryKey: ['createdCourses']
+        queryKey: composeKeys(QueryKeys.coursesMe)
     })
 
 
     const {mutate: activate} = useMutation({
         mutationFn: contentApi.activateCourse,
         onSuccess() {
-            client.invalidateQueries({queryKey: ['createdCourses']})
+            client.invalidatePartial(QueryKeys.coursesMe)
             toast('Успешно активировано')
         },
     })
@@ -28,7 +30,7 @@ export const useCreatedCoursesSectionVM = () => {
     const {mutate: archive} = useMutation({
         mutationFn: contentApi.archiveCourse,
         onSuccess() {
-            client.invalidateQueries({queryKey: ['createdCourses']})
+            client.invalidatePartial(QueryKeys.coursesMe)
             toast("Успешно архивировано")
         },
     })

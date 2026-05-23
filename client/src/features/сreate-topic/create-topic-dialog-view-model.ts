@@ -27,12 +27,14 @@ export const useCreateTopicDialogVM = ({courseID, onSuccess}: CreateTopicDialogV
 
 
     const { mutate, isPending } = useMutation({
-        mutationFn: (data: CreateTopicFormType) =>
-            contentApi.createTopic({...data, courseID}),
+        mutationFn: contentApi.createTopic,
 
         onSuccess: () => {
             toast.success('Тема успешно создана')
-            queryClient.invalidateQueries({ queryKey: QueryKeys.createdTopics(courseID) })
+            queryClient.invalidatePartial(
+                QueryKeys.courseTopics(courseID),
+                QueryKeys.course(courseID)
+            )
             onSuccess?.()
         },
         onError: (error: ApiError) => {
@@ -42,7 +44,7 @@ export const useCreateTopicDialogVM = ({courseID, onSuccess}: CreateTopicDialogV
     })
 
 
-    const onSubmit = handleSubmit((data) => mutate(data))
+    const onSubmit = handleSubmit((data) => mutate({...data, courseID}))
 
     return {
         errors,

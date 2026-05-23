@@ -11,16 +11,15 @@ import { useState } from 'react';
 import { CreateQuestionDialog } from '@/features/сreate-question/create-question-dialog';
 
 export const TopicQuestionsPage = () => {
-    const {topicID} = useParams<{topicID: string}>()
+    const { topicID } = useParams()
     const [isDialogOpen, setDialogOpen] = useState<boolean>(false)
 
-    const { topic, questions, error } = useTopicQuestionsPageVM({topicID: topicID!})
+    const { data, error } = useTopicQuestionsPageVM({topicID: topicID!})
 
-    if (!topic || !questions) {
-        return error
-            ?   <ErrorFallback message={error.message} />
-            :   <Spinner />
-    }
+    if (!data) return error
+        ?   <ErrorFallback message={error.message} />
+        :   <Spinner />
+
 
 
     return (
@@ -33,8 +32,8 @@ export const TopicQuestionsPage = () => {
             <div className="mb-6">
                 <div className="flex justify-between items-start flex-wrap gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold mb-2">{topic.title}</h1>
-                        <p className="text-muted-foreground">{topic.description}</p>
+                        <h1 className="text-2xl font-bold mb-2">{data.topic.title}</h1>
+                        <p className="text-muted-foreground">{data.topic.description}</p>
                     </div>
                     <CreateQuestionDialogButton onClick={() => setDialogOpen(true)} />
                 </div>
@@ -43,12 +42,12 @@ export const TopicQuestionsPage = () => {
             <div className="space-y-4">
                 <h2 className="text-xl font-semibold flex items-center gap-2">
                     <HelpCircle className="h-5 w-5" />
-                    Вопросы ({questions.length})
+                    Вопросы ({data.questions.length})
                 </h2>
 
-                {questions.length
+                {data.questions.length
                     ?   <div className="grid gap-3">
-                            {questions.map((question) => 
+                            {data.questions.map((question) => 
                                 <QuestionCard 
                                     key={question.id} question={question}
                                 />    

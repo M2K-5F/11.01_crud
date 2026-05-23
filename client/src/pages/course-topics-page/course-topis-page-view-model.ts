@@ -1,53 +1,60 @@
 import { contentApi } from "@/entities/content/api"
+import { composeKeys } from "@/shared/lib/composed-key"
 import { QueryKeys } from "@/shared/lib/query-keys"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useNavigate, useParams } from "react-router-dom"
+import { Bind } from "fluent-future"
+import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
 
-export const useCourseTopicsPageVM = () => {
-    const {courseID} = useParams<{courseID: string}>()
+type CourseTopicsPageVM = {
+    courseID: string
+}
+
+
+export const useCourseTopicsPageVM = ({courseID}: CourseTopicsPageVM) => {
     const client = useQueryClient()
     const navigate = useNavigate()
 
-
-    const {data: topics, isLoading: isTopicsLoading} = useQuery({
-        queryFn: () => contentApi.getCreatedTopicsByCourse(courseID!),
-        queryKey: QueryKeys.createdTopics(courseID!),
-        enabled: !!courseID
+    
+    const { data, error } = useQuery({
+        queryFn: () => Bind({
+            topics: contentApi.getCreatedTopicsByCourse(courseID),
+            course: contentApi.getCourseByID(courseID)
+        }),
+        queryKey: composeKeys(
+            QueryKeys.courseTopics(courseID),
+            QueryKeys.course(courseID)
+        ),
     })
 
 
-    const {data: course, isLoading: isCourseLoading} = useQuery({
-        queryFn: () => contentApi.getCourseByID(courseID!),
-        queryKey: QueryKeys.createdCourse(courseID!),
-        enabled: !!courseID
-    })
-
-
-    const {mutate: onTopicActivate} = useMutation({
+    const {mutate: topicActivateMutate} = useMutation({
         mutationFn: contentApi.activateTopic,
         onSuccess() {
-            client.invalidateQueries({queryKey: QueryKeys.createdTopics(courseID!)})
+            client.invalidatePartial(QueryKeys.courseTopics(courseID))
             toast("Успешно активировано")
         }
     })
 
 
-    const {mutate: onTopicArchive} = useMutation({
+    const {mutate: topicArchiveMutate} = useMutation({
         mutationFn: contentApi.archiveTopic,
         onSuccess() {
-            client.invalidateQueries({queryKey: QueryKeys.createdTopics(courseID!)})
+            client.invalidatePartial(QueryKeys.courseTopics(courseID))
             toast('Усешно архивировано')
         }
     })
 
+    const onTopicActivate = (topicID: string) => () => topicActivateMutate(topicID)
+
+    const onTopicArchive = (topicID: string) => () => topicArchiveMutate(topicID)
+
     const onTopicSelect = (topicID: string) => () => navigate(`/topic/${topicID}`)
 
     return {
-        topics, 
-        course,
-        isLoading: isCourseLoading || isTopicsLoading,
+        data, 
+        error,
         onTopicActivate, 
         onTopicArchive,
         onTopicSelect

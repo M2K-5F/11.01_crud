@@ -27,18 +27,17 @@ export const CreatedCoursesSection = () => {
                     <h2 className="text-xl font-semibold">Управление курсами</h2>
                 </div>
 
-                {/* <Button variant="ghost" size="sm">Посмотреть все →</Button> */}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <CreateCourseCard onClick={() => setDialogOpen(true)} />
                 
                 {courses.map((course) => (
                     <CourseCard
-                    key={course.id}
-                    course={course}
-                    onArchive={() => archive(course.id)}
-                    onActivate={() => activate(course.id)}
-                    onOpen={() => onCourseSelect(course.id)}
+                        key={course.id}
+                        course={course}
+                        onArchive={() => archive(course.id)}
+                        onActivate={() => activate(course.id)}
+                        onOpen={() => onCourseSelect(course.id)}
                     />
                 ))}
             </div>

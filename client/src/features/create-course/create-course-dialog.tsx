@@ -38,11 +38,11 @@ export const useCreateCoursesDialogVM = ({onSuccess}: {onSuccess: () => void}) =
 
 
     const {mutate, isPending} = useMutation({
-        mutationFn: (data: CreateCourseFormType) => contentApi.createCourse(data),
+        mutationFn: contentApi.createCourse,
         onSuccess: () => {
             onSuccess()
             toast('Курс успешно создан')
-            client.invalidateQueries({queryKey: QueryKeys.createdCourses})
+            client.invalidatePartial(QueryKeys.coursesMe)
         },
         onError: (error: ApiError) => {
             toast.error("Ошибка при создании курса", {description: error.message})
@@ -51,8 +51,11 @@ export const useCreateCoursesDialogVM = ({onSuccess}: {onSuccess: () => void}) =
     })
 
 
+    const onCourseCreate = handleSubmit(data => mutate(data))
+
+
     return {
-        createCourse: handleSubmit(data => mutate(data)), 
+        onCourseCreate, 
         isPending, 
         fields: {
             title: register('title'),
@@ -65,7 +68,7 @@ export const useCreateCoursesDialogVM = ({onSuccess}: {onSuccess: () => void}) =
 
 
 export const CreateCourseDialog = ({ open, onDialogClose, onSuccess }: CreateCourseDialogProps) => {
-    const {createCourse, fields, errors, isPending} = useCreateCoursesDialogVM({
+    const {onCourseCreate, fields, errors, isPending} = useCreateCoursesDialogVM({
         onSuccess: () => {
             onSuccess?.()
             onDialogClose()
@@ -76,7 +79,7 @@ export const CreateCourseDialog = ({ open, onDialogClose, onSuccess }: CreateCou
     return (
         <Dialog open={open} onOpenChange={() => onDialogClose()}>
             <DialogContent className="sm:max-w-106.25">
-                <form onSubmit={createCourse}>
+                <form onSubmit={onCourseCreate}>
                     <DialogHeader>
                         <DialogTitle>Создать курс</DialogTitle>
                     </DialogHeader>

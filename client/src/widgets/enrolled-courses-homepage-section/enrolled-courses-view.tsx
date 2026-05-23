@@ -34,7 +34,7 @@ export const EnrolledCoursesSection = () => {
                             />
                         )}
                     </div>
-                :   <ErrorFallback message={'no enrollments'} />
+                :   <ErrorFallback message='Нет подписок' />
             }
             
         </section>

@@ -17,6 +17,7 @@ export const learningApi = {
     getMyEnrollments: () => api.get<EnrollmentRead[]>('/learning/enrollments/me'),
     getEnrollByID: (enrollmentID: string) => api.get<EnrollmentRead>(`/learning/enrollments/${enrollmentID}`),
     getEnrollmentTopics: (enrollmentID: string) => api.get<EnrollmentTopicWithStatus[]>(`/learning/enrollments/${enrollmentID}/topics/me`),
-    getMyEnrollmentByCourseID: (courseID: string) => api.get<EnrollmentRead>(`/learning/enrollment`, {courseID}),
+    getMyEnrollmentByCourseID: (courseID: string) => api.get<EnrollmentRead>(`/learning/enrollment-by-course/${courseID}`),
     isEnrolled: (courseID: string) => api.get<boolean>('/learning/enrollments/is-enrolled', {courseID})
+    
 }

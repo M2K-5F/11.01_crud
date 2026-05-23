@@ -57,7 +57,7 @@ export const TopicPassingPage = () => {
                                             <Checkbox 
                                                 id={`q${question.id}-${option.id}`} 
                                                 checked={isChecked}
-                                                onCheckedChange={() => handleAnswerChange(question.id, option.id)}
+                                                onCheckedChange={handleAnswerChange(question.id, option.id)}
                                             />
                                             <Label 
                                                 htmlFor={`q${question.id}-${option.id}`} 

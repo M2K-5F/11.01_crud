@@ -60,7 +60,10 @@ const useCreateQuestionDialogVM = ({onSuccess, topicID}: CreateQuestionDialogVMP
         mutationFn: contentApi.createQuestion,
         onSuccess: () => {
             toast.success('Вопрос создан')
-            client.invalidateQueries({ queryKey: QueryKeys.questionsByTopic(topicID)})
+            client.invalidatePartial(
+                QueryKeys.topicQuestions(topicID),
+                QueryKeys.topic(topicID)
+            )
             reset()
             onSuccess?.()
         },
