@@ -1,6 +1,6 @@
 import  { useForm } from "react-hook-form"
 import { useMutation } from '@tanstack/react-query'
-import { api } from "@/shared/api/QueryClient"
+import { api } from "@/shared/api/query-client"
 import type { ApiError } from "@/shared/errors"
 import {useNavigate} from 'react-router-dom'
 import { useCurrentUser } from "@/entities/identity/user/current-user-provider"

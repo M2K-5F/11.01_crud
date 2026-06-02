@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { userApi } from "./api";
 import { ApiError } from "@/shared/errors";
 import { Begin, Future } from 'fluent-future';
-import { api } from "@/shared/api/QueryClient";
+import { api } from "@/shared/api/query-client";
 
 
 type CurrentUserContextType = {
@@ -23,20 +23,16 @@ export const CurrentUserProvider: FC<PropsWithChildren> = ({children}) => {
     const fetchCurrentUser = useCallback(() => 
         Begin<ApiError>()
             .tap (() => setIsLoading(true))
-
-            .andThen (() => userApi.getCurrent())
-
-            .tap (user => setUser(user))
-            .tapErr (err => console.log(err))
+            .andThen (userApi.getCurrent)
+            .tap (setUser)
+            .tapErr (console.log)
             .finally (() => setIsLoading(false))
     , [])
 
     const logout = useCallback(() => 
         Begin<ApiError>()
             .tap (() => setIsLoading(true))
-
-            .andThen (() => userApi.logout())
-
+            .andThen (userApi.logout)
             .tap (() => {
                 setUser(null)
                 api.removeBearer()
@@ -55,7 +51,6 @@ export const CurrentUserProvider: FC<PropsWithChildren> = ({children}) => {
         isLoading,
         fetchCurrentUser,
         logout,
-        isUserCurrent: (userID: string) => user && user.id === userID
     }), [user, isLoading, fetchCurrentUser, logout])
 
     return <CurrentUserContext.Provider value={value}>{children}</CurrentUserContext.Provider>

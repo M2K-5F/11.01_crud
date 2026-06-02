@@ -1,4 +1,4 @@
-import { api } from "@/shared/api/QueryClient";
+import { api } from "@/shared/api/query-client";
 import type { CourseRead, EnrollmentRead, QuestionRead, TopicRead } from "@contracts";
 
 export type CreateQuestionDTO = {
