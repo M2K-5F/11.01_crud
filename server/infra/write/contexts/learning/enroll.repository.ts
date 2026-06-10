@@ -81,7 +81,7 @@ export class EnrollRepository extends AbstractRepository<Enrollment, EnrollmentW
         const ids = rows.map(r => r.id)
         const topics = rows.flatMap(r => r.topics)
 
-        const enrolls = rows.map(r => {const {topics, ...tmp}=r; return tmp})
+        const enrolls = rows.map({topics, ...tmp} => tmp)
         const topicEnrolls = topics.map(t => t.topic)
         const attempts = topics.flatMap(t => t.attempts)
 
