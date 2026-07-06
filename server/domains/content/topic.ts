@@ -4,6 +4,7 @@ import type { Course } from "./course"
 import type { User } from "@domain/identity/user"
 import { Status } from "@domain/common/value-objects/active-status"
 import type { Updatable } from "@shared/lib"
+import { Serializable } from "nucleus-mold"
 
 export const ErrTopicArchived = new DomainError("TOPIC_ARCHIVED")
 export const ErrTopicActive = new DomainError("TOPIC_ACTIVE")
@@ -11,6 +12,7 @@ export const ErrTopicTitleLength = new DomainError("TOPIC_TITLE_LENGTH")
 export const ErrTopicDescriptionLength = new DomainError("TOPIC_DESCRIPTION_LENGTH")
 
 
+@Serializable()
 export class TopicTitle extends ValueObject<string> {
     static from(title: string) {
         if (title.length < 8 || title.length > 64) throw ErrTopicTitleLength
@@ -20,6 +22,7 @@ export class TopicTitle extends ValueObject<string> {
 }
 
 
+@Serializable()
 export class TopicDescription extends ValueObject<string> {
     static from(description: string) {
         if (description.length < 8 || description.length > 128) throw ErrTopicDescriptionLength
@@ -29,6 +32,7 @@ export class TopicDescription extends ValueObject<string> {
 }
 
 
+@Serializable()
 export class TopicNumber extends ValueObject<number> {
     static from(number: number) {
         return new TopicNumber(number)
@@ -42,6 +46,8 @@ export class TopicNumber extends ValueObject<number> {
     get asNumber() {return this._value}
 }
 
+
+@Serializable()
 export class Topic extends Entity {
     private constructor(
         private _title: TopicTitle,

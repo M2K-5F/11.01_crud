@@ -1,7 +1,8 @@
 import type { ITransactionManager } from "@applications/interfaces/itransaction-manager"
+import type { ID } from "@domain/common/abstractions"
 import TelegramLink from "@domain/common/value-objects/telegram-link"
 import { User, UserHashedPassword, UserRawPassword, UserUsername, type PasswordHashStrategy } from "@domain/identity/user"
-import { DomainError } from "@shared/error"
+import { DomainError, ErrNotFound } from "@shared/error"
 
 export type RegisterUserCMD = {
     name: string,
@@ -15,11 +16,15 @@ export type AuthUserCMD = {
 }
 
 
+export type GetRolesCMD = {
+    uid: ID<User>
+}
+
 const ErrUserNameExists = new DomainError("USER_NAME_EXISTS")
 const ErrAuthorization = new DomainError("AUTH_FAILED")
 
 
-export class UserService {
+export class IdentityService {
     constructor(
         readonly txmanager: ITransactionManager,
         readonly hashStrategy: PasswordHashStrategy
@@ -40,7 +45,7 @@ export class UserService {
 
             await uow.users.save(user)
 
-            return user.id
+            return {uid: user.id}
         })
     }
 
@@ -51,7 +56,17 @@ export class UserService {
             
             if (!await user.authenticate(cmd.password, this.hashStrategy)) throw ErrAuthorization
 
-            return [user.id, user.roles] as const
+            return {
+                uid: user.id, 
+                roles: user.roles
+            }
         })
+    }
+
+    async getRoles(cmd: GetRolesCMD) {
+        const user = await this.txmanager.begin(tx => tx.users.getByID(cmd.uid))
+        if (!user) throw ErrNotFound
+
+        return {roles: user.roles}
     }
 }

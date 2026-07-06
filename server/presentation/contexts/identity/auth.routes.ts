@@ -14,13 +14,13 @@ export const authRoutes = new Elysia()
         body, 
         cookie: { refresh_token }, 
         sessionService, 
-        userService,
+        identityService,
         device,
     }) => {
-        const [userId, roles] = await userService.authorize(body)
+        const {uid, roles} = await identityService.authorize(body)
 
         const {refresh, access} = await sessionService.newSession(
-            userId, device, roles
+            uid, device, roles
         )
 
         refresh_token!.set({
@@ -32,7 +32,7 @@ export const authRoutes = new Elysia()
             path: '/'
         })
 
-        return {access, id: userId.id}
+        return {access, id: uid.asString()}
     }, {
         body: t.Object({
             name: t.String(),
@@ -46,13 +46,14 @@ export const authRoutes = new Elysia()
     async ({
         sessionService,
         cookie: { refresh_token },
-        readService
+        readService,
+        identityService
     }) => {
         if (!refresh_token.value) throw ErrUnauthorized
 
         const session = await sessionService.verifyRefresh(refresh_token.value)
 
-        const roles = await readService.user.getRolesByID(session.userId)
+        const {roles} = await identityService.getRoles({uid: session.userId})
 
         const {access, refresh} = await sessionService.refreshTokensForSession(
             session, roles
@@ -96,10 +97,10 @@ export const authRoutes = new Elysia()
     .use(authFilter())
     .get("/me", 
         async ({
-            currentUser: {id},
+            currentUser: {uid},
             readService
         }) => {
-            return await readService.user.firstBy({id: id.id}) 
+            return await readService.user.firstBy({id: uid.asString()}) 
         },
     )
 )

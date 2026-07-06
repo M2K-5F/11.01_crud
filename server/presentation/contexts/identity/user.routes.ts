@@ -7,12 +7,12 @@ export const userRoutes = new Elysia()
 .post("/register", 
     async ({
         body,
-        userService,
+        identityService,
         readService
     }) => {
-        const userID = await userService.register(body)
+        const {uid} = await identityService.register(body)
 
-        return await readService.user.firstBy({id: userID.id})
+        return await readService.user.firstBy({id: uid.asString()})
     }, {
         body: t.Object({
             name: t.String(),

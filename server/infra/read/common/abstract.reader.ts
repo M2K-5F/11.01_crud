@@ -1,24 +1,35 @@
 import { Pool, sql } from "@m2k-5f/pgtx"
 
 
-export abstract class AbstractReader<View extends Record<string, any>, Params extends Record<string, any> = View> {
+export abstract class AbstractReader<View extends {id: string}> {
+    protected abstract tablename: string
     constructor(
         protected pool: Pool,
-        protected tablename: string
     ) {}
 
-    async firstBy(params: Partial<Params>, offset: number = 0) {
+    async firstBy(params: Partial<View>, offset: number = 0) {
+        const hasFilters = params && Object.keys(params).length > 0;
+
         const [row] = await this.pool.query<View>`
         select * from ${sql.ident(this.tablename)}
-        where ${sql.where(params)} offset ${offset} limit 1;` 
+        ${hasFilters
+            ?   sql.fragment`where ${sql.where(params)}`
+            :   sql.empty
+        }
+        offset ${offset} limit 1;` 
     
         return row
     }
     
-    async allBy(params: Partial<Params>, {limit, offset}: Partial<{limit: number, offset: number}> = {limit: 0, offset: 0}) {
+    async allBy(params: Partial<View>, {limit, offset}: Partial<{limit: number, offset: number}> = {limit: 0, offset: 0}) {
+        const hasFilters = params && Object.keys(params).length > 0;
+
         return await this.pool.query<View>`
         select * from ${sql.ident(this.tablename)}
-        where ${sql.where(params)}
+        ${hasFilters
+            ?   sql.fragment`where ${sql.where(params)}`
+            :   sql.empty
+        }
         ${limit
             ? sql.fragment`limit ${limit}`
             : sql.empty

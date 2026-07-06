@@ -1,11 +1,12 @@
 import type { ITransactionManager } from "@applications/interfaces/itransaction-manager";
 import type { ID } from "@domain/common/abstractions";
 import { Course, CourseDescription, CourseTitle } from "@domain/content/course";
-import Question, { Answer, AnswerText, CorrectStatus, QuestionText } from "@domain/content/question";
+import { Question, Answer, AnswerText, CorrectStatus, QuestionText } from "@domain/content/question";
 import { Topic, TopicDescription, TopicNumber, TopicTitle } from "@domain/content/topic";
 import type { User } from "@domain/identity/user";
 import { DomainError, ErrNotFound } from "@shared/error";
 import type { Updatable } from "@shared/lib";
+import { Json } from "nucleus-mold";
 
 
 type CreateCourseCMD = {
@@ -38,7 +39,7 @@ type CreateQuestionCMD = {
     text: string,
     answers: Array<{
         text: string,
-        is_correct: boolean
+        isCorrect: boolean
     }>
 }
 
@@ -68,7 +69,7 @@ export class CourseManagementService {
 
             await uow.courses.save(course)
 
-            return course.id
+            return {courseID: course.id}
         })
     }
 
@@ -83,7 +84,7 @@ export class CourseManagementService {
 
             await uow.courses.save(course)
 
-            return course.id
+            return {courseID: course.id}
         })
     }
 
@@ -98,13 +99,14 @@ export class CourseManagementService {
 
             await uow.courses.save(course)
 
-            return course.id
+            return {courseID: course.id}
         })
     }
 
     async createTopic(cmd: CreateTopicCMD) {
         return await this.txmanager.begin(async uow => {
             const course = await uow.courses.getByID(cmd.courseID)
+            
             if (!course) throw ErrNotFound
 
             if (!course.createdBy.equals(cmd.uid)) throw ErrCourseNotCreatedBy
@@ -151,7 +153,7 @@ export class CourseManagementService {
 
             await uow.topics.save(topic)
 
-            return topic.id
+            return {topicID: topic.id}
         })
     }
 
@@ -166,7 +168,7 @@ export class CourseManagementService {
 
             await uow.topics.save(topic)
 
-            return topic.id
+            return {topicID: topic.id}
         })
     }
 
@@ -184,11 +186,11 @@ export class CourseManagementService {
                 cmd.answers.map(a => 
                     Answer.create(
                         AnswerText.from(a.text),
-                        a.is_correct ? CorrectStatus.Correct : CorrectStatus.Wrong
+                        a.isCorrect ? CorrectStatus.Correct : CorrectStatus.Wrong
                     )
                 )
             )
-
+            
             await uow.questions.save(question)
 
             return {

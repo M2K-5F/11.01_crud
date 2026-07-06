@@ -26,7 +26,7 @@ export const UserProfile = () => {
             <DropdownMenuTrigger >
                 <Avatar className="h-8 w-8">
                     <AvatarFallback className="avatar-fallback text-amber-100">
-                        {getInitials(user.name)}
+                        {getInitials(user.username)}
                     </AvatarFallback>
                 </Avatar>
             </DropdownMenuTrigger>
@@ -37,14 +37,14 @@ export const UserProfile = () => {
                     <div className="flex items-center gap-3">
                         <Avatar className="h-12 w-12 border-2 border-blue-100">
                             <AvatarFallback className="bg-blue-500 text-white text-lg font-semibold">
-                                {getInitials(user.name)}
+                                {getInitials(user.username)}
                             </AvatarFallback>
                         </Avatar>
                         
-                        <CopyableSpan value={user.name} className="text-lg" />
+                        <CopyableSpan value={user.username} className="text-lg" />
                     </div>
 
-                    <CopyableSpan value={user.telegram_link} />
+                    <CopyableSpan value={user.telegramLink} />
 
                     <div className="flex flex-wrap gap-2 mt-1">
                         {user.roles.map((role) => role === 'Student'

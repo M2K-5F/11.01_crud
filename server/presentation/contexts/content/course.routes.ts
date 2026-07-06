@@ -2,8 +2,8 @@ import Elysia, { t } from "elysia";
 import { authFilter } from "../../auth/middlewares/auth.middleware";
 import { dependencies } from "@index/injection";
 import { UserRole } from "@domain/identity/user";
-import { CourseID } from "@domain/contexts/content/course";
 import { ErrForbidden, ErrNotFound } from "@shared/error";
+import { ID } from "@domain/common/abstractions";
 
 export const courseRoutes = new Elysia()
 .use(dependencies)
@@ -12,18 +12,21 @@ export const courseRoutes = new Elysia()
 .post('/courses', 
     async ({
         courseManagementService,
-        currentUser: {id},
+        currentUser: {uid},
         body,
         readService
     }) => {
-        const courseID = await courseManagementService.createCourse({
-            userID: id,
+        const {courseID} = await courseManagementService.createCourse({
+            uid,
             title: body.title,
             description: body.description,
         })
 
 
-        return readService.course.firstBy({id: courseID.id})
+        const course = await readService.course.firstBy({id: courseID.asString()})
+        if (!course) throw ErrNotFound
+
+        return course
     }, 
     {
         body: t.Object({
@@ -33,35 +36,41 @@ export const courseRoutes = new Elysia()
     }
 )
 
-.post('/courses/:course_id/activate', 
+.post('/courses/:plainCourseID/activate', 
     async ({
-        params: {course_id},
-        currentUser: { id },
+        params: {plainCourseID},
+        currentUser: {uid},
         courseManagementService,
         readService
     }) => {
-        const courseID = await courseManagementService.activateCourse({
-            userID: id,
-            courseID: CourseID.fromString(course_id)
+        const {courseID} = await courseManagementService.activateCourse({
+            uid,
+            courseID: ID.from(plainCourseID)
         })
 
-        return await readService.course.firstBy({id: courseID.id})
+        const course = await readService.course.firstBy({id: courseID.asString()})
+        if (!course) throw ErrNotFound
+
+        return course
     }
 )
 
-.post('/courses/:course_id/archive', 
+.post('/courses/:plainCourseID/archive', 
     async ({
-        params: {course_id},
-        currentUser: {id},
+        params: {plainCourseID},
+        currentUser: {uid},
         courseManagementService,
         readService
     }) => {
-        const courseID = await courseManagementService.archiveCourse({
-            userID: id,
-            courseID: CourseID.fromString(course_id)
+        const {courseID} = await courseManagementService.archiveCourse({
+            uid,
+            courseID: ID.from(plainCourseID)
         })
 
-        return await readService.course.firstBy({id: courseID.id})
+        const course = await readService.course.firstBy({id: courseID.asString()})
+        if (!course) throw ErrNotFound
+
+        return course
     }
 )
 
@@ -69,7 +78,6 @@ export const courseRoutes = new Elysia()
 .get('/courses/me/:courseID',
     async ({
         params: {courseID},
-        currentUser: {id: userID},
         readService
     }) => {
         const course = await readService.course.firstBy({id: courseID})
@@ -83,11 +91,11 @@ export const courseRoutes = new Elysia()
 
 .get('/courses/me', 
     async ({
-        currentUser: {id},
+        currentUser: {uid},
         readService,
         query: {limit}
     }) => {
-        return await readService.course.allBy({created_by_id: id.id}, {limit})
+        return await readService.course.allBy({createdBy: uid.asString()}, {limit})
     },
     {
         query: t.Object({

@@ -1,17 +1,16 @@
-import { UserID, UserRole, type UserRoleValue } from "@domain/identity/user"
+import type { ID } from "@domain/common/abstractions"
 import { AbstractReader } from "../common/abstract.reader"
 import type { UserRead } from "../views"
-import type { Pool } from "@m2k-5f/pgtx"
-import hydrate from "@index/infra/write/common/hydrator"
+import type { User, UserRoleType } from "@domain/identity/user"
 
 export class UserReader extends AbstractReader<UserRead> {
-    constructor(pool: Pool) {super(pool, "v_users_r")}
+    protected override tablename: string = 'users_r'
 
-    public async getRolesByID(id: UserID) {
-        const roles = await this.pool.query<{name: UserRoleValue}>`
+    public async getRolesByID(id: ID<User>) {
+        const roles = await this.pool.query<{name: UserRoleType}>`
         select name from user_roles
-        where user_id = ${id.id}`
+        where user_id = ${id.asString()}`
 
-        return roles.map(r => hydrate(UserRole, r.name))
+        return roles.map(r=>r.name)
     }
 }

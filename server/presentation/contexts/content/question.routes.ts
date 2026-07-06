@@ -2,56 +2,55 @@ import Elysia, { t } from "elysia";
 import { authFilter } from "../../auth/middlewares/auth.middleware";
 import { dependencies } from "@index/injection";
 import { UserRole } from "@domain/identity/user";
-import Topic, { TopicID } from "@domain/contexts/content/topic";
+import { ID } from "@domain/common/abstractions";
+import { ErrNotFound } from "@shared/error";
 
 export const questionRoutes = new Elysia()
 .use(dependencies)
-.group('', app => app
-    .use(authFilter(UserRole.Teacher))
+.use(authFilter(UserRole.Teacher))
 
 
-    .post('/topics/:topic_id/questions',
-        async ({
-            currentUser: { id },
-            params: { topic_id },
-            readService,
-            body,
-            courseManagementService,
-            contentEventHandler
-        }) => {
-            const {questionID, topicID} = await courseManagementService.createQuestion({
-                topicID: TopicID.fromString(topic_id),
-                userID: id,
-                ...body
-            })
+.post('/topics/:topicPlainID/questions',
+    async ({
+        currentUser: { uid },
+        params: { topicPlainID },
+        readService,
+        body,
+        courseManagementService,
+    }) => {
+        const {questionID} = await courseManagementService.createQuestion({
+            topicID: ID.from(topicPlainID),
+            uid,
+            ...body
+        })
 
-            void contentEventHandler.onQuestionCreate({questionID, topicID})
+        const question = await readService.question.firstBy({id: questionID.asString()})
+        if (!question) throw ErrNotFound
 
-            return await readService.question.firstBy({id: questionID.id})
-        }, {
-            body: t.Object({
+        return question
+    }, {
+        body: t.Object({
+            text: t.String(),
+            answers: t.Array(t.Object({
                 text: t.String(),
-                answers: t.Array(t.Object({
-                    text: t.String(),
-                    is_correct: t.Boolean()
-                }))
-            })
-        }
-    )
+                isCorrect: t.Boolean()
+            }))
+        })
+    }
+)
 
 
-    .get('/topics/:topicID/questions', 
-        async ({
-            params: {topicID},
-            currentUser: {id: userID},
-            readService
-        }) => {
-            return readService.question.allBy({
-                created_by_id: userID.id,
-                by_topic_id: TopicID.fromString(topicID).id
-            })
-        }
-    )
+.get('/topics/:topicID/questions', 
+    async ({
+        params: {topicID},
+        currentUser: {uid},
+        readService
+    }) => {
+        return readService.question.allBy({
+            createdBy: uid.asString(),
+            topicID: ID.from(topicID).asString()
+        })
+    }
 )
 
 

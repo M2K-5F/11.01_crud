@@ -3,6 +3,7 @@ import { DomainError } from "@shared/error"
 import type { Topic } from "./topic"
 import type { User } from "@domain/identity/user"
 import type { Updatable } from "@shared/lib"
+import { Serializable } from "nucleus-mold"
 
 
 export const ErrAnswerLength = new DomainError("ANSWER_TEXT_LENGTH")
@@ -11,6 +12,7 @@ export const ErrQuestionAnswersCount = new DomainError("QUESTION_ANSWERS_COUNT")
 export const ErrQuestionNoCorrectAnswer = new DomainError("QUESTION_NO_CORRECT_ANSWER")
 
 
+@Serializable()
 export class AnswerText extends ValueObject<string> {
     static from(text: string) {
         if (text.length < 8 || text.length > 64) throw ErrAnswerLength
@@ -20,6 +22,7 @@ export class AnswerText extends ValueObject<string> {
 }
 
 
+@Serializable()
 export class CorrectStatus extends ValueObject<boolean> {    
     static get Correct() { return new CorrectStatus(true) }
 
@@ -30,6 +33,7 @@ export class CorrectStatus extends ValueObject<boolean> {
 }
 
 
+@Serializable()
 export class Answer extends Entity {
     private constructor(
         private _text: AnswerText,
@@ -44,6 +48,7 @@ export class Answer extends Entity {
 }
 
 
+@Serializable()
 export class QuestionText extends ValueObject<string> {
     static from(text: string) {
         if (text.length < 8 || text.length > 128) throw ErrQuestionTextLength
@@ -55,7 +60,8 @@ export class QuestionText extends ValueObject<string> {
 type AnswerIDType = string
 
 
-export default class Question extends Entity {
+@Serializable()
+export class Question extends Entity {
     private constructor(
         private _text: QuestionText,
         private _byTopic: ID<Topic>,

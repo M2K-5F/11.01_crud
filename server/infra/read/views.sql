@@ -1,47 +1,60 @@
+CREATE OR REPLACE VIEW users_r AS
+SELECT 
+    id,
+    data->'_username'->>'_value' AS username,
+    data->'_telegramLink'->>'_value' AS telegramLink,
+    jsonb_path_query_array(data, '$._roles[*]._value') AS roles
+FROM users;
 
-create view users_r as
-select 
-    data->'_username'->>'_value' as username,
-    data->'_telegramLink'->>'_value' as telegramLink,
-    data->'_roles'->>'_value'
-from users
 
 
--- #region Course
-create view v_courses_r as
+create view courses_r as
 SELECT 
     id,
     c.data -> '_title' ->> '_value' AS title,
     c.data -> '_description' ->> '_value' AS description,
     c.data -> '_status' ->> '_value' AS status,
-    (c.data -> '_createdBy' ->> '_value')::uuid AS createdBy,
-    (select data->'_username'->>'_value' from users where id = c.data->'_createdBy'->>'_value') as createdByName, 
-    (SELECT count(*) from topics WHERE data->'' = c.id) as topics_count,
-    (SELECT count(*) FROM course_enrollments where course_id = c.id) as students_count
-from courses c
--- #endregion
+    c.data -> '_createdBy' ->> '_value' AS createdBy,
+    (select data->'_username'->>'_value' from users where c.data->'_createdBy' = data->'_id') as createdByName, 
+    (SELECT count(*) from topics WHERE data->'_byCourse' = c.data->'_id') as topicsCount,
+    (SELECT count(*) FROM enrollments where data->'_byCourse' = c.data->'_id') as studentsCount
+from courses c;
 
 
--- #region Question
-CREATE VIEW v_questions_r AS 
+
+CREATE VIEW topics_r AS
 SELECT 
-    q.*,
-    COALESCE(
-        (SELECT jsonb_agg(a) FROM answers a WHERE a.question_id = q.id),
-        '[]'::jsonb
+    id,
+    data->'_number'->>'_value' AS number,
+    data->'_title'->>'_value' AS title,
+    data->'_description'->>'_value' AS description,
+    data->'_status'->>'_value' AS status,
+    data->'_byCourse'->>'_value' AS courseID,
+    data->'_createdBy'->>'_value' AS createdBy,
+    
+    jsonb_path_query_array(data, '$._prerequisites[*]._value') AS prerequisites
+FROM topics;
+
+
+
+CREATE  VIEW questions_admin_r AS
+SELECT 
+    id,
+    data->'_text'->>'_value' AS text,
+    data->'_byTopic'->>'_value' AS topicID,
+    data->'_createdBy'->>'_value' AS createdBy,
+    
+    (
+        SELECT jsonb_agg(
+            jsonb_build_object(
+                'id', ans.value->'_id'->>'_value',
+                'text', ans.value->'_text'->>'_value',
+                'isCorrect', (ans.value->'_correctness'->>'_value')::boolean
+            )
+        )
+        FROM jsonb_each(data->'_answers') AS ans
     ) AS answers
-FROM questions q
--- #endregion
-
-
--- #region Topic
-create view v_topics_r as
-SELECT 
-    t.*, 
-    (select count(DISTINCT id) from questions where by_topic_id = t.id) as questions_count
-from topics t;
--- #endregion
-
+FROM questions;
 
 -- #region Enrollment
 create view v_enrollments_r as

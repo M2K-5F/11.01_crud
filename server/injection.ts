@@ -1,13 +1,14 @@
-import Elysia, { type Context } from "elysia";
+import Elysia from "elysia";
 import { TokenSigner } from "./presentation/auth/service/token.signer";
 import { Pool } from "@m2k-5f/pgtx";
-import { UserService } from "@applications/services/identity.service";
+import { IdentityService } from "@applications/services/identity.service";
 import { BCryptHashStrategy } from "./infra/security/bcrypt-hash-strategy";
 import { CourseManagementService } from "@applications/services/content.manage.service";
 import { TokenStorage } from "./presentation/auth/store/token.storage";
 import { SessionService } from "./presentation/auth/service/token.service";
 import { types } from "pg";
 import { TransactionManager } from "@infra/write";
+import { ReadService } from "./infra/read";
 
 export const getDependencies = async () => {
     types.setTypeParser(20, (val) => parseInt(val, 10))
@@ -34,9 +35,11 @@ export const getDependencies = async () => {
     const txm = new TransactionManager(persistensePool)
     
 
-    const userService = new UserService(txm, new BCryptHashStrategy())
+    const identityService = new IdentityService(txm, new BCryptHashStrategy())
     const courseManagementService = new CourseManagementService(txm)
     // const learningService = new LearningService(txm)
+
+    const readService = new ReadService(queriesPool)
 
     const sessionStorage = new TokenStorage(sessionsPool)
     const signer = await TokenSigner.newWithKeys()
@@ -46,9 +49,10 @@ export const getDependencies = async () => {
     
     return {
         querier: queriesPool,
-        userService,
+        identityService,
         courseManagementService,
         sessionService,
+        readService
         // learningService,
     }
 };

@@ -13,11 +13,10 @@ export class EnrollRepository extends AbstractRepository<Enrollment> implements 
     
     async isUserEnrolled(userID: ID<User>, courseID: ID<Course>): Promise<boolean> {
         const [res] = await this.tx.query<{res: 1}>`
-        select 1 as res from enrollments
+        select 1 as res from ${sql.ident(this.tablename)}
         where data->>'_courseID' = ${courseID} 
-        and data->>'_userID' = ${userID}
-        limit 1;
-        `
+        and data->>'_userID' = ${userID};`
+
         return !!res
     }
 
@@ -39,7 +38,7 @@ export class EnrollRepository extends AbstractRepository<Enrollment> implements 
             data->'_userID' = ${userID} 
             and 
             data->'_courseID' = ${courseID} 
-        limit 1 for update;`
+        for update;`
 
         return res ? this.fromRow(res) as Updatable<Enrollment> : null
     }
@@ -51,8 +50,7 @@ export class EnrollRepository extends AbstractRepository<Enrollment> implements 
         where
             data->'_userID' = ${userID}
             and
-            data->'_courseID' = ${courseID}
-        limit 1 ;`
+            data->'_courseID' = ${courseID};`
 
         return res ? this.fromRow(res) : null
     }

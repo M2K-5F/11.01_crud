@@ -1,7 +1,5 @@
-import { t } from "elysia";
 import { DomainError, ForbiddenError, NotFoundError, UnauthorizedError, ValidationError } from "./shared/error";
 import type Elysia from "elysia";
-import { retrieveRootparameters } from "elysia/sucrose";
 
 export const errorHandle = (app: Elysia) => app.onError(({code, error, set}) => {
     console.log(error)

@@ -3,6 +3,7 @@ import { Status } from "@domain/common/value-objects/active-status"
 import type { User } from "@domain/identity/user"
 import { DomainError } from "@shared/error"
 import type { Updatable } from "@shared/lib"
+import { Serializable } from "nucleus-mold"
 
 const ErrCourseTitleLength = new DomainError("COURSE_TITLE_LENGTH", "Название курса должно быть от 8 до 64 символов в длину")
 const ErrCourseDescriptionLength = new DomainError("COURSE_DESCRIPTION_LENGTH", "Описание курса должно быть от 8 до 128 символов в длину")
@@ -10,6 +11,7 @@ const ErrCourseArchived = new DomainError("COURSE_ARCHIVED")
 const ErrCourseActive = new DomainError("COURSE_ACTIVE")
 
 
+@Serializable()
 export class CourseTitle extends ValueObject<string> {
     static from(title: string) {
         if (title.length < 8 || title.length > 64) throw ErrCourseTitleLength
@@ -19,6 +21,7 @@ export class CourseTitle extends ValueObject<string> {
 }
 
 
+@Serializable()
 export class CourseDescription extends ValueObject<string> {
     static from(description: string) {
         if (description.length < 8 || description.length > 128) throw ErrCourseDescriptionLength
@@ -27,7 +30,7 @@ export class CourseDescription extends ValueObject<string> {
     }
 }
 
-
+@Serializable()
 export class Course extends Entity {
     private constructor(
         private _title: CourseTitle,
