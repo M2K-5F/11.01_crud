@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
 import { authFilter } from "../../auth/middlewares/auth.middleware";
 import { dependencies } from "@index/injection";
-import { UserRole } from "@domain/contexts/identity/user";
+import { UserRole } from "@domain/identity/user";
 import Topic, { TopicID } from "@domain/contexts/content/topic";
 
 export const questionRoutes = new Elysia()

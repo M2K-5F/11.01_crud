@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { DeviceID, type Device } from "../entities";
+import { Device } from "../entities";
 
 const deviceIdentity = new Elysia({ name: 'device-identity' })
     .derive({ as: "scoped" }, ({ request, cookie: { device_id } }) => {
@@ -35,13 +35,13 @@ const deviceIdentity = new Elysia({ name: 'device-identity' })
             return 'Unknown Browser'
         }
 
-        const device: Device = {
-            device_id: DeviceID.fromString(currentId),
-            ip: request.headers.get('x-forwarded-for') || '127.0.0.1',
-            os: getOS(ua),
-            browser: getBrowser(ua),
-            ua: ua
-        }
+
+        const device = new Device(
+            request.headers.get('x-forwarded-for') || '127.0.0.1',
+            getOS(ua),
+            getBrowser(ua),
+            ua
+        )
 
         return { device }
     })

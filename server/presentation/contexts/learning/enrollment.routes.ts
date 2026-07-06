@@ -2,7 +2,7 @@ import { ID } from "@domain/common/abstractions/abstract-identificator";
 import Course, { CourseID } from "@domain/contexts/content/course";
 import { AnswerID, QuestionID } from "@domain/contexts/content/question";
 import Topic, { TopicID } from "@domain/contexts/content/topic";
-import { UserRole } from "@domain/contexts/identity/user";
+import { UserRole } from "@domain/identity/user";
 import { EnrollmentID } from "@domain/contexts/learning/enrollment/aggregate";
 import { dependencies } from "@index/injection";
 import { authFilter } from "@presentation/auth/middlewares/auth.middleware";
@@ -26,7 +26,12 @@ export const enrollmentRoutes = new Elysia()
             userID: userId
         })
 
-        return readService.enroll.firstBy({id: enrID.id})!
+
+        const enrollment = await readService.enroll.firstBy({id: enrID.id})
+
+        if (!enrollment) throw ErrNotFound
+
+        return enrollment
     }
 )
 
@@ -38,12 +43,13 @@ export const enrollmentRoutes = new Elysia()
         params: {topic_id},
         readService
     }) => {
-        const topicID  = await learningService.startTopic({
+        const topicID = await learningService.canStartTopic({
             userID: userID,
             topicID: TopicID.fromString(topic_id)
         })
 
-        return readService.question.allBy({by_topic_id: topicID.id})
+        return await readService.question.allBy({by_topic_id: topicID.id})
+
     }
 )
 
@@ -65,7 +71,11 @@ export const enrollmentRoutes = new Elysia()
             ]))
         })
 
-        return readService.enroll.firstBy({id: enrollmentID.id})
+        const enrollment = await readService.enroll.firstBy({id: enrollmentID.id})
+
+        if (!enrollment) throw ErrNotFound
+
+        return enrollment
     }, 
     {
         body: t.Array(

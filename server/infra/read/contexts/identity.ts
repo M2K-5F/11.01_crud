@@ -1,4 +1,4 @@
-import { UserID, UserRole, type UserRoleValue } from "@domain/contexts/identity/user"
+import { UserID, UserRole, type UserRoleValue } from "@domain/identity/user"
 import { AbstractReader } from "../common/abstract.reader"
 import type { UserRead } from "../views"
 import type { Pool } from "@m2k-5f/pgtx"

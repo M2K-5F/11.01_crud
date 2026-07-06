@@ -1,8 +1,8 @@
-import type { PasswordHashStrategy } from "@domain/contexts/identity/user"
+import type { PasswordHashStrategy } from "@domain/identity/user"
 
 export class BCryptHashStrategy implements PasswordHashStrategy {
     async hash(raw: string) {
-        return await Bun.password.hash(raw) 
+        return await Bun.password.hash(raw)
     }
 
     async compare(raw: string, hash: string) {

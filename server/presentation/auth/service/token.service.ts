@@ -2,7 +2,8 @@ import type { TokenStorage } from "../store/token.storage";
 import { TokenSigner } from "./token.signer";
 import { ErrRefreshTokenInvalid, ErrSessionNotFound, ErrTokenExpired } from "../errors";
 import { Session, type Device } from "../entities";
-import type { UserID, UserRole } from "@domain/contexts/identity/user";
+import type { ID } from "@domain/common/abstractions";
+import type { User, UserRole } from "@domain/identity/user";
 
 
 export class SessionService {
@@ -11,35 +12,29 @@ export class SessionService {
         private signer: TokenSigner,
     ) {}
 
-    async newSession(user_id: UserID, device: Device, roles: UserRole[]) {
-        const session = Session.new(user_id, device)
+    async newSession(userID: ID<User>, device: Device, roles: UserRole[]) {
+        const session = Session.new(userID, device)
 
         const refresh = await this.signer.signRefresh(
-            user_id, session.id
+            userID, session.id
         )
 
         session.updateToken(refresh)
 
         const access = await this.signer.signAccess(
-            user_id, roles
+            userID, roles
         )
 
-        await this.storage.saveSession(session)
+        await this.storage.save(session)
 
         return {refresh, access}
     }
 
     async verifyRefresh(refresh: string) {
-        let pl
-        try {
-            pl = await this.signer.verifyRefresh(refresh)
-        } catch {
-            throw ErrRefreshTokenInvalid
-        }
+        const {sessionID} = await this.signer.verifyRefresh(refresh)
+                .catch(() => {throw ErrRefreshTokenInvalid})
 
-        const {session_id} = pl
-
-        const session = await this.storage.getByID(session_id)
+        const session = await this.storage.getByID(sessionID)
         if (!session) throw ErrSessionNotFound
 
         if (session.currentToken !== refresh) throw ErrRefreshTokenInvalid
@@ -60,7 +55,7 @@ export class SessionService {
             session.userId, roles
         )
 
-        await this.storage.saveSession(session)
+        await this.storage.save(session)
 
         return {access, refresh}
     }

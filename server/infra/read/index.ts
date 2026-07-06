@@ -1,15 +1,41 @@
-import type { Pool } from "@m2k-5f/pgtx";
-import { CourseReader, QuestionReader, TopicReader } from "./contexts/content";
-import { EnrollmentReader } from "./contexts/learning";
-import { UserReader } from "./contexts/identity";
+import yoga from "@elysiajs/graphql-yoga"
+import { dependencies } from "@index/injection"
+import { authFilter } from "@presentation/auth/middlewares/auth.middleware"
+import Elysia from "elysia"
 
-export class ReadService {
-    constructor(
-        public pool: Pool,
-        readonly user = new UserReader(pool),
-        readonly course = new CourseReader(pool),
-        readonly topics = new TopicReader(pool),
-        readonly question = new QuestionReader(pool),
-        readonly enroll = new EnrollmentReader(pool),
-    ) {}
+
+const typeDefs = `
+type Course {
+    id: String!
+    title: String!
+    description: String!
+    status: String!
+    createdBy: String!
 }
+
+type Query {
+    course(id: String!): Course!
+}
+`
+
+const app = new Elysia()
+.use(dependencies)
+.use(authFilter())
+.use(yoga({
+    typeDefs: `
+        type Course {
+            id: String!
+        }
+
+        type Query {
+            get(id: String!): Course!
+        }
+    `,
+    resolvers: {
+        Query: {
+            get: async (_, {id}) => {
+                
+            }
+        }
+    }
+}))

@@ -1,19 +1,22 @@
-import type { AnswerRow, CourseRow, QuestionRow, TopicRow } from "../write/contexts/content/shema"
-import type { UserRoleRow, UserRow } from "../write/contexts/identity/shema"
-import type { CourseEnrollmentRow, TopicEnrollmentRow } from "../write/contexts/learning/shema"
-
 // #region User
-export interface UserRead extends Pick<UserRow, 'id' | "name" | "telegram_link"> {
-    roles: Array<UserRoleRow['name']>
+export interface UserRead {
+    id: string
+    name: string
+    telegramLink: string
+    roles: string[]
 }
 // #endregion
 
 
 // #region Course
 export interface CourseRead extends CourseRow {
-    created_by: string,
-    topics_count: number,
-    students_count: number
+    id: string
+    title: string
+    description: string
+    status: string
+    createdBy: string,
+    topicsCount: number,
+    studentsCount: number
 }
 // #endregion
 

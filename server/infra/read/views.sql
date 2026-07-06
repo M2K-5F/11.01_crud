@@ -1,24 +1,23 @@
--- #region User
-create view v_users_r as
+
+create view users_r as
 select 
-    u.id,
-    u.name, 
-    u.telegram_link,
-    coalesce(
-        (select array_agg(ur.name) from user_roles ur where ur.user_id = u.id),
-        Array[]::text[]
-    ) as roles
-from users u
--- #endregion
+    data->'_username'->>'_value' as username,
+    data->'_telegramLink'->>'_value' as telegramLink,
+    data->'_roles'->>'_value'
+from users
 
 
 -- #region Course
 create view v_courses_r as
 SELECT 
-    c.*, 
-    (select name from users where id = c.created_by_id) as created_by, 
-    (SELECT count(DISTINCT id) from topics WHERE by_course_id = c.id) as topics_count,
-    (SELECT count(DISTINCT id) FROM course_enrollments where course_id = c.id) as students_count
+    id,
+    c.data -> '_title' ->> '_value' AS title,
+    c.data -> '_description' ->> '_value' AS description,
+    c.data -> '_status' ->> '_value' AS status,
+    (c.data -> '_createdBy' ->> '_value')::uuid AS createdBy,
+    (select data->'_username'->>'_value' from users where id = c.data->'_createdBy'->>'_value') as createdByName, 
+    (SELECT count(*) from topics WHERE data->'' = c.id) as topics_count,
+    (SELECT count(*) FROM course_enrollments where course_id = c.id) as students_count
 from courses c
 -- #endregion
 

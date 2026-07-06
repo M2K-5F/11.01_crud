@@ -6,13 +6,10 @@ import { BCryptHashStrategy } from "./infra/security/bcrypt-hash-strategy";
 import { CourseManagementService } from "@applications/services/content.manage.service";
 import { TokenStorage } from "./presentation/auth/store/token.storage";
 import { SessionService } from "./presentation/auth/service/token.service";
-import LearningService from "@applications/services/learning.service";
 import { types } from "pg";
 import { TransactionManager } from "@infra/write";
-import { ReadService } from "./infra/read";
-import { ContentEventHandler } from "@applications/handlers/contentEventHandler";
 
-const getDependencies = async () => {
+export const getDependencies = async () => {
     types.setTypeParser(20, (val) => parseInt(val, 10))
 
     const persistensePool = new Pool({
@@ -39,25 +36,20 @@ const getDependencies = async () => {
 
     const userService = new UserService(txm, new BCryptHashStrategy())
     const courseManagementService = new CourseManagementService(txm)
-    const learningService = new LearningService(txm)
+    // const learningService = new LearningService(txm)
 
     const sessionStorage = new TokenStorage(sessionsPool)
     const signer = await TokenSigner.newWithKeys()
 
     const sessionService = new SessionService(sessionStorage, signer)
 
-    const readService = new ReadService(queriesPool)
-
-    const contentEventHandler = new ContentEventHandler(txm)
     
     return {
         querier: queriesPool,
         userService,
         courseManagementService,
         sessionService,
-        contentEventHandler,
-        learningService,
-        readService
+        // learningService,
     }
 };
 

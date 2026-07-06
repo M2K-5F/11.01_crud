@@ -1,56 +1,53 @@
-import { ForMutate, type ITransactionManager, type Mutable } from "@applications/interfaces/itransaction-manager";
-import Course, { CourseDescription, CourseID, CourseTitle } from "@domain/contexts/content/course";
-import Question, { AnswerCorrectStatus, AnswerText, ChoiceAnswer, QuestionText } from "@domain/contexts/content/question";
-import type { TopicID } from "@domain/contexts/content/topic";
-import Topic, { TopicDescription, TopicNumber, TopicTitle } from "@domain/contexts/content/topic";
-import type { UserID } from "@domain/contexts/identity/user";
+import type { ITransactionManager } from "@applications/interfaces/itransaction-manager";
+import type { ID } from "@domain/common/abstractions";
+import { Course, CourseDescription, CourseTitle } from "@domain/content/course";
+import Question, { Answer, AnswerText, CorrectStatus, QuestionText } from "@domain/content/question";
+import { Topic, TopicDescription, TopicNumber, TopicTitle } from "@domain/content/topic";
+import type { User } from "@domain/identity/user";
 import { DomainError, ErrNotFound } from "@shared/error";
+import type { Updatable } from "@shared/lib";
 
 
-// #region Commands
 type CreateCourseCMD = {
-    userID: UserID,
+    uid: ID<User>,
     title: string,
     description: string,
 }
 
 type CourseArchiveCMD = {
-    userID: UserID,
-    courseID: CourseID
+    uid: ID<User>,
+    courseID: ID<Course>
 }
 
 type CreateTopicCMD = {
-    userID: UserID,
-    courseID: CourseID,
+    uid: ID<User>,
+    courseID: ID<Course>,
     title: string,
-    description: string
+    description: string,
+    accessType: "afterPrevious" | "free"
 }
 
 type TopicArchiveCMD = {
-    userID: UserID,
-    topicID: TopicID
+    uid: ID<User>,
+    topicID: ID<Topic>
 }
 
 type CreateQuestionCMD = {
-    userID: UserID,
-    topicID: TopicID,
+    uid: ID<User>,
+    topicID: ID<Topic>,
     text: string,
     answers: Array<{
         text: string,
         is_correct: boolean
     }>
 }
-// #endregion
 
 
-// #region Errors
 const ErrCourseTitleExist = new DomainError("COURSE_TITLE_EXISTS")
 const ErrCourseNotCreatedBy = new DomainError("COURSE_NOT_CREATED_BY")
 const ErrTopicNotCreatedBy = new DomainError("TOPIC_NOT_CREATED_BY")
-// #endregion
 
 
-// #region Service
 export class CourseManagementService {
     constructor (
         readonly txmanager: ITransactionManager
@@ -58,13 +55,16 @@ export class CourseManagementService {
 
     async createCourse(cmd: CreateCourseCMD) {
         return await this.txmanager.begin(async uow => {
-            if (await uow.courses.checkCourseNameExists(cmd.userID, cmd.title)) throw ErrCourseTitleExist
+            
+            if (await uow.courses.checkCourseExistsOnUser(
+                cmd.uid, CourseTitle.from(cmd.title)
+            )) throw ErrCourseTitleExist
 
             const course = Course.create(
-                CourseTitle.create(cmd.title),
-                CourseDescription.create(cmd.description),
-                cmd.userID
-            ) as Mutable<Course>
+                CourseTitle.from(cmd.title),
+                CourseDescription.from(cmd.description),
+                cmd.uid
+            )
 
             await uow.courses.save(course)
 
@@ -74,10 +74,10 @@ export class CourseManagementService {
 
     async archiveCourse(cmd: CourseArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            const course = await uow.courses.getByIDForMutate(cmd.courseID)
+            const course = await uow.courses.getByIDForUpdate(cmd.courseID)
             if (!course) throw ErrNotFound
 
-            if (!course.createdBy.equal(cmd.userID)) throw ErrCourseNotCreatedBy
+            if (!course.createdBy.equals(cmd.uid)) throw ErrCourseNotCreatedBy
 
             course.archive()
 
@@ -89,10 +89,10 @@ export class CourseManagementService {
 
     async activateCourse(cmd: CourseArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            const course = await uow.courses.getByIDForMutate(cmd.courseID)
+            const course = await uow.courses.getByIDForUpdate(cmd.courseID)
             if (!course) throw ErrNotFound
 
-            if (!course.createdBy.equal(cmd.userID)) throw ErrCourseNotCreatedBy
+            if (!course.createdBy.equals(cmd.uid)) throw ErrCourseNotCreatedBy
 
             course.activate()
 
@@ -107,17 +107,29 @@ export class CourseManagementService {
             const course = await uow.courses.getByID(cmd.courseID)
             if (!course) throw ErrNotFound
 
-            if (!course.createdBy.equal(cmd.userID)) throw ErrCourseNotCreatedBy
+            if (!course.createdBy.equals(cmd.uid)) throw ErrCourseNotCreatedBy
+            const topicNumber = TopicNumber.from(await uow.topics.countByCourse(cmd.courseID))
 
-            const count = await uow.topics.countByCourse(course.id)
+            let topic: Updatable<Topic>
 
-            const topic = Topic.create(
-                cmd.courseID, 
-                TopicTitle.create(cmd.title),
-                TopicDescription.create(cmd.description),
-                cmd.userID,
-                TopicNumber.create(count + 1)
-            ) as Mutable<Topic>
+            switch (cmd.accessType) {
+                case 'afterPrevious': 
+                    topic = Topic.createWithAccessAfterPrevious(        
+                        cmd.courseID, 
+                        TopicTitle.from(cmd.title),
+                        TopicDescription.from(cmd.description),
+                        cmd.uid,
+                        topicNumber
+                    ); break
+                case "free":
+                    topic = Topic.createWithFreeAccess(
+                        cmd.courseID, 
+                        TopicTitle.from(cmd.title),
+                        TopicDescription.from(cmd.description),
+                        cmd.uid,
+                        topicNumber
+                    ); break
+            }
 
             await uow.topics.save(topic)
 
@@ -130,10 +142,10 @@ export class CourseManagementService {
 
     async archiveTopic(cmd: TopicArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            const topic = await uow.topics.getByIDForMutate(cmd.topicID)
+            const topic = await uow.topics.getByIDForUpdate(cmd.topicID)
             if (!topic) throw ErrNotFound
 
-            if (!topic.createdBy.equal(cmd.userID)) throw ErrTopicNotCreatedBy
+            if (!topic.createdBy.equals(cmd.uid)) throw ErrTopicNotCreatedBy
 
             topic.archive()
 
@@ -145,10 +157,10 @@ export class CourseManagementService {
 
     async activateTopic(cmd: TopicArchiveCMD) {
         return await this.txmanager.begin(async uow => {
-            const topic = await uow.topics.getByIDForMutate(cmd.topicID)
+            const topic = await uow.topics.getByIDForUpdate(cmd.topicID)
             if (!topic) throw ErrNotFound
 
-            if (!topic.createdBy.equal(cmd.userID)) throw ErrTopicNotCreatedBy
+            if (!topic.createdBy.equals(cmd.uid)) throw ErrTopicNotCreatedBy
 
             topic.activate()
 
@@ -163,19 +175,19 @@ export class CourseManagementService {
             const topic = await uow.topics.getByID(cmd.topicID)
             if (!topic) throw ErrNotFound
 
-            if (!topic.createdBy.equal(cmd.userID)) throw ErrTopicNotCreatedBy
+            if (!topic.createdBy.equals(cmd.uid)) throw ErrTopicNotCreatedBy
 
             const question = Question.create(
-                QuestionText.create(cmd.text),
-                cmd.userID,
+                QuestionText.from(cmd.text),
+                cmd.uid,
                 cmd.topicID,
                 cmd.answers.map(a => 
-                    ChoiceAnswer.create(
-                        AnswerText.create(a.text),
-                        a.is_correct ? AnswerCorrectStatus.correct : AnswerCorrectStatus.uncorrect
+                    Answer.create(
+                        AnswerText.from(a.text),
+                        a.is_correct ? CorrectStatus.Correct : CorrectStatus.Wrong
                     )
                 )
-            ) as Mutable<Question>
+            )
 
             await uow.questions.save(question)
 
@@ -187,4 +199,3 @@ export class CourseManagementService {
         })
     }
 }
-// #endregion

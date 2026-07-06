@@ -1,14 +1,10 @@
-
-import type { ID } from "@domain/common/abstractions/abstract-identificator"
-import type { AggregateRoot } from "@domain/common/abstractions/abstract-aggregate"
-import type { UserID } from "@domain/contexts/identity/user"
-import type User from "@domain/contexts/identity/user"
-import type { CourseID } from "@domain/contexts/content/course"
-import type Course from "@domain/contexts/content/course"
-import type Topic from "@domain/contexts/content/topic"
-import type { TopicID } from "@domain/contexts/content/topic"
-import type Question from "@domain/contexts/content/question"
-import type { Enrollment } from "@domain/contexts/learning/enrollment/aggregate"
+import type { Entity, ID } from "@domain/common/abstractions"
+import type { Course, CourseTitle } from "@domain/content/course"
+import type Question from "@domain/content/question"
+import type { Topic } from "@domain/content/topic"
+import type { User, UserUsername } from "@domain/identity/user"
+import type { Enrollment } from "@domain/learning/course-enrollment"
+import type { Updatable } from "@shared/lib"
 
 export interface ITransactionWorkUnit {
     readonly users: IUserRepository
@@ -18,53 +14,41 @@ export interface ITransactionWorkUnit {
     readonly enrolls: IEnrollmentRepository
 }
 
-
-class ExecuteParam {}
-export class ForMutateParam extends ExecuteParam {}
-
-export const ForMutate = new ForMutateParam()
-
-export type Mutable<T> = T & { __brand: "Mutable" }
-
-
 export interface ITransactionManager {
     begin<T>(func: (ctx: ITransactionWorkUnit) => Promise<T>): Promise<T>
 }
 
-export interface IRepository<Tentity extends AggregateRoot<TID>, TID extends ID<any> = Tentity extends AggregateRoot<infer U> ? U : never> {
-    save(...root: Array<Mutable<Tentity>>): Promise<void>
+export interface IRepository<Tentity extends Entity, TID = ID<Tentity>> {
+    save(...root: Array<Updatable<Tentity>>): Promise<void>
 
-    getByIDForMutate(id: TID): Promise<Mutable<Tentity> | null>
+    getByIDForUpdate(id: TID): Promise<Updatable<Tentity> | null>
     getByID(id: TID): Promise<Tentity | null>
 }
 
 export interface IUserRepository extends IRepository<User> {
-    checkNameExists(name: string): Promise<boolean>
-    getByName(name: string): Promise<User | null>
+    checkNameExists(name: UserUsername): Promise<boolean>
+    getByName(name: UserUsername): Promise<User | null>
 }
 
 export interface ICourseRepository extends IRepository<Course> {
-    checkCourseNameExists(userID: UserID, name: string): Promise<boolean>
+    checkCourseExistsOnUser(userID: ID<User>, title: CourseTitle): Promise<boolean>
 }
 
 export interface ITopicRepository extends IRepository<Topic> {
-    countByCourse(courseID: CourseID): Promise<number>
-    getPrevious(topicID: TopicID): Promise<Topic | null>
-    isTopicEmpty(topicID: TopicID): Promise<boolean>
-    listByCourse(courseID: CourseID): Promise<Array<Topic>>
+    countByCourse(courseID: ID<Course>): Promise<number>
+    listByCourse(courseID: ID<Course>): Promise<Array<Topic>>
 }
 
 export interface IQuestionRepository extends IRepository<Question> {
-    listByTopic(topicID: TopicID): Promise<Array<Question>>
-    countByTopic(topicID: TopicID): Promise<number>
+    listByTopic(topicID: ID<Topic>): Promise<Array<Question>>
+    countByTopic(topicID: ID<Topic>): Promise<number>
 }
 
 export interface IEnrollmentRepository extends IRepository<Enrollment> {
-    isUserEnrolled(userID: UserID, courseID: CourseID): Promise<boolean>
-    
+    isUserEnrolled(userID: ID<User>, courseID: ID<Course>): Promise<boolean>
 
-    getByUserAndCourseForMutate(userID: UserID, courseID: CourseID): Promise<Mutable<Enrollment> | null>
-    getByUserAndCourse(userID: UserID, courseID: CourseID): Promise<Enrollment | null>
+    getByUserAndCourseForUpdate(userID: ID<User>, courseID: ID<Course>): Promise<Updatable<Enrollment> | null>
+    getByUserAndCourse(userID: ID<User>, courseID: ID<Course>): Promise<Enrollment | null>
 
-    listByCourseForMutate(courseID: CourseID): Promise<Array<Mutable<Enrollment>>>
+    listByCourseForUpdate(courseID: ID<Course>): Promise<Array<Updatable<Enrollment>>>
 }

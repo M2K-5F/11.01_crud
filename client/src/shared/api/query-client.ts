@@ -71,18 +71,13 @@ export class ApiClient {
             method: 'post',
             credentials: 'include',
         })
-        .andThen(res => {
-            if (res.ok) {
-                return parseJson(res)
+        .andThen(res => res.ok
+            ?    parseJson(res)
                     .tap(data => sessionStorage.setItem("access", data.access))
-            }
-            else {
-                return Reject(
-                    new ApiError(401, "REFRESH_FAILED", "refresh failed")
-                )
-                .tapErr(this.removeBearer)
-            }
-        })
+            :   Reject(new ApiError(401, "REFRESH_FAILED", "refresh failed"))
+                    .tapErr(this.removeBearer)
+        
+        )
     }
 
 
@@ -143,18 +138,19 @@ export class ApiClient {
     private _fetchWithRefresh(url: string, params: QueryParams) {
         return fetchFuture(url, params)
             .andThen(res => {
-                if (res.status === 401) {
-                    return this._refreshToken()
-                        .tap(() => {
-                            if (this.bearer) params.headers = {
-                                    ...params.headers, 
-                                    Authorization: `Bearer ${this.bearer}`
-                                }
-                        })
-                        .andThen(() => fetchFuture(url, params))
-                }
+                if (res.status !== 401) return Resolve(res)
 
-                return Resolve(res)
+                return this._refreshToken()
+                    .tap(() => {
+                        if (this.bearer) {
+                            params.headers = {
+                                ...params.headers, 
+                                Authorization: `Bearer ${this.bearer}`
+                            }
+                        }
+                    })
+                    .andThen(() => fetchFuture(url, params))
+                
             })
     }
 }

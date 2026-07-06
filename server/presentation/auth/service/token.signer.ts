@@ -1,14 +1,14 @@
 import { importPKCS8, importSPKI, jwtVerify, SignJWT } from "jose"
-import { SessionID } from "../entities"
-import hydrate from "@index/infra/write/common/hydrator"
-import { UserID, UserRole, type UserRoleValue } from "@domain/contexts/identity/user"
+import { UserRole, type User, type UserRoleType } from "@domain/identity/user"
+import { ID } from "@domain/common/abstractions"
+import type { Session } from "../entities"
 
 export class TokenSigner {
     private constructor(
-        private access_pub: CryptoKey,
-        private access_pri: CryptoKey,
-        private refresh_pub: CryptoKey,
-        private refresh_pri: CryptoKey,
+        private accessPub: CryptoKey,
+        private accessPri: CryptoKey,
+        private refreshPub: CryptoKey,
+        private refreshPri: CryptoKey,
     ) {}
 
     static async newWithKeys() {
@@ -19,7 +19,7 @@ export class TokenSigner {
             Bun.file(Bun.env.REFRESH_PRIVATE).text()
         ])
 
-        return new this(
+        return new TokenSigner(
             await importSPKI(aPub, 'ES256'),
             await importPKCS8(aPri, 'ES256'),
             await importSPKI(rPub, 'ES256'),
@@ -27,36 +27,36 @@ export class TokenSigner {
         )
     }
 
-    async signAccess(user_id: UserID, roles: UserRole[]) {
-        const token = await new SignJWT({roles: roles.map(r => r['_value'])})
+    async signAccess(userID: ID<User>, roles: UserRole[]) {
+        const token = await new SignJWT({roles: roles.map(r => r.asString())})
         .setProtectedHeader({ alg: 'ES256' })
-        .setSubject(user_id.id)
+        .setSubject(userID.asString())
         .setExpirationTime(Bun.env.ACCESS_TTL)
         .setIssuedAt()
-        .sign(this.access_pri)
+        .sign(this.accessPri)
 
         return token
     }
 
-    async signRefresh(user_id: UserID, session_id: SessionID) {
-        const token = await new SignJWT({session_id: session_id.id})
+    async signRefresh(userID: ID<User>, sessionID: ID<Session>) {
+        const token = await new SignJWT({sessionID: sessionID.asString()})
         .setProtectedHeader({ alg: 'ES256' })
         .setIssuedAt()
         .setExpirationTime(Bun.env.SESSION_TTL)
-        .setSubject(user_id.id)
-        .sign(this.refresh_pri)
+        .setSubject(userID.asString())
+        .sign(this.refreshPri)
 
         return token
     }
 
     async verifyAccess(access: string) {
-        const {sub, roles} = (await jwtVerify(access, this.access_pub)).payload as {sub: string, roles: UserRoleValue[]}
+        const {sub, roles} = (await jwtVerify(access, this.accessPub)).payload as {sub: string, roles: UserRoleType[]}
     
-        return {user_id: UserID.fromString(sub), roles: roles.map(r => hydrate(UserRole, r))}
+        return {uid: ID.from<User>(sub), roles: roles.map(r => r === 'Student' ? UserRole.Student : UserRole.Teacher)}
     }
 
     async verifyRefresh(refresh: string) {
-        const {sub, session_id} = (await jwtVerify(refresh, this.refresh_pub)).payload as {sub: string, session_id: string}
-        return {user_id: UserID.fromString(sub), session_id: SessionID.fromString(session_id)}
+        const {sub, sessionID} = (await jwtVerify(refresh, this.refreshPub)).payload as {sub: string, sessionID: string}
+        return {uid: ID.from<User>(sub), sessionID: ID.from<Session>(sessionID)}
     }
 }

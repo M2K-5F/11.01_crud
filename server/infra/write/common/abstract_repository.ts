@@ -1,46 +1,55 @@
-import type { IRepository, ForMutate, ForMutateParam, Mutable } from "@applications/interfaces/itransaction-manager"
-import type { AggregateRoot } from "@domain/common/abstractions/abstract-aggregate"
-import type { ID } from "@domain/common/abstractions/abstract-identificator"
-import { Pool, sql, Transaction } from "@m2k-5f/pgtx" 
-import type { Identifier } from "typescript"
+import type { IRepository } from "@applications/interfaces/itransaction-manager"
+import type { Entity, ID } from "@domain/common/abstractions"
+import { sql, type Transaction } from "@m2k-5f/pgtx"
+import type { Updatable } from "@shared/lib"
+import { Json } from "nucleus-mold"
 
+export type Row = {id: string, data: string}
 
-type GetID<T> = T extends AggregateRoot<infer Tid> ? Tid : never
+export type RowData = {data: string}
 
-export abstract class AbstractRepository<TAgg extends AggregateRoot<any>, TRow extends {id: string}> implements IRepository<TAgg, GetID<TAgg>>  {
-    abstract table: any 
+export abstract class AbstractRepository<TEnt extends Entity> implements IRepository<TEnt>  {
+    protected abstract tablename: string
     constructor(
         readonly tx: Transaction,
     ) {}
 
-    abstract toRow(agg: TAgg): TRow
-    abstract fromRow(row: TRow): TAgg
+    protected toRow(agg: Updatable<TEnt>): Row {
+        return {
+            id: agg.id.asString(),
+            data: Json.marshall(agg)
+        }
+    }
+
+    protected fromRow(row: RowData): TEnt {
+        
+        return Json.unmarshall<TEnt>(row.data)
+    }
     
-    async save(...aggs: Array<Mutable<TAgg>>) {
-        const rows = aggs.map(agg => this.toRow(agg))
-        const ids = rows.map(r => r.id)
+    async save(...aggs: Array<Updatable<TEnt>>) {
+        const rows = aggs.map(a => this.toRow(a))
 
         rows.length && await this.tx.query
-        `insert into ${this.table} 
-        ${sql.insert<TRow>(...rows)}
+        `insert into ${sql.ident(this.tablename)} 
+        ${sql.insert<Row>(...rows)}
         on conflict (id) do update set 
-        ${sql.excluded(Object.keys(rows[0]!))}
+        ${sql.excluded(['data'])}
         `
     }
 
-    async getByID(id: GetID<TAgg>) {
-        const [row] = await this.tx.query<TRow>
-        `select * from ${this.table} 
-        where id = ${id.id} limit 1;`
+    async getByID(id: ID<TEnt>) {
+        const [row] = await this.tx.query<RowData>
+        `select data::text from ${sql.ident(this.tablename)} 
+        where id = ${id.asString()};`
 
         return row ? this.fromRow(row) : null
     }
 
-    async getByIDForMutate(id: GetID<TAgg>): Promise<Mutable<TAgg> | null> {
-        const [row] = await this.tx.query<TRow>
-        `select * from ${this.table} 
-        where id = ${id.id} for update limit 1;` 
+    async getByIDForUpdate(id: ID<TEnt>): Promise<Updatable<TEnt> | null> {
+        const [row] = await this.tx.query<RowData>
+        `select data::text from ${sql.ident(this.tablename)} 
+        where id = ${id.asString()} for update;` 
 
-        return row ? this.fromRow(row) as Mutable<TAgg> : null
+        return row ? this.fromRow(row) as Updatable<TEnt> : null
     }
 }

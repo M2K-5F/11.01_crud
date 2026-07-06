@@ -1,17 +1,15 @@
-import { ID } from "@domain/common/abstractions/abstract-identificator"
-import type { UserID } from "@domain/contexts/identity/user"
+import { Entity, ID } from "@domain/common/abstractions"
+import type { User } from "@domain/identity/user"
+import { Serializable } from "nucleus-mold"
 
-export class SessionID extends ID<Session> {}
-
-
-export class Session {
+@Serializable()
+export class Session extends Entity {
     constructor(
-        readonly id: SessionID,
-        readonly userId: UserID,
+        readonly userId: ID<User>,
         readonly device: Device,
         public lastActivity: Date,
         public currentToken: string
-    ) {}
+    ) {super()}
 
     updateToken(newRefresh: string) {
         this.currentToken = newRefresh
@@ -21,9 +19,8 @@ export class Session {
         this.lastActivity = new Date()
     }
 
-    static new(user_id: UserID, device: Device) {
+    static new(user_id: ID<User>, device: Device) {
         return new this(
-            SessionID.generate(),
             user_id,
             device,
             new Date(),
@@ -32,20 +29,19 @@ export class Session {
     }
 }
 
-export class DeviceID extends ID<Device> {}
-
-export type Device = {
-    device_id: DeviceID,
-    ip: string,
-    os: string,
-    browser: string,
-    ua: string
+@Serializable()
+export class Device extends Entity {
+    constructor (
+        public ip: string,
+        public os: string,
+        public browser: string,
+        public ua: string
+    ) {super()}
 }
 
-export const mockDevice: Device = {
-    device_id: DeviceID.generate(),
-    ip: "192.168.1.42",
-    os: "macOS 14.2",
-    browser: "Chrome 122",
-    ua: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36..."
-};
+export const mockDevice: Device = new Device(
+    "192.168.1.42", 
+    "macOS 14.2", 
+    "Chrome 122", 
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36..."
+)

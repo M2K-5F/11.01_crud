@@ -2,7 +2,7 @@ import { ForMutate, type ITransactionManager, type Mutable } from "@applications
 import { CourseID } from "@domain/contexts/content/course";
 import type { AnswerID, QuestionID } from "@domain/contexts/content/question";
 import type { TopicID } from "@domain/contexts/content/topic";
-import type { UserID } from "@domain/contexts/identity/user";
+import type { UserID } from "@domain/identity/user";
 import { Enrollment, EnrollmentProgress } from "@domain/contexts/learning/enrollment/aggregate";
 import { TopicEnrollment, TopicEnrollmentAttempt } from "@domain/contexts/learning/enrollment/topic-enrollment";
 import { DomainError, ErrNotFound } from "@shared/error";
@@ -49,18 +49,10 @@ export default class LearningService {
 
             const topics = await uow.topics.listByCourse(cmd.courseID)
 
-            const topicEnrollments: TopicEnrollment[] = []
-
-            for (const topic of topics) {
-                const totalQuestions = await uow.questions.countByTopic(topic.id)
-                topicEnrollments.push(TopicEnrollment.create(topic.id, totalQuestions))
-            }
-
             const enroll = Enrollment.create(
                 cmd.userID,
                 cmd.courseID,
-                EnrollmentProgress.createNullish(topics.length),
-                topicEnrollments
+                EnrollmentProgress.createNullish(),
             ) as Mutable<Enrollment>
 
             await uow.enrolls.save(enroll)
@@ -70,20 +62,17 @@ export default class LearningService {
     }
 
 
-    startTopic(cmd: StartTopicCMD) {
+    canStartTopic(cmd: StartTopicCMD) {
         return this.txmanager.begin(async uow => {
-            const topic =  await uow.topics.getByID(cmd.topicID)
+            const topic = await uow.topics.getByID(cmd.topicID)
             if (!topic) throw ErrNotFound
 
             if (await uow.topics.isTopicEmpty(topic.id)) throw ErrTopicAreEmpty
 
-
-            const enroll = await uow.enrolls.getByUserAndCourse(cmd.userID, topic.courseID)
+            const enroll = await uow.enrolls.getByUserAndCourseForMutate(cmd.userID, topic.courseID)
             if(!enroll) throw ErrNotEnrolled
 
-            const previousTopic = await uow.topics.getPrevious(topic.id)
-            
-            if (previousTopic && !enroll.canStartNextTopic(previousTopic.id)) throw ErrCanNotAnswer
+            if (!enroll.canStartTopic(topic.number)) throw ErrCanNotAnswer
 
             return topic.id
         })
@@ -95,15 +84,8 @@ export default class LearningService {
             const topic = await uow.topics.getByID(cmd.topicID)
             if (!topic) throw ErrNotFound
 
-            if (await uow.topics.isTopicEmpty(topic.id)) throw ErrTopicAreEmpty
-
             const enroll = await uow.enrolls.getByUserAndCourseForMutate(cmd.userID, topic.courseID)
             if(!enroll) throw ErrNotEnrolled
-            
-
-            const previousTopic = await uow.topics.getPrevious(topic.id)
-
-            if (previousTopic && !enroll.canStartNextTopic(previousTopic.id)) throw ErrCanNotAnswer
 
             const questions = await uow.questions.listByTopic(topic.id)
         
@@ -120,10 +102,11 @@ export default class LearningService {
 
             const attempt = TopicEnrollmentAttempt.create(
                 completedQuestionCount,
-                questions.length
+                questions.length,
+                topic.id, topic.number
             ) 
 
-            enroll.registerAttempt(attempt, topic.id)
+            enroll.registerAttempt(attempt)
 
             await uow.enrolls.save(enroll)
 

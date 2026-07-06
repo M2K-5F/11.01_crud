@@ -1,78 +1,61 @@
-import { AggregateRoot } from "@domain/common/abstractions/abstract-aggregate";
-import { Status } from "@domain/common/value-objects/active-status";
-import { ID } from "@domain/common/abstractions/abstract-identificator";
-import { ValueObject } from "@domain/common/abstractions/abstract-value-object";
-import { DomainError } from "@shared/error";
-import type { UserID } from "@domain/contexts/identity/user";
+import { Entity, ID, ValueObject } from "@domain/common/abstractions"
+import { Status } from "@domain/common/value-objects/active-status"
+import type { User } from "@domain/identity/user"
+import { DomainError } from "@shared/error"
+import type { Updatable } from "@shared/lib"
 
-
-// #region Errors
 const ErrCourseTitleLength = new DomainError("COURSE_TITLE_LENGTH", "Название курса должно быть от 8 до 64 символов в длину")
 const ErrCourseDescriptionLength = new DomainError("COURSE_DESCRIPTION_LENGTH", "Описание курса должно быть от 8 до 128 символов в длину")
 const ErrCourseArchived = new DomainError("COURSE_ARCHIVED")
 const ErrCourseActive = new DomainError("COURSE_ACTIVE")
-// #endregion
 
 
-// #region ID
-export class CourseID extends ID<Course> {}
-// #endregion
-
-
-// #region Title
 export class CourseTitle extends ValueObject<string> {
-    static create(title: string) {
+    static from(title: string) {
         if (title.length < 8 || title.length > 64) throw ErrCourseTitleLength
 
         return new this(title)
     }
 }
-// #endregion
 
 
-// #region Description
 export class CourseDescription extends ValueObject<string> {
-    static create(description: string) {
+    static from(description: string) {
         if (description.length < 8 || description.length > 128) throw ErrCourseDescriptionLength
 
         return new this(description)
     }
 }
-// #endregion
 
 
-// #region Course
-export default class Course extends AggregateRoot<CourseID> {
+export class Course extends Entity {
     private constructor(
-        id: CourseID,
         private _title: CourseTitle,
         private _description: CourseDescription,
         private _status: Status,
-        private _createdBy: UserID
-    ) {super(id)}
+        private _createdBy: ID<User>
+    ) {super()}
 
-    static create(title: CourseTitle, description: CourseDescription, createdBy: UserID) {
+    static create(title: CourseTitle, description: CourseDescription, createdBy: ID<User>) {
         return new Course(
-            CourseID.generate(),
             title,
             description,
             Status.Active,
             createdBy
-        )
+        ) as Updatable<Course>
     }
 
     archive() {
-        if (this._status.equal(Status.Archived)) throw ErrCourseArchived
+        if (this._status.equals(Status.Archived)) throw ErrCourseArchived
 
         this._status = Status.Archived
     }
 
     activate() {
-        if (this._status.equal(Status.Active)) throw ErrCourseActive
+        if (this._status.equals(Status.Active)) throw ErrCourseActive
 
         this._status = Status.Active
     }
 
     get createdBy() {return this._createdBy}
 }
-// #endregion

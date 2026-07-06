@@ -1,10 +1,10 @@
 import type { ICourseRepository, IEnrollmentRepository, IQuestionRepository, ITopicRepository, ITransactionManager, ITransactionWorkUnit, IUserRepository } from "@applications/interfaces/itransaction-manager";
 import type { Pool } from "@m2k-5f/pgtx";
-import { UserRepository } from "./contexts/identity/user.repository";
-import { CourseRepository } from "./contexts/content/course.repository";
-import { QuestionRepository } from "./contexts/content/question.repository";
-import { TopicRepository } from "./contexts/content/topic.repository";
-import { EnrollRepository } from "./contexts/learning/enroll.repository";
+import { UserRepository } from "./identity/user.repository";
+import { CourseRepository } from "./content/course.repository";
+import { TopicRepository } from "./content/topic.repository";
+import { QuestionRepository } from "./content/question.repository";
+import { EnrollRepository } from "./learning/enroll.repository";
 
 export class TransactionManager implements ITransactionManager {
     constructor(

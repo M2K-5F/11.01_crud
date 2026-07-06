@@ -1,8 +1,11 @@
-import { ValueObject } from "@domain/common/abstractions/abstract-value-object";
+import { Serializable } from "nucleus-mold"
+import { ValueObject } from "../abstractions"
 
-export type StatusValue = "active" | "archived"
+export type StatusType = "active" | "archived"
 
-export class Status extends ValueObject<StatusValue> {
+
+@Serializable()
+export class Status extends ValueObject<StatusType> {
     static get Archived() {return new Status("archived")}
 
     static get Active() {return new Status("active")}

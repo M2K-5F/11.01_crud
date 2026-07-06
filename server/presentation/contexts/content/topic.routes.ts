@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
 import { dependencies } from "@index/injection";
 import { authFilter } from "../../auth/middlewares/auth.middleware";
-import { UserRole } from "@domain/contexts/identity/user";
+import { UserRole } from "@domain/identity/user";
 import { TopicID } from "@domain/contexts/content/topic";
 import { CourseID } from "@domain/contexts/content/course";
 import { ErrNotFound } from "@shared/error";
