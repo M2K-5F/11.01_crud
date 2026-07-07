@@ -1,1 +1,77 @@
-export * from "./server/infra/read/views"
+export interface UserRead {
+    id: string
+    username: string
+    telegramLink: string
+    roles: string[]
+}
+
+
+export interface CourseRead {
+    id: string;
+    title: string;
+    description: string;
+    status: 'active' | 'archived'; 
+    createdBy: string; 
+    createdByName: string; 
+    topicsCount: number; 
+    studentsCount: number; 
+}
+
+
+export interface TopicRead {
+    id: string;
+    number: number;
+    title: string;
+    description: string;
+    status: 'active' | 'archived'
+    courseID: string; 
+    createdBy: string;
+    prerequisites: string[]; 
+}
+
+
+export interface AnswerRead {
+    id: string;
+    text: string;
+    isCorrect: boolean;
+}
+
+export interface QuestionRead {
+    id: string;
+    text: string;
+    topicID: string;
+    createdBy: string;
+    answers: AnswerRead[];
+}
+
+
+
+// export interface EnrollmentRead extends CourseEnrollmentRow {
+//     progress: number,
+//     course_title: string,
+//     course_description: string
+// }
+
+// export type EnrollmentTopicWithStatus = 
+//     Pick<
+//         TopicEnrollmentRow, 
+//         | 'id' 
+//         | 'completed_questions' 
+//         | "question_count" 
+//     > &
+//     Pick<
+//         TopicRow,
+//         | 'title'
+//         | 'description'
+//         | 'number'
+//         | 'status'
+//     > &
+//     {
+//         topic_id: TopicRow['id']
+//         is_available: boolean
+//         is_completed: boolean
+//         is_attempted: boolean
+//     }
+// // #endregion
+
+

@@ -6,22 +6,32 @@
     "module": "ESNext",
     "types": ["vite/client"],
     "skipLibCheck": true,
-
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
-
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
+
     "paths": {
       "@/*": ["./src/*"],
       "@contracts": ["../contracts.ts"]
     }
-  }
+  },
+
+  "include": [
+    "src",
+    "vite.config.ts",
+    "../contracts.ts"
+  ],
+
+  "exclude": [
+    "node_modules",
+    "../node_modules"
+  ]
 }

@@ -1,8 +1,8 @@
 import Elysia from "elysia";
 import swagger from '@elysiajs/swagger'
-import { contentRoutes } from "./presentation/contexts/content";
-import { identityRoutes } from "./presentation/contexts/identity";
-import { errorHandle } from "./error-handler";
+import { contentRoutes } from "@presentation/contexts/content";
+import { identityRoutes } from "@presentation/contexts/identity";
+import { errorHandle } from "@index/error-handler";
 import {cors} from "@elysiajs/cors"
 const app = new Elysia({})
 .use(cors({}))
