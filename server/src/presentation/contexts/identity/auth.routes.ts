@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
 import deviceIdentity from "../../auth/middlewares/device.identity.middleware";
-import { AppError, ErrUnauthorized } from "../../../src/shared/error";
-import { dependencies } from "@index/injection";
+import { ErrUnauthorized } from "@shared/error";
+import { dependencies } from "@index/../injection";
 import { authFilter } from "@presentation/auth/middlewares/auth.middleware";
 
 export const authRoutes = new Elysia()

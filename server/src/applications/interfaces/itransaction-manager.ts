@@ -1,6 +1,6 @@
 import type { Entity, ID } from "@domain/common/abstractions"
 import type { Course, CourseTitle } from "@domain/content/course"
-import type Question from "@domain/content/question"
+import type { Question } from "@domain/content/question"
 import type { Topic } from "@domain/content/topic"
 import type { User, UserUsername } from "@domain/identity/user"
 import type { Enrollment } from "@domain/learning/course-enrollment"

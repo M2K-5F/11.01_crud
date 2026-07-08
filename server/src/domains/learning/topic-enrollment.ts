@@ -1,8 +1,12 @@
 import { Entity, ID, ValueObject } from "@domain/common/abstractions"
+import { DateTime } from "@domain/common/value-objects/date-time"
 import type { TopicNumber } from "@domain/content/topic"
-import type Topic from "@domain/content/topic"
-import type { Updatable } from "@index/src/shared/lib"
+import type { Topic } from "@domain/content/topic"
+import type { Updatable } from "@shared/lib"
+import { Serializable } from "nucleus-mold"
 
+
+@Serializable()
 export class TopicEnrollmentProgress extends ValueObject<{completed: number, total: number,}> {
     static createNullish() {
         return new TopicEnrollmentProgress({
@@ -11,19 +15,22 @@ export class TopicEnrollmentProgress extends ValueObject<{completed: number, tot
         })
     }
 
-    updateOnAttempt(completed: number, total: number) {
+
+    static create(completed: number, total: number) {
         return new TopicEnrollmentProgress({
             total, completed
         })
     }
     
+
     get total() {return this._value.total}
     get ratio() {return this._value.completed / this._value.total || 0}
 }
 
 
+@Serializable()
 export class TopicEnrollmentAttempt extends ValueObject<{
-    attemptedAt: Date, 
+    attemptedAt: DateTime, 
     completed: number,
     total: number, 
     topicID: ID<Topic>,
@@ -31,10 +38,11 @@ export class TopicEnrollmentAttempt extends ValueObject<{
 }> {
     static create(completed: number, total: number, topicID: ID<Topic>, topicNumber: TopicNumber) {
         return new TopicEnrollmentAttempt({
-            attemptedAt: new Date(),
+            attemptedAt: DateTime.now(),
             completed, total, topicID, topicNumber
         })
     }
+    
 
     get completed() {return this._value.completed}
     get total() {return this._value.total}
@@ -44,13 +52,16 @@ export class TopicEnrollmentAttempt extends ValueObject<{
 }
 
 
+@Serializable()
 export class TopicEnrollment extends Entity {
     private static readonly COMPLETION_THRESHOLD = 0.8
+
 
     private constructor(
         private _topicID: ID<Topic>,
         private _progress: TopicEnrollmentProgress
     ) { super() }
+    
 
     static create(topicID: ID<Topic>) {
         return new TopicEnrollment(
@@ -59,14 +70,14 @@ export class TopicEnrollment extends Entity {
         ) as Updatable<TopicEnrollment>
     }
 
+
     registerAttempt(attempt: TopicEnrollmentAttempt) {
         if (attempt.ratio >= this._progress.ratio) {
-            this._progress = this._progress.updateOnAttempt(attempt.completed, attempt.total)
+            this._progress = TopicEnrollmentProgress.create(attempt.completed, attempt.total)
         }
     }
 
 
-    get isCompleted() { return this._progress.ratio >= TopicEnrollment.COMPLETION_THRESHOLD }
+    isCompleted() { return this._progress.ratio >= TopicEnrollment.COMPLETION_THRESHOLD }
     get topicID() { return this._topicID }
 }
-// #endregion

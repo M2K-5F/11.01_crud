@@ -29,6 +29,7 @@ export class Session extends Entity {
     }
 }
 
+
 @Serializable()
 export class Device extends Entity {
     constructor (

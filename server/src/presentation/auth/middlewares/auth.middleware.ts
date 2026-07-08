@@ -1,7 +1,6 @@
-import type { SessionService } from "../service/token.service";
-import { ErrForbidden, ErrUnauthorized } from "../../../src/shared/error";
+import { ErrForbidden, ErrUnauthorized } from "@shared/error";
 import Elysia from "elysia";
-import { dependencies } from "@index/injection";
+import { dependencies } from "@index/../injection";
 import type { UserRole } from "@domain/identity/user";
 
 export function authFilter(...rolesRequired: UserRole[]) { 

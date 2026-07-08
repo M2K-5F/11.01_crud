@@ -1,12 +1,8 @@
-import { ID } from "@domain/common/abstractions/abstract-identificator";
-import Course, { CourseID } from "@domain/contexts/content/course";
-import { AnswerID, QuestionID } from "@domain/contexts/content/question";
-import Topic, { TopicID } from "@domain/contexts/content/topic";
+import { ID } from "@domain/common/abstractions";
 import { UserRole } from "@domain/identity/user";
-import { EnrollmentID } from "@domain/contexts/learning/enrollment/aggregate";
-import { dependencies } from "@index/injection";
+import { dependencies } from "@index/../injection";
 import { authFilter } from "@presentation/auth/middlewares/auth.middleware";
-import { ErrNotFound } from "@index/src/shared/error";
+import { ErrNotFound } from "@shared/error";
 import Elysia, { t } from "elysia";
 
 export const enrollmentRoutes = new Elysia()
@@ -14,16 +10,16 @@ export const enrollmentRoutes = new Elysia()
 .use(authFilter(UserRole.Student))
 
 
-.post('/enroll/:course_id' , 
+.post('/enroll/:coursePlainID' , 
     async ({
-        currentUser: {id: userId},
+        currentUser: {uid},
         learningService,
         readService,
-        params: {course_id}
+        params: {coursePlainID}
     }) => {
         const enrID = await learningService.enrollCourse({
-            courseID: CourseID.fromString(course_id),
-            userID: userId
+            courseID: ID.from(coursePlainID),
+            uid
         })
 
 

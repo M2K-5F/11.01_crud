@@ -1,7 +1,7 @@
 import type { IRepository } from "@applications/interfaces/itransaction-manager"
 import type { Entity, ID } from "@domain/common/abstractions"
 import { sql, type Transaction } from "@m2k-5f/pgtx"
-import type { Updatable } from "@index/src/shared/lib"
+import type { Updatable } from "@shared/lib"
 import { Json } from "nucleus-mold"
 
 export type Row = {id: string, data: string}

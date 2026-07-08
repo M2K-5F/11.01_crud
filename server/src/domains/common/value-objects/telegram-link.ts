@@ -1,4 +1,4 @@
-import { DomainError } from "@index/src/shared/error"
+import { DomainError } from "@shared/error"
 import { ValueObject } from "../abstractions"
 import { Serializable } from "nucleus-mold"
 

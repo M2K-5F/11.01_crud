@@ -1,9 +1,9 @@
 import Elysia, { t } from "elysia";
 import { authFilter } from "../../auth/middlewares/auth.middleware";
-import { dependencies } from "@index/injection";
+import { dependencies } from "@index/../injection";
 import { UserRole } from "@domain/identity/user";
 import { ID } from "@domain/common/abstractions";
-import { ErrNotFound } from "@index/src/shared/error";
+import { ErrNotFound } from "@shared/error";
 
 export const questionRoutes = new Elysia()
 .use(dependencies)

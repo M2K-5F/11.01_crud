@@ -21,8 +21,8 @@ export class TokenStorage {
 
     async getByID(id: ID<Session>) {
         const [row] = await this.pool.query<Row>`
-        select * from sessions 
-        where data->>'id' = ${id.asString()} 
+        select data::text from sessions 
+        where data->'_id' = ${id} 
         limit 1;`
         if (!row) return null
 

@@ -1,4 +1,4 @@
-import { ValidationError } from "@index/src/shared/error";
+import { ValidationError } from "@shared/error";
 import { Serializable } from "nucleus-mold";
 
 
@@ -32,6 +32,7 @@ export class ID<T extends Entity> extends ValueObject<string> {
         if (!UUID_REGEX.test(plain)) {
             throw ErrInvalidIdFormat
         }
+        
         return new ID<T>(plain)
     }
 

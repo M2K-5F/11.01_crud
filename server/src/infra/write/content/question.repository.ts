@@ -1,5 +1,5 @@
 import type { IQuestionRepository } from "@applications/interfaces/itransaction-manager"
-import type Question from "@domain/content/question"
+import { Question } from "@domain/content/question"
 import { AbstractRepository, type Row, type RowData } from "../common/abstract_repository"
 import type { Topic } from "@domain/content/topic"
 import type { ID } from "@domain/common/abstractions"

@@ -1,42 +1,38 @@
-import { ForMutate, type ITransactionManager, type Mutable } from "@applications/interfaces/itransaction-manager";
-import { CourseID } from "@domain/contexts/content/course";
-import type { AnswerID, QuestionID } from "@domain/contexts/content/question";
-import type { TopicID } from "@domain/contexts/content/topic";
-import type { UserID } from "@domain/identity/user";
-import { Enrollment, EnrollmentProgress } from "@domain/contexts/learning/enrollment/aggregate";
-import { TopicEnrollment, TopicEnrollmentAttempt } from "@domain/contexts/learning/enrollment/topic-enrollment";
+import type { ITransactionManager } from "@applications/interfaces/itransaction-manager";
+import type { ID } from "@domain/common/abstractions";
+import type { Course } from "@domain/content/course";
+import type { Answer } from "@domain/content/question";
+import type { Topic } from "@domain/content/topic";
+import type { User } from "@domain/identity/user";
+import { Enrollment } from "@domain/learning/course-enrollment";
+import { TopicEnrollmentAttempt } from "@domain/learning/topic-enrollment";
 import { DomainError, ErrNotFound } from "@shared/error";
 
 
-// #region Commands
 export type EnrollCourseCMD = {
-    userID: UserID,
-    courseID: CourseID
+    uid: ID<User>,
+    courseID: ID<Course>
 }
 
 export type StartTopicCMD = {
-    userID: UserID,
-    topicID: TopicID,
+    uid: ID<User>,
+    topicID: ID<Topic>,
 }
 
 export type CompleteTopicCMD = {
-    topicID: TopicID,
-    userID: UserID,
-    questionAnswers: Map<string, Array<AnswerID>>
+    topicID: ID<Topic>,
+    uid: ID<User>,
+    questionAnswers: Record<string, ID<Answer>[]>
 }
-// #endregion
 
 
-// #region Errors
 const ErrAlreadyEnroll = new DomainError("ALREADY_ENROLLED")
 const ErrNotEnrolled = new DomainError("NOT_ENROLLED_AT_COURSE")
-const ErrCanNotAnswer = new DomainError("CANNOT_ANSWER")
+const ErrCanNotStart = new DomainError("CANNOT_START_TOPIC")
 const ErrQuestionCountMismatch = new DomainError("QUESTION_COUNT_MISMATCH")
 const ErrTopicAreEmpty = new DomainError("TOPIC_ARE_EMPTY")
-// #endregion
 
 
-// #region Service
 export default class LearningService {
     constructor (
         private txmanager: ITransactionManager,
@@ -45,36 +41,38 @@ export default class LearningService {
 
     enrollCourse(cmd: EnrollCourseCMD) {
         return this.txmanager.begin(async uow => {
-            if (await uow.enrolls.isUserEnrolled(cmd.userID, cmd.courseID)) throw ErrAlreadyEnroll
-
-            const topics = await uow.topics.listByCourse(cmd.courseID)
+            if (await uow.enrolls.isUserEnrolled(cmd.uid, cmd.courseID)) throw ErrAlreadyEnroll
 
             const enroll = Enrollment.create(
-                cmd.userID,
+                cmd.uid,
                 cmd.courseID,
-                EnrollmentProgress.createNullish(),
-            ) as Mutable<Enrollment>
+            )
 
             await uow.enrolls.save(enroll)
 
-            return enroll.id
+            return {
+                enrollmentID: enroll.id
+            }
         })
     }
 
 
-    canStartTopic(cmd: StartTopicCMD) {
+    startTopic(cmd: StartTopicCMD) {
         return this.txmanager.begin(async uow => {
             const topic = await uow.topics.getByID(cmd.topicID)
             if (!topic) throw ErrNotFound
 
-            if (await uow.topics.isTopicEmpty(topic.id)) throw ErrTopicAreEmpty
+            if (await uow.questions.countByTopic(topic.id) === 0) throw ErrTopicAreEmpty
 
-            const enroll = await uow.enrolls.getByUserAndCourseForMutate(cmd.userID, topic.courseID)
+            const enroll = await uow.enrolls.getByUserAndCourseForUpdate(cmd.uid, topic.courseID)
             if(!enroll) throw ErrNotEnrolled
 
-            if (!enroll.canStartTopic(topic.number)) throw ErrCanNotAnswer
+            if (!enroll.canStartTopic(topic.number, topic.prerequisites)) throw ErrCanNotStart
 
-            return topic.id
+            return {
+                topicID: topic.id,
+                enrollmentID: enroll.id
+            }
         })
     }
 
@@ -84,18 +82,18 @@ export default class LearningService {
             const topic = await uow.topics.getByID(cmd.topicID)
             if (!topic) throw ErrNotFound
 
-            const enroll = await uow.enrolls.getByUserAndCourseForMutate(cmd.userID, topic.courseID)
+            const enroll = await uow.enrolls.getByUserAndCourseForUpdate(cmd.uid, topic.courseID)
             if(!enroll) throw ErrNotEnrolled
 
             const questions = await uow.questions.listByTopic(topic.id)
         
 
-            if (cmd.questionAnswers.size !== questions.length) throw ErrQuestionCountMismatch
+            if (Object.keys(cmd.questionAnswers).length !== questions.length) throw ErrQuestionCountMismatch
 
             const completedQuestionCount = questions
                 .filter(question => 
                     question.checkAnswers(
-                        cmd.questionAnswers.get(question.id.id) || []
+                        cmd.questionAnswers[question.id.asString()] || []
                     )
                 )
                 .length
@@ -110,8 +108,9 @@ export default class LearningService {
 
             await uow.enrolls.save(enroll)
 
-            return enroll.id
+            return {
+                enrollmentID: enroll.id
+            }
         })
     }
 }
-// #endregion

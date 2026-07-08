@@ -1,9 +1,9 @@
 import { Entity, ID, ValueObject } from "@domain/common/abstractions"
-import { DomainError } from "@index/src/shared/error"
+import { DomainError } from "@shared/error"
 import type { Course } from "./course"
 import type { User } from "@domain/identity/user"
 import { Status } from "@domain/common/value-objects/active-status"
-import type { Updatable } from "@index/src/shared/lib"
+import type { Updatable } from "@shared/lib"
 import { Serializable } from "nucleus-mold"
 
 export const ErrTopicArchived = new DomainError("TOPIC_ARCHIVED")
@@ -43,7 +43,7 @@ export class TopicNumber extends ValueObject<number> {
 
     isFirst() {return this._value === 0}
 
-    get asNumber() {return this._value}
+    asNumber() {return this._value}
 }
 
 
@@ -103,6 +103,6 @@ export class Topic extends Entity {
     get courseID() {return this._byCourse}
     get createdBy() { return this._createdBy }
     get prerequisites() {return this._prerequisites }
-
+    get number() {return this._number}
 }
 

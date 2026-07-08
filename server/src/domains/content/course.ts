@@ -1,8 +1,8 @@
 import { Entity, ID, ValueObject } from "@domain/common/abstractions"
 import { Status } from "@domain/common/value-objects/active-status"
 import type { User } from "@domain/identity/user"
-import { DomainError } from "@index/src/shared/error"
-import type { Updatable } from "@index/src/shared/lib"
+import { DomainError } from "@shared/error"
+import type { Updatable } from "@shared/lib"
 import { Serializable } from "nucleus-mold"
 
 const ErrCourseTitleLength = new DomainError("COURSE_TITLE_LENGTH", "Название курса должно быть от 8 до 64 символов в длину")

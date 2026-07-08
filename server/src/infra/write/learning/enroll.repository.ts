@@ -2,7 +2,7 @@ import type { IEnrollmentRepository } from "@applications/interfaces/itransactio
 import type { Enrollment } from "@domain/learning/course-enrollment"
 import { AbstractRepository, type Row } from "../common/abstract_repository"
 import type { Course } from "@domain/content/course"
-import type { Updatable } from "@index/src/shared/lib"
+import type { Updatable } from "@shared/lib"
 import { sql } from "@m2k-5f/pgtx"
 import type { ID } from "@domain/common/abstractions"
 import type { User } from "@domain/identity/user"

@@ -1,4 +1,4 @@
-import { dependencies } from "@index/injection";
+import { dependencies } from "@index/../injection";
 import Elysia, { t } from "elysia";
 
 export const userRoutes = new Elysia()

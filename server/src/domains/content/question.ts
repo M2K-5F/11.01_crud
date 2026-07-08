@@ -1,9 +1,10 @@
 import { Entity, ID, ValueObject } from "@domain/common/abstractions"
-import { DomainError } from "@index/src/shared/error"
+import { DomainError } from "@shared/error"
 import type { Topic } from "./topic"
 import type { User } from "@domain/identity/user"
-import type { Updatable } from "@index/src/shared/lib"
+import type { Updatable } from "@shared/lib"
 import { Serializable } from "nucleus-mold"
+import { HashMap } from "@domain/common/value-objects/hash-map"
 
 
 export const ErrAnswerLength = new DomainError("ANSWER_TEXT_LENGTH")
@@ -66,7 +67,7 @@ export class Question extends Entity {
         private _text: QuestionText,
         private _byTopic: ID<Topic>,
         private _createdBy: ID<User>,
-        private _answers: Record<AnswerIDType, Answer>
+        private _answers: HashMap<ID<Answer>, Answer>
     ) {super()}
 
 
@@ -81,13 +82,14 @@ export class Question extends Entity {
             text,
             byTopic,
             createdBy,
-            Object.fromEntries(answers.map(a => [a.id.asString(), a]))
+
+            HashMap.fromEntries(answers.map(a => [a.id, a]))
         ) as Updatable<Question>
     }
 
 
     checkAnswers(selectedAnswerIDs: ID<Answer>[]) {
-        const correctAnswers = Object.values(this._answers)
+        const correctAnswers = this._answers.values()
             .filter(answer => answer.correctness.isCorrect())
         
         if (selectedAnswerIDs.length !== correctAnswers.length) return false

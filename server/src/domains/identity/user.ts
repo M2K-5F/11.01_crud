@@ -1,7 +1,7 @@
 import { Entity, ValueObject } from "@domain/common/abstractions";
 import TelegramLink from "@domain/common/value-objects/telegram-link";
-import { DomainError } from "@index/src/shared/error";
-import type { Updatable } from "@index/src/shared/lib";
+import { DomainError } from "@shared/error";
+import type { Updatable } from "@shared/lib";
 import { Serializable } from "nucleus-mold";
 
 
