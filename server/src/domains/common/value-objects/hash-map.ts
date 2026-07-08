@@ -1,35 +1,32 @@
-import { ID, ValueObject } from "@domain/common/abstractions"
-import { TopicNumber } from "@domain/content/topic"
-import type { User } from "@domain/identity/user"
-import { TopicEnrollmentAttempt } from "@domain/learning/topic-enrollment"
-import { Json, Serializable } from "nucleus-mold"
+import { ValueObject } from "@domain/common/abstractions"
+import { Serializable } from "nucleus-mold"
 
 
 @Serializable()
-export class HashMap<K, V> extends ValueObject<Record<string, { key: K, value: V }>> {
+export class HashMap<K, V> extends ValueObject<Record<string, V>> {
     
     static new<K, V>(): HashMap<K, V> {
         return new HashMap({})
     }
 
-    static fromEntries<K, V>(entries: Array<[K, V]>): HashMap<K, V> {
-        const map = HashMap.new<K, V>()
-        
-        for (const [key, value] of entries) {
-            map.set(key, value)
-        }
-        
-        return map
+    static fromEntries<K, V>(entries: [K, V][]): HashMap<K, V> {
+        const map = HashMap.new()
+
+        entries.forEach(entry => {
+            map.set(entry[0], entry[1])
+        })
+
+        return map as any
     }
 
     public set(key: K, value: V): void {
         const hash = getHash(key)
-        this._value[hash] = { key, value }
+        this._value[hash] = value
     }
 
     public get(key: K): V | undefined {
         const hash = getHash(key)
-        return this._value[hash]?.value
+        return this._value[hash]
     }
 
     public has(key: K): boolean {
@@ -37,14 +34,15 @@ export class HashMap<K, V> extends ValueObject<Record<string, { key: K, value: V
         return hash in this._value
     }
 
-    public entries(): Array<[K, V]> {
-        return Object.values(this._value).map(item => [item.key, item.value])
+    public values(): V[] {
+        return Object.values(this._value)
     }
 
-    public values(): V[] {
-        return Object.values(this._value).map(item => item.value)
+    public get size(): number {
+        return Object.values(this._value).length
     }
 }
+
 
 
 function getHash(value: any) {

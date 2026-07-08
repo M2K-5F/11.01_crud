@@ -1,4 +1,6 @@
 import { ID } from "@domain/common/abstractions";
+import { HashMap } from "@domain/common/value-objects/hash-map";
+import type { Answer, Question } from "@domain/content/question";
 import { UserRole } from "@domain/identity/user";
 import { dependencies } from "@index/../injection";
 import { authFilter } from "@presentation/auth/middlewares/auth.middleware";
@@ -17,13 +19,13 @@ export const enrollmentRoutes = new Elysia()
         readService,
         params: {coursePlainID}
     }) => {
-        const enrID = await learningService.enrollCourse({
+        const {enrollmentID} = await learningService.enrollCourse({
             courseID: ID.from(coursePlainID),
             uid
         })
 
 
-        const enrollment = await readService.enroll.firstBy({id: enrID.id})
+        const enrollment = await readService.enroll.firstBy({id: enrollmentID.asString()})
 
         if (!enrollment) throw ErrNotFound
 
@@ -32,42 +34,41 @@ export const enrollmentRoutes = new Elysia()
 )
 
 
-.post('/start-topic/:topic_id', 
+.post('/start-topic/:topicPlainID', 
     async ({
         learningService,
-        currentUser: {id: userID},
-        params: {topic_id},
+        currentUser: {uid},
+        params: {topicPlainID},
         readService
     }) => {
-        const topicID = await learningService.canStartTopic({
-            userID: userID,
-            topicID: TopicID.fromString(topic_id)
+        const { topicID } = await learningService.startTopic({
+            uid,
+            topicID: ID.from(topicPlainID)
         })
 
-        return await readService.question.allBy({by_topic_id: topicID.id})
-
+        return await readService.question.allBy({topicID: topicID.asString()})
     }
 )
 
 
-.post('/complete-topic/:topic_id', 
+.post('/complete-topic/:topicPlainID', 
     async ({
         learningService,
         readService,
         body,
-        currentUser: {id: userID},
-        params: {topic_id}
+        currentUser: {uid},
+        params: {topicPlainID}
     }) => {
-        const enrollmentID = await learningService.completeTopic({
-            topicID: TopicID.fromString(topic_id),
-            userID: userID,
-            questionAnswers: new Map(body.map(q => [
-                q.id,
-                q.selected_answers.map(a => AnswerID.fromString(a))
+        const { enrollmentID } = await learningService.completeTopic({
+            topicID: ID.from(topicPlainID),
+            uid,
+        questionAnswers: HashMap.fromEntries(body.map(({id, selectedAnswers}) => [
+                ID.from<Question>(id),
+                selectedAnswers.map(ID.from<Answer>)
             ]))
         })
 
-        const enrollment = await readService.enroll.firstBy({id: enrollmentID.id})
+        const enrollment = await readService.enroll.firstBy({id: enrollmentID.asString()})
 
         if (!enrollment) throw ErrNotFound
 
@@ -77,7 +78,7 @@ export const enrollmentRoutes = new Elysia()
         body: t.Array(
             t.Object({
                 id: t.String(),
-                selected_answers: t.Array(t.String())
+                selectedAnswers: t.Array(t.String())
             })
         )
     }
@@ -86,11 +87,11 @@ export const enrollmentRoutes = new Elysia()
 
 .get('/enrollments/me', 
     async ({
-        currentUser: {id},
+        currentUser: {uid},
         readService,
     }) => {
         return readService.enroll.allBy({
-            user_id: id.id,
+            userID: uid.asString(),
         })
     }
 )
@@ -99,12 +100,12 @@ export const enrollmentRoutes = new Elysia()
 .get("/enrollments/:enrollmentID",
     async ({
         params: {enrollmentID},
-        currentUser: {id: userID},
+        currentUser: {uid},
         readService
     }) => {
         const enrollment = await readService.enroll.firstBy({
-            id: EnrollmentID.fromString(enrollmentID).id,
-            user_id: userID.id
+            id: ID.from(enrollmentID).asString(),
+            userID: uid.asString()
         })
 
         if (!enrollment) throw ErrNotFound
@@ -114,36 +115,15 @@ export const enrollmentRoutes = new Elysia()
 )
 
 
-.get('/enrollments/:enrollmentID/topics/me',
-    async ({
-        currentUser: {id: userID},
-        params: {enrollmentID},
-        readService,
-
-    }) => {
-        const enrollment = await readService.enroll.firstBy({
-            id: EnrollmentID.fromString(enrollmentID).id,
-            user_id: userID.id
-        })
-
-        if (!enrollment) throw ErrNotFound
-
-        return await readService.enroll.getEnrollmentTopics(
-            EnrollmentID.fromString(enrollment.id)
-        )
-    }
-)
-
-
 .get('/enrollment-by-course/:courseID',
     async ({
         params: {courseID},
-        currentUser: {id: userID},
+        currentUser: {uid},
         readService
     }) => {
         const enrollment = await readService.enroll.firstBy({
-            course_id: CourseID.fromString(courseID).id,
-            user_id: userID.id
+            courseID: ID.from(courseID).asString(),
+            userID: uid.asString()
         })
 
         if (!enrollment) throw ErrNotFound

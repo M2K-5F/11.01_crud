@@ -44,34 +44,16 @@ export interface QuestionRead {
     answers: AnswerRead[];
 }
 
-
-
-// export interface EnrollmentRead extends CourseEnrollmentRow {
-//     progress: number,
-//     course_title: string,
-//     course_description: string
-// }
-
-// export type EnrollmentTopicWithStatus = 
-//     Pick<
-//         TopicEnrollmentRow, 
-//         | 'id' 
-//         | 'completed_questions' 
-//         | "question_count" 
-//     > &
-//     Pick<
-//         TopicRow,
-//         | 'title'
-//         | 'description'
-//         | 'number'
-//         | 'status'
-//     > &
-//     {
-//         topic_id: TopicRow['id']
-//         is_available: boolean
-//         is_completed: boolean
-//         is_attempted: boolean
-//     }
-// // #endregion
-
+export interface EnrollmentRead {
+    id: string
+    userID: string
+    courseID: string
+    progress: number
+    topicEnrollments: {
+        id: string,
+        topicID: string
+        questionCount: number
+        completedQuestions: number
+    }[]
+}
 

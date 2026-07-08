@@ -3,11 +3,12 @@ RETURNS TABLE(key jsonb, value jsonb) AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        ans.value->'key' AS key,
-        ans.value->'value' AS value
+        (ans.key)::jsonb AS key,
+        ans.value AS value
     FROM jsonb_each(hashmap_data->'_value') AS ans;
 END;
-$$ LANGUAGE plpgsql IMMUTABLE;
+$$ LANGUAGE plpgsql IMMUTABLE STRICT;
+
 
 CREATE OR REPLACE FUNCTION val(vo_data jsonb)
 RETURNS text AS $$
@@ -16,6 +17,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE STRICT;
 
+
+
+CREATE OR REPLACE FUNCTION valj(vo_data jsonb)
+RETURNS jsonb AS $$
+BEGIN
+    RETURN vo_data->>'_value';
+END;
+$$ LANGUAGE plpgsql IMMUTABLE STRICT;
 
 
 CREATE OR REPLACE VIEW users_r AS
@@ -76,15 +85,28 @@ SELECT
     ) AS answers
 FROM questions;
 
--- #region Enrollment
-create view v_enrollments_r as
-select 
-    ce.*,  
-    round(completed_topics::numeric / topics_count, 2) as progress,
-    c.title as course_title,
-    c.description as course_description
-from course_enrollments ce
-join courses c on ce.course_id = c.id;
--- #endregion
+
+
+CREATE OR REPLACE VIEW course_enrollments_rs AS 
+SELECT 
+    id,
+    val(data->'_userID') AS "userID",
+    val(data->'_courseID') AS "courseID",
+    val(data->'_progress')::int AS "progress",
+    (
+        SELECT jsonb_agg(
+            jsonb_build_object(
+                'id', val(value->'_id'),
+                'topicID', val(value->'_topicID'),
+                'completedQuestions', (valj(value->'_progress')->>'completed')::int,
+                'questionCount', (valj(value->'_progress')->>'total')::int
+            )
+        )
+        FROM hashmap_each(data->'_topicEnrollments')
+    ) AS "topicEnrollments"
+FROM enrollments;
+
+
+
 
 

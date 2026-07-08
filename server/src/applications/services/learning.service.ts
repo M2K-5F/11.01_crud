@@ -1,7 +1,8 @@
 import type { ITransactionManager } from "@applications/interfaces/itransaction-manager";
 import type { ID } from "@domain/common/abstractions";
+import type { HashMap } from "@domain/common/value-objects/hash-map";
 import type { Course } from "@domain/content/course";
-import type { Answer } from "@domain/content/question";
+import type { Answer, Question } from "@domain/content/question";
 import type { Topic } from "@domain/content/topic";
 import type { User } from "@domain/identity/user";
 import { Enrollment } from "@domain/learning/course-enrollment";
@@ -22,7 +23,7 @@ export type StartTopicCMD = {
 export type CompleteTopicCMD = {
     topicID: ID<Topic>,
     uid: ID<User>,
-    questionAnswers: Record<string, ID<Answer>[]>
+    questionAnswers: HashMap<ID<Question>, ID<Answer>[]>
 }
 
 
@@ -87,13 +88,12 @@ export default class LearningService {
 
             const questions = await uow.questions.listByTopic(topic.id)
         
-
-            if (Object.keys(cmd.questionAnswers).length !== questions.length) throw ErrQuestionCountMismatch
+            if (cmd.questionAnswers.size !== questions.length) throw ErrQuestionCountMismatch
 
             const completedQuestionCount = questions
                 .filter(question => 
                     question.checkAnswers(
-                        cmd.questionAnswers[question.id.asString()] || []
+                        cmd.questionAnswers.get(question.id) || []
                     )
                 )
                 .length

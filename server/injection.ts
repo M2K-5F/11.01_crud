@@ -9,6 +9,7 @@ import { SessionService } from "@presentation/auth/service/token.service";
 import { types } from "pg";
 import { TransactionManager } from "@infra/write";
 import { ReadService } from "./src/infra/read";
+import LearningService from "@applications/services/learning.service";
 
 export const getDependencies = async () => {
     types.setTypeParser(20, (val) => parseInt(val, 10))
@@ -37,7 +38,7 @@ export const getDependencies = async () => {
 
     const identityService = new IdentityService(txm, new BCryptHashStrategy())
     const courseManagementService = new CourseManagementService(txm)
-    // const learningService = new LearningService(txm)
+    const learningService = new LearningService(txm)
 
     const readService = new ReadService(queriesPool)
 
@@ -52,8 +53,8 @@ export const getDependencies = async () => {
         identityService,
         courseManagementService,
         sessionService,
-        readService
-        // learningService,
+        readService,
+        learningService,
     }
 };
 

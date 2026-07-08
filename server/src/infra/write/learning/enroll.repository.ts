@@ -12,10 +12,10 @@ export class EnrollRepository extends AbstractRepository<Enrollment> implements 
 
     
     async isUserEnrolled(userID: ID<User>, courseID: ID<Course>): Promise<boolean> {
-        const [res] = await this.tx.query<{res: 1}>`
+        const [res] = await this.tx.query`
         select 1 as res from ${sql.ident(this.tablename)}
-        where data->>'_courseID' = ${courseID} 
-        and data->>'_userID' = ${userID};`
+        where data->'_courseID' = ${courseID} 
+        and data->'_userID' = ${userID};`
 
         return !!res
     }
@@ -23,7 +23,7 @@ export class EnrollRepository extends AbstractRepository<Enrollment> implements 
 
     async listByCourseForUpdate(courseID: ID<Course>): Promise<Array<Updatable<Enrollment>>> {
         const res = await this.tx.query<Row>`
-        select * from ${sql.ident(this.tablename)}
+        select  fdata::textrom ${sql.ident(this.tablename)}
         where data->'_courseID' = ${courseID}
         for update`
 
@@ -33,7 +33,7 @@ export class EnrollRepository extends AbstractRepository<Enrollment> implements 
 
     async getByUserAndCourseForUpdate(userID: ID<User>, courseID: ID<Course>): Promise<Updatable<Enrollment> | null> {
         const [res] = await this.tx.query<Row>`
-        select * from ${sql.ident(this.tablename)}
+        select data::text from ${sql.ident(this.tablename)}
         where 
             data->'_userID' = ${userID} 
             and 
@@ -46,7 +46,7 @@ export class EnrollRepository extends AbstractRepository<Enrollment> implements 
 
     async getByUserAndCourse(userID: ID<User>, courseID: ID<Course>): Promise<Enrollment | null> {
         const [res] = await this.tx.query<Row>`
-        select * from ${sql.ident(this.tablename)}
+        select data::text from ${sql.ident(this.tablename)}
         where
             data->'_userID' = ${userID}
             and

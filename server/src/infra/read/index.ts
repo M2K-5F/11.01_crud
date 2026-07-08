@@ -1,6 +1,7 @@
 import type { Pool } from "@m2k-5f/pgtx";
 import { CourseReader, QuestionReader, TopicReader } from "./contexts/content";
 import { UserReader } from "./contexts/identity";
+import { EnrollmentReader } from "./contexts/learning";
 
 export class ReadService {
     constructor(
@@ -9,6 +10,6 @@ export class ReadService {
         readonly course = new CourseReader(pool),
         readonly topics = new TopicReader(pool),
         readonly question = new QuestionReader(pool),
-        // readonly enroll = new EnrollmentReader(pool),
+        readonly enroll = new EnrollmentReader(pool),
     ) {}
 }
