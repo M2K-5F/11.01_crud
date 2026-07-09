@@ -4,24 +4,25 @@ import { authFilter } from "../../auth/middlewares/auth.middleware";
 import { UserRole } from "@domain/identity/user";
 import { ErrNotFound } from "@shared/error";
 import { ID } from "@domain/common/abstractions";
+import { Obj, Opt, Str } from "@shared/typebox";
 
 export const topicRoutes = new Elysia()
 .use(dependencies)
 .use(authFilter())
 
 
-.post("/courses/:plainCourseID/topics", 
+.post("/courses/:coursePlainID/topics", 
     async ({
         courseManagementService,
         currentUser: {uid},
         readService,
-        params: {plainCourseID},
+        params: {coursePlainID},
         body,
     }) => {
         const {topicID, courseID} = await courseManagementService.createTopic({
             uid,
             ...body,
-            courseID: ID.from(plainCourseID),
+            courseID: ID.from(coursePlainID),
         })
 
         const topic = await readService.topics.firstBy({id: topicID.asString()})
@@ -78,23 +79,29 @@ export const topicRoutes = new Elysia()
 )
 
 
-.get("/courses/:courseID/topics/me", 
+.get("/topics", 
     async ({
         readService,
-        params: {courseID}
+        query
     }) => {
-        return await readService.topics.allBy({courseID: ID.from(courseID).asString()})
+        return await readService.topics.allBy(query)
+    }, 
+    {
+        query: Obj({
+            courseID: Opt(Str),
+            createdBy: Opt(Str)
+        })
     }
 )
 
 
-.get('/topics/:topicID',
+.get('/topics/:topicPlainID',
     async ({
-        params: {topicID},
+        params: {topicPlainID},
         readService
     }) => {
         const topic = await readService.topics.firstBy({
-            id: ID.from(topicID).asString()
+            id: topicPlainID
         })
 
         if (!topic) throw ErrNotFound

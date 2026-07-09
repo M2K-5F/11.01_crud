@@ -1,12 +1,12 @@
 import type { ITransactionManager } from "@applications/interfaces/itransaction-manager"
 import type { ID } from "@domain/common/abstractions"
 import TelegramLink from "@domain/common/value-objects/telegram-link"
-import { User, UserHashedPassword, UserRawPassword, UserUsername, type PasswordHashStrategy } from "@domain/identity/user"
+import { User, UserHashedPassword, UserRawPassword, UserRole, UserUsername, type PasswordHashStrategy } from "@domain/identity/user"
 import { DomainError, ErrNotFound } from "@shared/error"
 
 export type RegisterUserCMD = {
     name: string,
-    telegram_link: string,
+    telegramLink: string,
     password: string
 }
 
@@ -17,6 +17,11 @@ export type AuthUserCMD = {
 
 
 export type GetRolesCMD = {
+    uid: ID<User>
+}
+
+export type AddRoleCMD = {
+    roleName: "teacher" | "student",
     uid: ID<User>
 }
 
@@ -39,7 +44,7 @@ export class IdentityService {
             
             const user = User.register(
                 UserUsername.from(cmd.name),
-                TelegramLink.from(cmd.telegram_link),
+                TelegramLink.from(cmd.telegramLink),
                 UserHashedPassword.from(await rawPassword.hash(this.hashStrategy))
             )
 
@@ -67,6 +72,28 @@ export class IdentityService {
         const user = await this.txmanager.begin(tx => tx.users.getByID(cmd.uid))
         if (!user) throw ErrNotFound
 
-        return {roles: user.roles}
+        return {
+            roles: user.roles
+        }
+    }
+
+
+    async addRole(cmd: AddRoleCMD) {
+        return this.txmanager.begin(async uow => {
+            const user = await uow.users.getByIDForUpdate(cmd.uid)
+            if (!user) throw ErrNotFound
+
+            user.addRole(
+                cmd.roleName === 'student' 
+                    ?   UserRole.Student
+                    :   UserRole.Teacher
+            )
+
+            await uow.users.save(user)
+
+            return {
+                uid: user.id
+            }
+        })
     }
 }

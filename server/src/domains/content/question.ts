@@ -24,7 +24,7 @@ export class AnswerText extends ValueObject<string> {
 
 
 @Serializable()
-export class CorrectStatus extends ValueObject<boolean> {    
+export class CorrectStatus extends ValueObject<boolean> {
     static get Correct() { return new CorrectStatus(true) }
 
     static get Wrong() { return new CorrectStatus(false) }
@@ -68,13 +68,13 @@ export class Question extends Entity {
         private _byTopic: ID<Topic>,
         private _createdBy: ID<User>,
         private _answers: HashMap<ID<Answer>, Answer>
-    ) {super()}
+    ) { super()}
 
 
     static create(text: QuestionText, createdBy: ID<User>, byTopic: ID<Topic>, answers: Answer[]) {
         if (answers.length < 2) throw ErrQuestionAnswersCount
 
-        if (!answers.some(a => 
+        if (!answers.some(a =>
             a.correctness.isCorrect()
         )) throw ErrQuestionNoCorrectAnswer
 
@@ -91,11 +91,11 @@ export class Question extends Entity {
     checkAnswers(selectedAnswerIDs: ID<Answer>[]) {
         const correctAnswers = this._answers.values()
             .filter(answer => answer.correctness.isCorrect())
-        
+
         if (selectedAnswerIDs.length !== correctAnswers.length) return false
 
-        return correctAnswers.every(correctAnswer => 
+        return correctAnswers.every(correctAnswer =>
             selectedAnswerIDs.some(selected => correctAnswer.id.equals(selected))
         )
     }
-} 
+}

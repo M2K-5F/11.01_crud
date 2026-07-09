@@ -4,5 +4,5 @@ import type { EnrollmentRead } from "@contracts";
 import type { Enrollment } from "@domain/learning/course-enrollment";
 
 export class EnrollmentReader extends AbstractReader<EnrollmentRead> {
-    protected override tablename: string = 'enrolments_r'
+    protected override tablename: string = 'course_enrollments_rs'
 }

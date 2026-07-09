@@ -40,9 +40,13 @@ export const errorHandle = (app: Elysia) => app.onError(({code, error, set}) => 
         return {code: "ERR_VALIDATION", message: error.all.map(err => {return `${err.path}:  ${err.message}`})}
     }
 
+    if (code === 'NOT_FOUND') {
+        set.status = 404
+
+        return {code: "NOT_FOUND", message: "Resourse not found"}
+    }
+
     set.status = 500
-    
-    console.log(error)
     
     return {code: "INTERNAL", message: "internal error"}
 })

@@ -5,6 +5,7 @@ import { UserRole } from "@domain/identity/user";
 import { dependencies } from "@index/../injection";
 import { authFilter } from "@presentation/auth/middlewares/auth.middleware";
 import { ErrNotFound } from "@shared/error";
+import { Opt, Str } from "@shared/typebox";
 import Elysia, { t } from "elysia";
 
 export const enrollmentRoutes = new Elysia()
@@ -12,7 +13,7 @@ export const enrollmentRoutes = new Elysia()
 .use(authFilter(UserRole.Student))
 
 
-.post('/enroll/:coursePlainID' , 
+.post('/course/:coursePlainID/enrollments' , 
     async ({
         currentUser: {uid},
         learningService,
@@ -24,9 +25,7 @@ export const enrollmentRoutes = new Elysia()
             uid
         })
 
-
         const enrollment = await readService.enroll.firstBy({id: enrollmentID.asString()})
-
         if (!enrollment) throw ErrNotFound
 
         return enrollment
@@ -34,7 +33,7 @@ export const enrollmentRoutes = new Elysia()
 )
 
 
-.post('/start-topic/:topicPlainID', 
+.post('/topics/:topicPlainID/start', 
     async ({
         learningService,
         currentUser: {uid},
@@ -51,7 +50,7 @@ export const enrollmentRoutes = new Elysia()
 )
 
 
-.post('/complete-topic/:topicPlainID', 
+.post('/topics/:topicPlainID/complete', 
     async ({
         learningService,
         readService,
@@ -85,47 +84,29 @@ export const enrollmentRoutes = new Elysia()
 )
 
 
-.get('/enrollments/me', 
+.get('/enrollments', 
     async ({
-        currentUser: {uid},
+        query,
         readService,
     }) => {
-        return readService.enroll.allBy({
-            userID: uid.asString(),
+        return readService.enroll.allBy(query)
+    }, {
+        query: t.Object({
+            courseID: Opt(Str),
+            userID: Opt(Str)
         })
     }
 )
 
 
-.get("/enrollments/:enrollmentID",
+.get("/enrollments/:enrollmentPlainID",
     async ({
-        params: {enrollmentID},
-        currentUser: {uid},
+        params: {enrollmentPlainID},
         readService
     }) => {
         const enrollment = await readService.enroll.firstBy({
-            id: ID.from(enrollmentID).asString(),
-            userID: uid.asString()
+            id: enrollmentPlainID,
         })
-
-        if (!enrollment) throw ErrNotFound
-
-        return enrollment
-    }
-)
-
-
-.get('/enrollment-by-course/:courseID',
-    async ({
-        params: {courseID},
-        currentUser: {uid},
-        readService
-    }) => {
-        const enrollment = await readService.enroll.firstBy({
-            courseID: ID.from(courseID).asString(),
-            userID: uid.asString()
-        })
-
         if (!enrollment) throw ErrNotFound
 
         return enrollment

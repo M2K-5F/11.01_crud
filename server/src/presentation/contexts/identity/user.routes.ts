@@ -1,23 +1,56 @@
+import { ID } from "@domain/common/abstractions";
 import { dependencies } from "@index/../injection";
+import { authFilter } from "@presentation/auth/middlewares/auth.middleware";
+import { Obj, Str } from "@shared/typebox";
 import Elysia, { t } from "elysia";
 
 export const userRoutes = new Elysia()
-.use(dependencies)
+.use(
+    new Elysia()
+    .use(dependencies)
 
-.post("/register", 
-    async ({
-        body,
-        identityService,
-        readService
-    }) => {
-        const {uid} = await identityService.register(body)
 
-        return await readService.user.firstBy({id: uid.asString()})
-    }, {
-        body: t.Object({
-            name: t.String(),
-            telegram_link: t.String(),
-            password: t.String()
-        }),
-    }
+    .post("/users", 
+        async ({
+            body,
+            identityService,
+            readService
+        }) => {
+            const {uid} = await identityService.register(body)
+
+            return await readService.user.firstBy({id: uid.asString()})
+        }, {
+            body: Obj({
+                name: Str,
+                telegramLink: t.String(),
+                password: t.String()
+            }),
+        }
+    )
+)
+.use(
+    new Elysia()
+    .use(dependencies)
+    .use(authFilter())
+    
+
+    .post("/users/:userPlainID/addrole",
+        async ({
+            identityService,
+            body: {roleName},
+            params: {userPlainID},
+            readService
+        }) => {
+            const {uid} = await identityService.addRole({
+                roleName,
+                uid: ID.from(userPlainID)
+            })
+
+            return await readService.user.firstBy({id: uid.asString()})
+        }, {
+            body: Obj({
+                roleName: t.Union([t.Literal('student'), t.Literal('teacher')] as const),
+            })
+        }
+    )
 )

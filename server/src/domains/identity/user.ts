@@ -86,6 +86,12 @@ export class User extends Entity {
             [UserRole.Student]
         ) as Updatable<User>
     }
+
+    addRole(role: UserRole) {
+        if (this._roles.some(r=>r.equals(role))) return
+        
+        this._roles.push(role)
+    }
     
     async authenticate(password: string, strategy: PasswordHashStrategy) {
         return await this._hashedPassword.verify(password, strategy)

@@ -9,7 +9,7 @@ export const authRoutes = new Elysia()
 .use(deviceIdentity)
 
 
-.post("/login", 
+.post("/auth/login", 
     async ({
         body, 
         cookie: { refresh_token }, 
@@ -42,7 +42,7 @@ export const authRoutes = new Elysia()
 )
 
 
-.post('/refresh',
+.post('/auth/refresh',
     async ({
         sessionService,
         cookie: { refresh_token },
@@ -77,7 +77,7 @@ export const authRoutes = new Elysia()
 )
 
 
-.post('/logout', 
+.post('/auth/logout', 
     async ({
         cookie: { refresh_token }
     }) => {
@@ -95,7 +95,7 @@ export const authRoutes = new Elysia()
 
 .group('', app => app
     .use(authFilter())
-    .get("/me", 
+    .get("/auth/me", 
         async ({
             currentUser: {uid},
             readService
