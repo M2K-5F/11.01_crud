@@ -12,7 +12,6 @@ const fetchFuture = (input: string | URL | RequestInfo, init?: RequestInit) => F
     () => new ApiError(503, "SERVER_UNAVAILABLE", "Server unavailable")
 )
 
-
 const parseJson = <T = any>(response: Response) => Future.of(
     response.json() as Promise<T>,
     () => new ApiError(response.status, 'PARSE_ERROR', 'Invalid JSON')
@@ -25,7 +24,7 @@ export class ApiClient {
 
     constructor (rootPath: string) {
         this.ROOT_PATH = rootPath
-    } 
+    }
 
 
     private _refreshFuture: Future<RefreshResponse, ApiError> | null = null
@@ -61,13 +60,13 @@ export class ApiClient {
             this._refreshFuture = this._performRefresh()
                 .finally(() => this._refreshFuture = null)
         }
-        
+
         return this._refreshFuture
     }
 
 
     private  _performRefresh(): Future<RefreshResponse, ApiError> {
-        return fetchFuture(this.ROOT_PATH + '/identity/refresh', {
+        return fetchFuture(this.ROOT_PATH + '/identity/auth/refresh', {
             method: 'post',
             credentials: 'include',
         })
@@ -76,14 +75,14 @@ export class ApiClient {
                     .tap(data => sessionStorage.setItem("access", data.access))
             :   Reject(new ApiError(401, "REFRESH_FAILED", "refresh failed"))
                     .tapErr(this.removeBearer)
-        
+
         )
     }
 
 
     query<T = void>(url: string, params: QueryParams): Future<T, ApiError> {
         const { queryUrl, init } = this._prepareParams(url, params)
-        
+
         return this._fetchWithRefresh(queryUrl, init)
             .map(res => ({res}))
             .bind({
@@ -130,7 +129,7 @@ export class ApiClient {
         if (this.bearer) {
             init.headers = {...init.headers, Authorization: `Bearer ${this.bearer}`}
         }
-        
+
         return {queryUrl, init}
     }
 
@@ -144,13 +143,13 @@ export class ApiClient {
                     .tap(() => {
                         if (this.bearer) {
                             params.headers = {
-                                ...params.headers, 
+                                ...params.headers,
                                 Authorization: `Bearer ${this.bearer}`
                             }
                         }
                     })
                     .andThen(() => fetchFuture(url, params))
-                
+
             })
     }
 }

@@ -1,5 +1,6 @@
 export const QueryKeys = {
     course: (courseID: string) => ['course', courseID],
+    courses: (param: string | number) => ['courses', param],
     coursesMe: ['courses', 'me'],
     courseSearch: (query: string) => ['courses', 'search', query],
 

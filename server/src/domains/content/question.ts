@@ -58,8 +58,6 @@ export class QuestionText extends ValueObject<string> {
     }
 }
 
-type AnswerIDType = string
-
 
 @Serializable()
 export class Question extends Entity {

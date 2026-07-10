@@ -3,8 +3,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 type ThemeType = "light" | "dark"
 
 type ThemeContextType = {
-    theme: ThemeType, 
-    toggleDarkTheme: () => void, 
+    theme: ThemeType,
+    toggleDarkTheme: () => void,
     toggleLightTheme: () => void,
 }
 

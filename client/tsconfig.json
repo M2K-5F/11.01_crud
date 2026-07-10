@@ -25,7 +25,7 @@
   },
 
   "include": [
-    "src",
+    "src/**/*",
     "vite.config.ts",
     "../contracts.ts"
   ],

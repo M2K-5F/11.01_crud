@@ -2,7 +2,7 @@ export interface UserRead {
     id: string
     username: string
     telegramLink: string
-    roles: string[]
+  roles: ("Student" | "Teacher" )[]
 }
 
 
@@ -10,11 +10,11 @@ export interface CourseRead {
     id: string;
     title: string;
     description: string;
-    status: 'active' | 'archived'; 
-    createdBy: string; 
-    createdByName: string; 
-    topicsCount: number; 
-    studentsCount: number; 
+    status: 'active' | 'archived';
+    createdBy: string;
+    createdByName: string;
+    topicsCount: number;
+    studentsCount: number;
 }
 
 
@@ -24,9 +24,9 @@ export interface TopicRead {
     title: string;
     description: string;
     status: 'active' | 'archived'
-    courseID: string; 
+    courseID: string;
     createdBy: string;
-    prerequisites: string[]; 
+    prerequisites: string[];
 }
 
 
@@ -49,11 +49,13 @@ export interface EnrollmentRead {
     userID: string
     courseID: string
     progress: number
-    topicEnrollments: {
-        id: string,
-        topicID: string
-        questionCount: number
-        completedQuestions: number
-    }[]
+    topicEnrollments: TopicEnrollmentRead[]
 }
 
+
+export interface TopicEnrollmentRead {
+  id: string
+  topicID: string
+  questionCount: number
+  completedQuestions: number
+}

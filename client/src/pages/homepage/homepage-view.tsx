@@ -8,7 +8,6 @@ export const Homepage = () => {
         <>
             {user.roles.includes('Student') && <EnrolledCoursesSection />}
 
-            
             {user.roles.includes('Teacher') && <CreatedCoursesSection />}
         </>
     )
