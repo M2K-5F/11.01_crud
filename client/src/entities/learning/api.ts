@@ -1,23 +1,23 @@
 import { api } from "@/shared/api/query-client";
-import type { EnrollmentRead, EnrollmentTopicWithStatus, QuestionRead } from "@contracts";
+import type { EnrollmentRead, QuestionRead } from "@contracts";
 
 type compteteTopicDTO = {
     topicID: string,
     questions: Array<{
         id: string,
-        selected_answers: Array<string>
+        selectedAnswers: Array<string>
     }>
 }
 
 
 export const learningApi = {
-    enrollCourse: (courseID: string) => api.post<EnrollmentRead>(`/learning/enroll/${courseID}`),
-    startTopic: (topicID: string) => api.post<QuestionRead[]>(`/learning/start-topic/${topicID}`),
-    completeTopic: (data: compteteTopicDTO) => api.post<EnrollmentRead>(`/learning/complete-topic/${data.topicID}`, data.questions),
-    getMyEnrollments: () => api.get<EnrollmentRead[]>('/learning/enrollments/me'),
-    getEnrollByID: (enrollmentID: string) => api.get<EnrollmentRead>(`/learning/enrollments/${enrollmentID}`),
-    getEnrollmentTopics: (enrollmentID: string) => api.get<EnrollmentTopicWithStatus[]>(`/learning/enrollments/${enrollmentID}/topics/me`),
-    getMyEnrollmentByCourseID: (courseID: string) => api.get<EnrollmentRead>(`/learning/enrollment-by-course/${courseID}`),
-    isEnrolled: (courseID: string) => api.get<boolean>('/learning/enrollments/is-enrolled', {courseID})
-    
+    enrollCourse: (courseID: string) => api.post<EnrollmentRead>(`/learning/courses/${courseID}/enrollments`),
+    startTopic: (topicID: string) => api.post<QuestionRead[]>(`/learning/topics/${topicID}/start`),
+    completeTopic: ({topicID, questions}: compteteTopicDTO) => api.post<EnrollmentRead>(`/learning/topics/${topicID}/complete`, questions),
+    getEnrollmentsByUser: (userID: string) => api.get<EnrollmentRead[]>('/learning/enrollments', {userID}),
+    getEnrollmentByID: (enrollmentID: string) => api.get<EnrollmentRead>(`/learning/enrollments/${enrollmentID}`),
+    getEnrollmentsByCourse: (courseID: string) => api.get<EnrollmentRead>(`/learning/enrollments`, {courseID}),
+    getUserEnrollmentByCourse: (courseID: string, userID: string) => api.get<EnrollmentRead[]>('/learning/enrollments', {userID, courseID})
+        .map(arr=>arr[0])
+        .recoverIf(err=>err.status===404, null)
 }

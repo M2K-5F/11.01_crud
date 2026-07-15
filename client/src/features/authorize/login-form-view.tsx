@@ -9,16 +9,18 @@ import { Spinner } from "@/shared/ui/spinner";
 const LoginForm = () => {
     const {
         errors,
-        formFields,
-        submitHandler,
+        fields,
+        onSubmit,
         isPending
     } = useLoginFormVM()
 
     return(
         <Card className="w-full max-w-sm h-fit mb-3.5">
-            <form onSubmit={submitHandler}>
+            <form onSubmit={onSubmit}>
                 <CardHeader className="text-center">
-                    <CardTitle className={'text-center'}>Войти в свой аккаунт</CardTitle>
+                    <CardTitle className={'text-center'}>
+                        Войти в свой аккаунт
+                    </CardTitle>
                     <CardDescription>
                         Войти в аккаунт используя логин и пароль
                     </CardDescription>
@@ -28,12 +30,12 @@ const LoginForm = () => {
                     <div className="flex flex-col gap-6 mb-4">
                         <div className="grid gap-1">
                             <Label htmlFor="email">Логин</Label>
-                            <Input {...formFields.nameField}/>
+                            <Input {...fields.name}/>
                             <ErrorMessage error={errors.name} />
                         </div>
                         <div className="grid gap-1">
                             <Label htmlFor="password">Пароль</Label>
-                            <Input {...formFields.passwordField}/>
+                            <Input {...fields.password}/>
                             <ErrorMessage error={errors.password} />
                         </div>
                     </div>

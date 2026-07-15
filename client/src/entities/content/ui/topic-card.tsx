@@ -17,11 +17,13 @@ export const TopicCard: FC<TopicCardProps> = ({ topic, onActivate, onArchive, on
     const isActive = topic.status === "active"
 
     return (
-        <Card className={clsx(
+        <Card 
+        className={clsx(
             "overflow-hidden transition-all duration-300 border border-foreground/30",
             "hover:shadow-md hover:border-foreground/50",
             !isActive && "opacity-70"
-        )}>
+        )}
+        >
             <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-3">
                     <div className="flex items-start gap-3 flex-1">
@@ -41,35 +43,44 @@ export const TopicCard: FC<TopicCardProps> = ({ topic, onActivate, onArchive, on
                         </div>
                     </div>
 
-                    <Button
-                        variant="outline"
+                    {isActive
+                    ?   <Button
+                        variant='outline'
                         size="sm"
-                        onClick={isActive ? onArchive : onActivate}
-                        title={isActive ? 'Архивировать' : 'Разархивировать'}
-                        className="h-8 w-8 p-0 shrink-0"
-                    >
-                        {isActive 
-                            ?   <Archive className="h-4 w-4" /> 
-                            :   <ArchiveRestore className="h-4 w-4" />
-                        }
-                    </Button>
+                        onClick={onArchive}
+                        title='Архивировать'
+                        className="h-8 w-8 p-0"
+                        >
+                            <Archive className="h-4 w-4" />
+                        </Button>
+
+                    :   <Button
+                        variant='outline'
+                        size="sm"
+                        onClick={onActivate}
+                        title='Разархивировать'
+                        className="h-8 w-8 p-0"
+                        >
+                            <ArchiveRestore className="h-4 w-4" />
+                        </Button>
+                    }
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 mt-3">
                     {isActive 
-                        ?   <Badge variant='default'>
-                                <div className="h-2 w-2 rounded-full bg-background animate-pulse mr-1" />
-                                Активная
-                            </Badge>
-                        :   <Badge variant='secondary'>
-                                <Archive className="h-3 w-3 mr-1" />
-                                В архиве
-                            </Badge>
+                    ?   <Badge variant='default'>
+                            <div className="h-2 w-2 rounded-full bg-background animate-pulse mr-1" />
+                            Активная
+                        </Badge>
+                    :   <Badge variant='secondary'>
+                            <Archive className="h-3 w-3 mr-1" />
+                            В архиве
+                        </Badge>
                     }
 
                     <div className="flex items-center gap-1 text-sm bg-secondary/20 px-2 py-1 rounded-full">
                         <FileText className="h-3.5 w-3.5" />
-                        <span>Вопросов: {topic.questions_count}</span>
+                        <span>Вопросов: {topic.questionsCount}</span>
                     </div>
                 </div>
 

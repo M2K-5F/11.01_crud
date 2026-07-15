@@ -13,6 +13,8 @@ type EnrollmentCardPropsType = {
 
 
 export const EnrollmentCard: FC<EnrollmentCardPropsType> = ({enrollment, onSelect}) => {
+    const progress = enrollment.progress / enrollment.topicsCount * 100 || 0
+    
     return (
         <Card>
             <CardHeader className="pb-2">
@@ -21,13 +23,13 @@ export const EnrollmentCard: FC<EnrollmentCardPropsType> = ({enrollment, onSelec
                         <BookOpen className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="flex-1">
-                        <CardTitle className="text-base">{enrollment.course_title}</CardTitle>
-                        <CardDescription className="text-xs mt-1">Прогресс: {enrollment.progress * 100}%</CardDescription>
+                        <CardTitle className="text-base">{enrollment.title}</CardTitle>
+                        <CardDescription className="text-xs mt-1">Прогресс: {progress}%</CardDescription>
                     </div>
                 </div>
             </CardHeader>
             <CardContent className="pb-2">
-                <Progress value={enrollment.progress * 100} className="h-2" />
+                <Progress value={progress} className="h-2" />
             </CardContent>
             <CardFooter>
                 <Button variant="outline" size="sm" onClick={onSelect} className="w-full">

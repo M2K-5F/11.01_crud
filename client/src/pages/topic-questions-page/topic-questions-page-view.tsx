@@ -25,9 +25,9 @@ export const TopicQuestionsPage = () => {
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
             <CreateQuestionDialog
-                topicID={topicID!}
-                onOpenChange={setDialogOpen}
-                open={isDialogOpen}
+            topicID={data.topic.id}
+            onOpenChange={setDialogOpen}
+            open={isDialogOpen}
             />
             <div className="mb-6">
                 <div className="flex justify-between items-start flex-wrap gap-4">
@@ -46,18 +46,18 @@ export const TopicQuestionsPage = () => {
                 </h2>
 
                 {data.questions.length
-                    ?   <div className="grid gap-3">
-                            {data.questions.map((question) => 
-                                <QuestionCard 
-                                    key={question.id} question={question}
-                                />    
-                            )}
-                        </div>
-                    :   <Card>
-                            <CardContent className="py-8 text-center text-muted-foreground">
-                                В этой теме пока нет вопросов
-                            </CardContent>
-                        </Card> 
+                ?   <div className="grid gap-3">
+                        {data.questions.map((question) => 
+                            <QuestionCard 
+                                key={question.id} question={question}
+                            />    
+                        )}
+                    </div>
+                :   <Card>
+                        <CardContent className="py-8 text-center text-muted-foreground">
+                            В этой теме пока нет вопросов
+                        </CardContent>
+                    </Card> 
                 }
             </div>
         </div>

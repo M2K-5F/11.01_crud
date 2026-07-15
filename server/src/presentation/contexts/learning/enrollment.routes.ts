@@ -13,7 +13,7 @@ export const enrollmentRoutes = new Elysia()
 .use(authFilter(UserRole.Student))
 
 
-.post('/course/:coursePlainID/enrollments' , 
+.post('/courses/:coursePlainID/enrollments' , 
     async ({
         currentUser: {uid},
         learningService,
@@ -61,7 +61,7 @@ export const enrollmentRoutes = new Elysia()
         const { enrollmentID } = await learningService.completeTopic({
             topicID: ID.from(topicPlainID),
             uid,
-        questionAnswers: HashMap.fromEntries(body.map(({id, selectedAnswers}) => [
+            questionAnswers: HashMap.fromEntries(body.map(({id, selectedAnswers}) => [
                 ID.from<Question>(id),
                 selectedAnswers.map(ID.from<Answer>)
             ]))

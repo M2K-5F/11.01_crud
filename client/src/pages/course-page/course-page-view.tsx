@@ -20,7 +20,7 @@ export const CoursePage = () => {
     }
 
     const {course, topics, enrollment} = data
-
+    
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -34,7 +34,7 @@ export const CoursePage = () => {
                                     {topics.length} тем
                                 </Badge>
                                 <Badge variant="outline">
-                                    Автор: {course.created_by}
+                                    Автор: {course.createdByName}
                                 </Badge>
                             </div>
                             <p className="text-muted-foreground">{course.description}</p>
@@ -79,7 +79,7 @@ export const CoursePage = () => {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Badge variant="outline">
-                                                {topic.questions_count} вопросов
+                                                {topic.questionsCount} вопросов
                                             </Badge>
                                         </div>
                                     </div>

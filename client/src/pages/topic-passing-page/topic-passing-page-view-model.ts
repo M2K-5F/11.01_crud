@@ -23,6 +23,7 @@ export const useTopicPassingPageVM = ({ topicID }: TopicPassingPageVMProps) => {
         queryFn: () => learningApi.startTopic(topicID),
     })
 
+    
     const { mutate: completeTopic, isPending: isSubmitting } = useMutation({
         mutationFn: learningApi.completeTopic,
         onSuccess: (enrollment) => {
@@ -64,7 +65,7 @@ export const useTopicPassingPageVM = ({ topicID }: TopicPassingPageVMProps) => {
                 questions: Object.entries(answeredQuestions)
                     .map(([questionID, selectedAnswers]) => ({
                         id: questionID, 
-                        selected_answers: selectedAnswers
+                        selectedAnswers: selectedAnswers
                     }))
             })
         } else {

@@ -1,7 +1,5 @@
-import { UserProfile } from "@/entities/identity/user/ui/user-profile"
+import { UserProfile } from "@/entities/identity/ui/user-profile"
 import { CourseSearch } from "@/features/course-search/course-search-input"
-import { Input } from "@/shared/ui/input"
-import { Search } from "lucide-react"
 import { Link } from "react-router-dom"
 
 export const Header = () => {

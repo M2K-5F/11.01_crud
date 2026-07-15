@@ -14,38 +14,44 @@ import { Checkbox } from '@/shared/ui/checkbox';
 import { Plus, Trash2, CheckCircle } from 'lucide-react';
 import { QueryKeys } from '@/shared/lib/query-keys';
 import { ErrorMessage } from '@/shared/ui/form-error-message';
+import { zodResolver } from '@hookform/resolvers/zod';
+import z from 'zod';
 
-type AnswerForm = {
-    text: string
-    is_correct: boolean
-}
 
-type QuestionForm = {
-    text: string
-    answers: AnswerForm[]
-}
+const formShema = z.object({
+    text: z.string()
+        .min(8, 'Минимум 8 символов')
+        .max(128, 'максимум 128 символов'),
+    answers: z.array(z.object({
+        text: z.string()
+            .min(8, 'Минимум 8 символов')
+            .max(128, "максимум 128 символов"),
+        isCorrect: z.boolean()
+    }))
+})
+
 
 type CreateQuestionDialogVMProps = {
     topicID: string
-    onSuccess?: () => void
+    onOpenChange: (open: boolean)=> void
 }
 
 
 type CreateQuestionDialogProps = {
     topicID: string
-    onSuccess?: () => void
     open: boolean
-    onOpenChange: (state: boolean) => void
+    onOpenChange: (open: boolean) => void
 }
 
 
-const useCreateQuestionDialogVM = ({onSuccess, topicID}: CreateQuestionDialogVMProps) => {
+const useCreateQuestionDialogVM = ({topicID, onOpenChange}: CreateQuestionDialogVMProps) => {
     const client = useQueryClient()
 
-    const { register, control, handleSubmit, reset, formState: { errors } } = useForm<QuestionForm>({
+    const { control, formState: { errors } } = useForm({
+        resolver: zodResolver(formShema),
         defaultValues: {
             text: '',
-            answers: [{ text: '', is_correct: true }],
+            answers: [{ text: '', isCorrect: true }],
         },
     })
 
@@ -64,8 +70,8 @@ const useCreateQuestionDialogVM = ({onSuccess, topicID}: CreateQuestionDialogVMP
                 QueryKeys.topicQuestions(topicID),
                 QueryKeys.topic(topicID)
             )
-            reset()
-            onSuccess?.()
+            control._reset()
+            onOpenChange(false)
         },
         onError: (error) => {
             toast.error('Ошибка', { description: error.message })
@@ -73,8 +79,8 @@ const useCreateQuestionDialogVM = ({onSuccess, topicID}: CreateQuestionDialogVMP
     })
 
 
-    const onQuestionCreate = handleSubmit(data => {
-        const hasCorrect = data.answers.some(a => a.is_correct)
+    const onSubmit = control.handleSubmit(data => {
+        const hasCorrect = data.answers.some(a => a.isCorrect)
         
         if (!hasCorrect) {
             toast('выберите хотя бы один правильный ответ')
@@ -83,7 +89,7 @@ const useCreateQuestionDialogVM = ({onSuccess, topicID}: CreateQuestionDialogVMP
         mutate({topicID, text: data.text, answers: data.answers})
     })
 
-    const onAnswerAdd = () => append({text: '', is_correct: false})
+    const onAnswerAdd = () => append({text: '', isCorrect: false})
 
     const onAnswerRemove = (answerIndex: number) => () => remove(answerIndex)
 
@@ -91,38 +97,34 @@ const useCreateQuestionDialogVM = ({onSuccess, topicID}: CreateQuestionDialogVMP
     return {
         onAnswerAdd,
         onAnswerRemove,
-        onQuestionCreate,
+        onSubmit,
         isPending,
         errors,
         answers,
         getAnswerError: (index: number) => errors.answers?.[index]?.text,
-        fields: {
-            questionText: register('text', {
-                required: {value: true, message: 'Это поле обязательно'},
-                min: {value: 8, message: 'Слишком короткий текст'}
-            }),
-            answerText: (answerIndex: number) => register(`answers.${answerIndex}.text`, {
-                required: {value: true, message: "Это поле обязательно"},
-                minLength: {value: 8, message: "Слишком короткий ответ"}
-            }),
-            answerIsCorretc: (answerIndex: number) => register(`answers.${answerIndex}.is_correct`),
-        },
         control
     }
 }
 
 
-export const CreateQuestionDialog = ({ topicID, onSuccess, open, onOpenChange }: CreateQuestionDialogProps) => {
 
-    const {fields, answers, errors, isPending, onAnswerAdd, onAnswerRemove, onQuestionCreate, control, getAnswerError} = useCreateQuestionDialogVM({
-        topicID,
-        onSuccess: () => {onSuccess?.(); onOpenChange(false)}
-    })
+export const CreateQuestionDialog = ({ topicID, open, onOpenChange }: CreateQuestionDialogProps) => {
+
+    const {
+        answers, 
+        errors, 
+        isPending, 
+        onAnswerAdd, 
+        onAnswerRemove, 
+        onSubmit, 
+        control, 
+        getAnswerError
+    } = useCreateQuestionDialogVM({topicID, onOpenChange})
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <form onSubmit={onQuestionCreate} className="space-y-4">
+                <form onSubmit={onSubmit} className="space-y-4">
                     <DialogTitle className="flex items-center gap-2" asChild>
                         <div className='flex'>
                             <div className="h-5 w-1 bg-primary rounded-full" />
@@ -135,7 +137,7 @@ export const CreateQuestionDialog = ({ topicID, onSuccess, open, onOpenChange }:
                         <Input
                             id="text"
                             placeholder="Введите текст вопроса"
-                            {...fields.questionText}
+                            {...control.register('text')}
                         />
                         <ErrorMessage error={errors.text} />
                     </div>
@@ -158,37 +160,37 @@ export const CreateQuestionDialog = ({ topicID, onSuccess, open, onOpenChange }:
                         <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                             {answers.map((answer, index) => (
                                 <div
-                                    key={answer.id}
-                                    className="relative border rounded-lg p-4 bg-muted/20"
+                                key={answer.id}
+                                className="relative border rounded-lg p-4 bg-muted/20"
                                 >
                                     <div className="flex flex-col gap-3">
                                         <Input
-                                            placeholder="Текст ответа"
-                                            {...fields.answerText(index)}
+                                        placeholder="Текст ответа"
+                                        {...control.register(`answers.${index}.text`)}
                                         />
                                         <ErrorMessage error={getAnswerError(index)} />
+
                                         <div className="flex items-center gap-3">
                                             <Controller
-                                                control={control}
-                                                name={`answers.${index}.is_correct`}
-                                                render={({ field }) => (
-                                                    <Checkbox
-                                                        id={`correct-${index}`}
-                                                        checked={field.value}
-                                                        onCheckedChange={field.onChange}
-                                                    />
-                                                )}
+                                            control={control}
+                                            name={`answers.${index}.isCorrect`}
+                                            render={({field}) => (
+                                                <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                                />
+                                            )}
                                             />
-                                            <Label htmlFor={`correct-${index}`} className="text-sm">
+                                            <Label className="text-sm">
                                                 Правильный ответ
                                             </Label>
                                             {answers.length > 1 && 
                                                 <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={onAnswerRemove(index)}
-                                                    className="ml-auto right-2 top-2 h-7 w-7 p-0"
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={onAnswerRemove(index)}
+                                                className="ml-auto right-2 top-2 h-7 w-7 p-0"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>

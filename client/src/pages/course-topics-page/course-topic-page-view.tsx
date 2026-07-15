@@ -1,16 +1,14 @@
 import { TopicCard } from "@/entities/content/ui/topic-card";
 import { CreateTopicCard } from "@/features/сreate-topic/ui/create-topic-card";
 import { CreateTopicDialog } from "@/features/сreate-topic/ui/create-topic-dialog";
-import { Button } from "@/shared/ui/button";
 import { ErrorFallback } from "@/shared/ui/error-fallback";
 import { Spinner } from "@/shared/ui/spinner";
 import { BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { useCourseTopicsPageVM } from "./course-topis-page-view-model";
 import { useParams } from "react-router-dom";
-
-
-
+import "react-daisyui"
+import { Button } from "@/shared/ui/button";
 
 
 export const CourseTopicsPage = () => {
@@ -40,7 +38,7 @@ export const CourseTopicsPage = () => {
             </div>
 
             <div className="flex justify-center gap-4">
-                <Button variant="outline" onClick={() => console.log('nav to stats')}>
+                <Button size='xs' variant="outline" color='secondary' onClick={() => console.log('nav to stats')}>
                     <BarChart3 className="h-4 w-4 mr-2" />
                     Статистика курса
                 </Button>

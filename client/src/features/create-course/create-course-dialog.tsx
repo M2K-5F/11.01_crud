@@ -19,8 +19,7 @@ import { QueryKeys } from '@/shared/lib/query-keys';
 
 type CreateCourseDialogProps = {
     open: boolean,
-    onDialogClose: () => void,
-    onSuccess?: () => void,
+    onOpenChange: (open: boolean)=> void
 }
 
 
@@ -30,7 +29,7 @@ type CreateCourseFormType = {
 }
 
 
-export const useCreateCoursesDialogVM = ({onSuccess}: {onSuccess: () => void}) => {
+export const useCreateCoursesDialogVM = ({onOpenChange}: {onOpenChange: (open: boolean)=> void})=> {
     const client = useQueryClient()
 
 
@@ -40,9 +39,9 @@ export const useCreateCoursesDialogVM = ({onSuccess}: {onSuccess: () => void}) =
     const {mutate, isPending} = useMutation({
         mutationFn: contentApi.createCourse,
         onSuccess: () => {
-            onSuccess()
             toast('Курс успешно создан')
             client.invalidatePartial(QueryKeys.coursesMe)
+            onOpenChange(false)
         },
         onError: (error: ApiError) => {
             toast.error("Ошибка при создании курса", {description: error.message})
@@ -67,17 +66,12 @@ export const useCreateCoursesDialogVM = ({onSuccess}: {onSuccess: () => void}) =
 
 
 
-export const CreateCourseDialog = ({ open, onDialogClose, onSuccess }: CreateCourseDialogProps) => {
-    const {onCourseCreate, fields, errors, isPending} = useCreateCoursesDialogVM({
-        onSuccess: () => {
-            onSuccess?.()
-            onDialogClose()
-        }
-    })
+export const CreateCourseDialog = ({ open, onOpenChange }: CreateCourseDialogProps) => {
+    const {onCourseCreate, fields, errors, isPending} = useCreateCoursesDialogVM({onOpenChange})
 
 
     return (
-        <Dialog open={open} onOpenChange={() => onDialogClose()}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-106.25">
                 <form onSubmit={onCourseCreate}>
                     <DialogHeader>
@@ -96,7 +90,7 @@ export const CreateCourseDialog = ({ open, onDialogClose, onSuccess }: CreateCou
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={onDialogClose}>
+                        <Button type="button" variant="outline" onClick={()=> onOpenChange(false)}>
                             Отмена
                         </Button>
                         <Button type="submit" disabled={isPending}>

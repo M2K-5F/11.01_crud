@@ -19,7 +19,7 @@ export const useCourseTopicsPageVM = ({courseID}: CourseTopicsPageVM) => {
     
     const { data, error } = useQuery({
         queryFn: () => Bind({
-            topics: contentApi.getCreatedTopicsByCourse(courseID),
+            topics: contentApi.getTopicsByCourse(courseID),
             course: contentApi.getCourseByID(courseID)
         }),
         queryKey: composeKeys(

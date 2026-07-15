@@ -23,15 +23,12 @@
       "@contracts": ["../contracts.ts"]
     }
   },
-
   "include": [
-    "src/**/*",
-    "vite.config.ts",
-    "../contracts.ts"
+    "src/**/*",       
+    "../contracts.ts" 
   ],
-
   "exclude": [
     "node_modules",
-    "../node_modules"
+    "dist"
   ]
 }

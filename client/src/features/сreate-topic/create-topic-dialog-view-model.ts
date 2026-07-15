@@ -4,55 +4,63 @@ import { QueryKeys } from "@/shared/lib/query-keys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import {z} from 'zod'
+import {zodResolver} from '@hookform/resolvers/zod'
 
-type CreateTopicFormType = {
-    title: string
-    description: string
-}
 
 type CreateTopicDialogVMProps = {
-    onSuccess?: () => void,
+    onOpenChange: (open: boolean) => void
     courseID: string
 }
 
-export const useCreateTopicDialogVM = ({courseID, onSuccess}: CreateTopicDialogVMProps) => {
+
+const formShema = z.object({
+    title: z.string()
+        .min(8, 'Минимум 8 символов')
+        .max(64, 'Маскимум 64 символа'),
+    description: z.string()
+        .min(8, 'Минимум 8 символов')
+        .max(64, 'Маскимум 64 символа'),
+    accessType: z.enum(['free', 'afterPrevious'], 'Неверный тип доступа')
+})
+
+
+export const useCreateTopicDialogVM = ({courseID, onOpenChange}: CreateTopicDialogVMProps) => {
     const queryClient = useQueryClient()
     
     const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        setError,
-    } = useForm<CreateTopicFormType>()
+        control,
+        formState: {errors},
+        reset
+    } = useForm({resolver: zodResolver(formShema)})
 
 
     const { mutate, isPending } = useMutation({
         mutationFn: contentApi.createTopic,
 
-        onSuccess: () => {
+        onSuccess: ()=> {
             toast.success('Тема успешно создана')
             queryClient.invalidatePartial(
                 QueryKeys.courseTopics(courseID),
                 QueryKeys.course(courseID)
             )
-            onSuccess?.()
+            onOpenChange(false)
+            reset()
         },
         onError: (error: ApiError) => {
             toast.error('Ошибка при создании темы', { description: error.message })
-            setError('root', { message: error.message })
+            control.setError('root', { message: error.message })
         },
     })
 
 
-    const onSubmit = handleSubmit((data) => mutate({...data, courseID}))
+    const onSubmit = control.handleSubmit(data=> mutate({...data, courseID}))
 
+    
     return {
         errors,
-        fields: {
-            title: register('title'),
-            description: register('description')
-        },
         onSubmit,
-        isPending
+        isPending,
+        control
     }
 }

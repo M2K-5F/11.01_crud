@@ -19,5 +19,5 @@ export class TopicReader extends AbstractReader<TopicRead> {
 }
 
 export class QuestionReader extends AbstractReader<QuestionRead> {
-    protected override tablename: string = 'questions_admin_r'
+    protected override tablename: string = 'questions_r'
 }

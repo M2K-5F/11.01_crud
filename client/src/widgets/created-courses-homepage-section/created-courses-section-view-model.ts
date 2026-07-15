@@ -1,5 +1,5 @@
 import { contentApi } from "@/entities/content/api"
-import { useGuardedCurrentUser } from "@/entities/identity/user/current-user-provider"
+import { useGuardedCurrentUser } from "@/entities/identity/providers/current-user-provider"
 import { composeKeys } from "@/shared/lib/composed-key"
 import { QueryKeys } from "@/shared/lib/query-keys"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -13,7 +13,7 @@ export const useCreatedCoursesSectionVM = () => {
 
 
     const {data: courses, error} = useQuery({
-        queryFn: contentApi.getCreatedCourses,
+        queryFn: ()=> contentApi.getCoursesCreatedBy(user.id),
         queryKey: composeKeys(QueryKeys.coursesMe)
     })
 
@@ -35,13 +35,15 @@ export const useCreatedCoursesSectionVM = () => {
         },
     })
 
-    const onCourseSelect = (courseID: string) => navigate(`/edit-course/${courseID}`)
+    const onCourseSelect = (courseID: string)=> ()=> navigate(`/edit-course/${courseID}`)
+    const onCourseArchive = (courseID: string)=> ()=> archive(courseID)
+    const onCourseActivate = (courseID: string)=> ()=> activate(courseID)
 
     return {
         courses, 
         error, 
-        archive,
-        activate,
+        onCourseActivate,
+        onCourseArchive,
         isTeacher: user.roles.includes('Teacher'),
         onCourseSelect
     }

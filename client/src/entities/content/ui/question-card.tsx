@@ -10,7 +10,7 @@ type QuestionCardProps = {
 export const QuestionCard = ({ question }: QuestionCardProps) => {
     const correctAnswersCount = question
         .answers
-        .filter(a => a.is_correct)
+        .filter(a => a.isCorrect)
         .length
 
     return (
@@ -44,7 +44,7 @@ export const QuestionCard = ({ question }: QuestionCardProps) => {
                             key={answer.id}
                             className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full w-fit"
                         >
-                            {answer.is_correct 
+                            {answer.isCorrect
                                 ?   <CheckCircle className="h-3 w-3 text-green-600" />
                                 :   <Circle className="h-3 w-3" />
                             }

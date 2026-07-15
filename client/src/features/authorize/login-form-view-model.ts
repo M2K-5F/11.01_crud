@@ -3,8 +3,8 @@ import { useMutation } from '@tanstack/react-query'
 import { api } from "@/shared/api/query-client"
 import type { ApiError } from "@/shared/errors"
 import {useNavigate} from 'react-router-dom'
-import { useCurrentUser } from "@/entities/identity/user/current-user-provider"
-import { userApi } from "@/entities/identity/user/api"
+import { useCurrentUser } from "@/entities/identity/providers/current-user-provider"
+import { userApi } from "@/entities/identity/api"
 
 export type LoginForm = {
     password: string,
@@ -12,7 +12,7 @@ export type LoginForm = {
 }
 
 export const useLoginFormVM = () => {
-    const { fetchCurrentUser } = useCurrentUser()
+    const { updateCurrentUser } = useCurrentUser()
     const navigate = useNavigate()
 
 
@@ -24,19 +24,17 @@ export const useLoginFormVM = () => {
     } = useForm<LoginForm>()
 
 
-    const {
-        mutate, 
-        isPending
-    } = useMutation({
-        mutationFn: (data: LoginForm) => 
-            userApi.login(data)
-                .map (({access}) => access)
-                .tap (access => api.setBearer(access))
-                .andThen (() => fetchCurrentUser())
-        ,
+    const {mutate, isPending} = useMutation({
+        mutationFn: (data: LoginForm) => userApi
+            .login(data)
+            .map(({access}) => access)
+            .tap(api.setBearer)
+            .andThen(updateCurrentUser),
+
         onSuccess: () => {
             navigate('/')
         },
+
         onError: (err: ApiError)  => {
             if (err.status === 400) {
                 setError('root' , {message: 'Неверный логин или пароль'})
@@ -47,25 +45,25 @@ export const useLoginFormVM = () => {
     })
 
 
-    const formFields = {
-        nameField: register('name', {
+    const fields = {
+        name: register('name', {
             required: 'Это поле обязательно',
             maxLength: {value: 32, message: "Слишком длинное имя"}, 
             minLength: {value: 8, message: "Слишком которкое имя"},
         }),
 
-        passwordField: register('password', {
+        password: register('password', {
             minLength: {value: 8, message: "Слишком короткий пароль"},
             required: "Это поле обязательно",
         }),
     }
 
 
-    const handler = handleSubmit(form => mutate(form))
+    const onSubmit = handleSubmit(form => mutate(form))
 
     return {
-        formFields,
-        submitHandler: handler,
+        fields,
+        onSubmit,
         errors,
         isPending
     }

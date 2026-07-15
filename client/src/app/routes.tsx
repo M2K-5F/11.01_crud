@@ -12,7 +12,7 @@ import { StudentGuard } from "./guards/student-guard";
 import { EnrollmentPage } from "@/pages/enroll-topics-page/enroll-topics-page-view";
 import { CoursePage } from "@/pages/course-page/course-page-view";
 import { TopicQuestionsPage } from "@/pages/topic-questions-page/topic-questions-page-view";
-import { TopicPassingPage } from "@/pages/topic-passing-page/topic-passing-page-view";
+import { TopicPassingPage } from "@/pages/topic-passing-page/topic-passing-page-view"
 
 export const RegisteredRoutes = () => 
 <Routes>

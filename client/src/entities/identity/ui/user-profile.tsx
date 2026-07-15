@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu"
 import { useNavigate } from "react-router-dom"
-import { useGuardedCurrentUser } from "../current-user-provider"
+import { useGuardedCurrentUser } from "../providers/current-user-provider"
 import { Badge } from "@/shared/ui/badge"
 import { LogOut, Shield, User } from "lucide-react"
 import { ThemeSwitcher } from "@/shared/ui/theme-switcher"

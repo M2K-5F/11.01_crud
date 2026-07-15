@@ -2,7 +2,6 @@ import { contentApi } from "@/entities/content/api"
 import { learningApi } from "@/entities/learning/api"
 import { composeKeys } from "@/shared/lib/composed-key"
 import { QueryKeys } from "@/shared/lib/query-keys"
-import type { EnrollmentTopicWithStatus } from "@contracts"
 import { useQuery } from "@tanstack/react-query"
 import { Bind } from "fluent-future"
 import { useNavigate } from "react-router-dom"
@@ -24,17 +23,18 @@ export const useEnrollmentPageVM = ({enrollmentID}: EnrollmentPageVMProps) => {
         ),
         queryFn: () => 
             Bind({
-                enrollment: learningApi.getEnrollByID(enrollmentID),
-                topics: learningApi.getEnrollmentTopics(enrollmentID),
+                enrollment: learningApi.getEnrollmentByID(enrollmentID)
             })
             .bind({
                 course: ({enrollment}) => 
-                    contentApi.getCourseByID(enrollment.course_id)
+                    contentApi.getCourseByID(enrollment.courseID),
+                topics: ({enrollment}) => 
+                    contentApi.getTopicsByCourse(enrollment.courseID)
             })
     })
 
 
-    const onTopicSelect = (topic: EnrollmentTopicWithStatus) => () => navigate(`/topic-pass/${topic.topic_id}`)
+    const onTopicSelect = (topicID: string) => () => navigate(`/topic-pass/${topicID}`)
 
 
     return {

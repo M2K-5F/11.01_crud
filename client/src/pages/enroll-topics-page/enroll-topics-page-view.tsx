@@ -29,12 +29,14 @@ import { Spinner } from "@/shared/ui/spinner";
 import { ErrorFallback } from "@/shared/ui/error-fallback";
 import { EnrollmentTopicCard } from "@/entities/learning/ui/enrollment-topic-card";
 import { useEnrollmentPageVM } from "./enroll-topics-page-view-model";
+import { useClipboard } from "@/shared/hooks/useClipboard";
 
 
 
 
 export const EnrollmentPage = () => {
     const { enrollmentID } = useParams()
+    const copy = useClipboard()
 
     const {error, data, onTopicSelect} = useEnrollmentPageVM({enrollmentID: enrollmentID!})
 
@@ -43,7 +45,7 @@ export const EnrollmentPage = () => {
             :   <Spinner />
     
 
-    const enrollmentProgress = (data.enrollment.completed_topics / data.enrollment.topics_count || 0) * 100
+    const enrollmentProgress = (data.enrollment.progress / data.course.topicsCount || 0) * 100
 
     return (
         <div className="p-6 h-full">
@@ -67,7 +69,7 @@ export const EnrollmentPage = () => {
                                         </Badge>
                                         <Badge>
                                             <User className="h-3 w-3 mr-1" />
-                                            Автор: {data.course.created_by}
+                                            Автор: {data.course.createdByName}
                                         </Badge>
                                         <Badge className="bg-green-400" variant="default">
                                             <Check className="h-3 w-3 mr-1" />
@@ -76,7 +78,11 @@ export const EnrollmentPage = () => {
                                     </div>
 
                                     <div className="w-fit flex flex-col max-md:hidden gap-2">
-                                        <Button variant="outline" className="flex items-center gap-2">
+                                        <Button 
+                                        onClick={() => copy(`${window.location.host}/course/${data.course.id}`)}
+                                        variant="outline" 
+                                        className="flex items-center gap-2"
+                                        >
                                             <Share2 className="h-4 w-4" />
                                             <span className="max-md:hidden">Поделиться курсом</span>
                                         </Button>
@@ -141,7 +147,8 @@ export const EnrollmentPage = () => {
                                             }
                                             <EnrollmentTopicCard
                                                 topic={topic}
-                                                onSelect={onTopicSelect(topic)}
+                                                enrollment={data.enrollment}
+                                                onSelect={onTopicSelect(topic.id)}
                                             />
                                         </Fragment>
                                 )}

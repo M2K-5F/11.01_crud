@@ -4,7 +4,6 @@ import { contentRoutes } from "@presentation/contexts/content";
 import { identityRoutes } from "@presentation/contexts/identity";
 import { errorHandle } from "@index/error-handler";
 import {cors} from "@elysiajs/cors"
-import { ID } from "@domain/common/abstractions";
 import { learningRoutes } from "@presentation/contexts/learning";
 
 const app = new Elysia({})

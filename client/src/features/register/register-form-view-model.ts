@@ -2,14 +2,14 @@ import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import type { ApiError } from "@/shared/errors"
-import { userApi } from "@/entities/identity/user/api"
+import { userApi } from "@/entities/identity/api"
 
 
 export type RegisterForm = {
     name: string,
-    telegram_link: string,
+    telegramLink: string,
     password: string,
-    password_repeat: string
+    passwordRepeat: string
 }
 
 
@@ -23,7 +23,7 @@ export const useRegisterFormMV = () => {
             maxLength: {value: 32, message: "Слишком длинное имя"}
         }),
 
-        telegramLink: register('telegram_link', {
+        telegramLink: register('telegramLink', {
             required: "Это поле обязательно",
             minLength: {value: 13, message: "Слишком короткая ссылка"}
         }),
@@ -33,20 +33,20 @@ export const useRegisterFormMV = () => {
             minLength: {value: 8, message: "Слишком короткий пароль"}
         }),
 
-        repeatPassword: register('password_repeat', {
+        repeatPassword: register('passwordRepeat', {
             required: "Это поле обязательно",
             minLength: {value: 8, message: "Слишком короткий пароль"},
-            validate: (val) => val === getValues('password') || "Пароли не совпадают"
+            validate: val => val === getValues('password') || "Пароли не совпадают"
         })
     }
 
 
     const {isPending, mutate} = useMutation({
-        mutationFn: ({password_repeat, ...data}: RegisterForm) => 
+        mutationFn: ({passwordRepeat, ...data}: RegisterForm) => 
             userApi.register(data),
 
-        onSuccess: (user) => 
-            toast(`Пользователь с именем ${user.name} зарегистрирован.`),
+        onSuccess: user => 
+            toast(`Пользователь с именем ${user.username} зарегистрирован.`),
 
         onError: (err: ApiError) => 
             setError("root", {message: err.message})

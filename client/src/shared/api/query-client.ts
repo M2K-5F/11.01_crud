@@ -46,7 +46,7 @@ export class ApiClient {
     }
 
 
-    public setBearer(token: string) {
+    public setBearer = (token: string)=> {
         this.bearer = token
     }
 

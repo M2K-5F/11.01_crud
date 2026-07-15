@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Bind } from 'fluent-future';
 import { composeKeys } from '@/shared/lib/composed-key';
+import { useGuardedCurrentUser } from '@/entities/identity/providers/current-user-provider';
 
 type CoursePageVMProps = {
     courseID: string
@@ -16,6 +17,7 @@ type CoursePageVMProps = {
 export const useCoursePageVM = ({ courseID }: CoursePageVMProps) => {
     const navigate = useNavigate()
     const client = useQueryClient()
+    const {user} = useGuardedCurrentUser()
 
 
     const {data, error} = useQuery({
@@ -26,9 +28,8 @@ export const useCoursePageVM = ({ courseID }: CoursePageVMProps) => {
         ),
         queryFn: () => Bind({
             course: contentApi.getCourseByID(courseID),
-            topics: contentApi.getCreatedTopicsByCourse(courseID),
-            enrollment: learningApi.getMyEnrollmentByCourseID(courseID)
-                            .recoverIf(err => err.status === 404, null)
+            topics: contentApi.getTopicsByCourse(courseID),
+            enrollment: learningApi.getUserEnrollmentByCourse(courseID, user.id)
         }),
     })
 

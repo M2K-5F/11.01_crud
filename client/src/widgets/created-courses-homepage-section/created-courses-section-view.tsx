@@ -8,7 +8,7 @@ import { useState } from "react"
 import { CreateCourseDialog } from "@/features/create-course/create-course-dialog"
 
 export const CreatedCoursesSection = () => {
-    const {courses, error, isTeacher, activate, archive, onCourseSelect} = useCreatedCoursesSectionVM()
+    const {courses, error, isTeacher, onCourseArchive, onCourseActivate, onCourseSelect} = useCreatedCoursesSectionVM()
     const [isCreateCourseDialogOpen, setDialogOpen] = useState<boolean>(false)
 
     if (!isTeacher) return null
@@ -20,7 +20,7 @@ export const CreatedCoursesSection = () => {
 
     return (
         <section className="space-y-4">
-            <CreateCourseDialog open={isCreateCourseDialogOpen} onDialogClose={() => setDialogOpen(false)} />
+            <CreateCourseDialog open={isCreateCourseDialogOpen} onOpenChange={setDialogOpen} />
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
@@ -35,9 +35,9 @@ export const CreatedCoursesSection = () => {
                     <CourseCard
                         key={course.id}
                         course={course}
-                        onArchive={() => archive(course.id)}
-                        onActivate={() => activate(course.id)}
-                        onOpen={() => onCourseSelect(course.id)}
+                        onArchive={onCourseArchive(course.id)}
+                        onActivate={onCourseActivate(course.id)}
+                        onOpen={onCourseSelect(course.id)}
                     />
                 ))}
             </div>

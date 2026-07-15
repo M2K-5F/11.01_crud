@@ -26,7 +26,8 @@ export interface TopicRead {
     status: 'active' | 'archived'
     courseID: string;
     createdBy: string;
-    prerequisites: string[];
+    prerequisites: number[];
+    questionsCount: number
 }
 
 
@@ -46,16 +47,20 @@ export interface QuestionRead {
 
 export interface EnrollmentRead {
     id: string
+    title: string
     userID: string
     courseID: string
     progress: number
     topicEnrollments: TopicEnrollmentRead[]
+    topicsCount: number
 }
 
 
 export interface TopicEnrollmentRead {
-  id: string
-  topicID: string
-  questionCount: number
-  completedQuestions: number
+    id: string
+    topicID: string
+    questionCount: number
+    completedQuestions: number
+    number: number
+    isCompleted: boolean
 }
