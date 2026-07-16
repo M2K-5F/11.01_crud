@@ -1,12 +1,13 @@
 import { Entity, ValueObject } from "@domain/common/abstractions";
 import TelegramLink from "@domain/common/value-objects/telegram-link";
 import { DomainError } from "@shared/error";
-import type { Updatable } from "@shared/lib";
+import type { Branded, Updatable } from "@shared/lib";
 import { Serializable } from "nucleus-mold";
 
 
 export const ErrUsernameLength = new DomainError("USERNAME_LENGTH", "длина имени должна быть от 8 до 32 символов")
 export const ErrPasswordLength = new DomainError("PASSWORD_LENGTH", "Пароль должен быть длиннее 8 символов")
+export const ErrAuthorizationFailed = new DomainError("AUTHORIZATION_FAILED")
 
 
 @Serializable()
@@ -19,7 +20,7 @@ export class UserUsername extends ValueObject<string> {
 }
 
 
-type PasswordHashType = string & {__brand: "PasswordHash"}
+type PasswordHashType = Branded<string, 'passwordHash'>
 
 export interface PasswordHashStrategy {
     hash: (raw: string) => Promise<string>
@@ -40,6 +41,8 @@ export class UserRawPassword extends ValueObject<string> {
 
         return hash
     }
+
+    get value() {return this._value}
 }
 
 
@@ -49,8 +52,9 @@ export class UserHashedPassword extends ValueObject<PasswordHashType> {
         return new UserHashedPassword(hash)
     }
 
-    async verify(rawPassword: string, strategy: PasswordHashStrategy) {
-        return await strategy.compare(rawPassword, this._value)
+    async verify(rawPassword: UserRawPassword, strategy: PasswordHashStrategy) {
+        const result = await strategy.compare(rawPassword.value, this._value)
+        if (!result) throw ErrAuthorizationFailed
     }
 }
 
@@ -93,8 +97,8 @@ export class User extends Entity {
         this._roles.push(role)
     }
     
-    async authenticate(password: string, strategy: PasswordHashStrategy) {
-        return await this._hashedPassword.verify(password, strategy)
+    async authenticate(password: UserRawPassword, strategy: PasswordHashStrategy) {
+        await this._hashedPassword.verify(password, strategy)
     }
 
     public get roles(): UserRole[] {

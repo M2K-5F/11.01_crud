@@ -1,10 +1,11 @@
-import type { ICourseRepository, IEnrollmentRepository, IQuestionRepository, ITopicRepository, ITransactionManager, ITransactionWorkUnit, IUserRepository } from "@applications/interfaces/itransaction-manager";
+import type { ICourseRepository, IEnrollmentRepository, IQuestionRepository, ISessionRepository, ITopicRepository, ITransactionManager, ITransactionWorkUnit, IUserRepository } from "@applications/interfaces/itransaction-manager";
 import type { Pool } from "@m2k-5f/pgtx";
 import { UserRepository } from "./identity/user.repository";
 import { CourseRepository } from "./content/course.repository";
 import { TopicRepository } from "./content/topic.repository";
 import { QuestionRepository } from "./content/question.repository";
 import { EnrollRepository } from "./learning/enroll.repository";
+import { SessionRepository } from "./identity/session.repository";
 
 export class TransactionManager implements ITransactionManager {
     constructor(
@@ -18,7 +19,8 @@ export class TransactionManager implements ITransactionManager {
                 new CourseRepository(tx),
                 new TopicRepository(tx),
                 new QuestionRepository(tx),
-                new EnrollRepository(tx)
+                new EnrollRepository(tx),
+                new SessionRepository(tx)
             )
             
             return await func(uow) 
@@ -32,6 +34,7 @@ class TransactionWorkUnit implements ITransactionWorkUnit {
         readonly courses: ICourseRepository,    
         readonly topics: ITopicRepository,
         readonly questions: IQuestionRepository,
-        readonly enrolls: IEnrollmentRepository
+        readonly enrolls: IEnrollmentRepository,
+        readonly sessions: ISessionRepository
     ) {}
 }

@@ -1,6 +1,6 @@
 import Elysia, { t } from "elysia";
 import { dependencies } from "@index/../injection";
-import { authFilter } from "../../auth/middlewares/auth.middleware";
+import { authFilter } from "../../common/auth.middleware";
 import { UserRole } from "@domain/identity/user";
 import { ErrNotFound } from "@shared/error";
 import { ID } from "@domain/common/abstractions";

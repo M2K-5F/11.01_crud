@@ -8,7 +8,7 @@ import { userApi } from "@/entities/identity/api"
 
 export type LoginForm = {
     password: string,
-    name: string
+    username: string
 }
 
 export const useLoginFormVM = () => {
@@ -27,7 +27,7 @@ export const useLoginFormVM = () => {
     const {mutate, isPending} = useMutation({
         mutationFn: (data: LoginForm) => userApi
             .login(data)
-            .map(({access}) => access)
+            .map(({accessToken}) => accessToken)
             .tap(api.setBearer)
             .andThen(updateCurrentUser),
 
@@ -46,7 +46,7 @@ export const useLoginFormVM = () => {
 
 
     const fields = {
-        name: register('name', {
+        name: register('username', {
             required: 'Это поле обязательно',
             maxLength: {value: 32, message: "Слишком длинное имя"}, 
             minLength: {value: 8, message: "Слишком которкое имя"},

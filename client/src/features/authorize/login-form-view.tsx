@@ -31,7 +31,7 @@ const LoginForm = () => {
                         <div className="grid gap-1">
                             <Label htmlFor="email">Логин</Label>
                             <Input {...fields.name}/>
-                            <ErrorMessage error={errors.name} />
+                            <ErrorMessage error={errors.username} />
                         </div>
                         <div className="grid gap-1">
                             <Label htmlFor="password">Пароль</Label>

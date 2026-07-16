@@ -72,7 +72,7 @@ export class ApiClient {
         })
         .andThen(res => res.ok
             ?    parseJson(res)
-                    .tap(data => sessionStorage.setItem("access", data.access))
+                    .tap(data => sessionStorage.setItem("access", data.accessToken))
             :   Reject(new ApiError(401, "REFRESH_FAILED", "refresh failed"))
                     .tapErr(this.removeBearer)
 

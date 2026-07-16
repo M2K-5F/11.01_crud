@@ -6,7 +6,7 @@ import type { UserRole } from "@domain/identity/user";
 export function authFilter(...rolesRequired: UserRole[]) { 
     return (app: Elysia) => app
         .use(dependencies)
-        .derive(async ({sessionService, headers}) => {
+        .derive(async ({authService, headers}) => {
             const authHeader = headers['authorization']
             const token = authHeader?.startsWith('Bearer ') 
                 ? authHeader.slice(7) 
@@ -14,7 +14,7 @@ export function authFilter(...rolesRequired: UserRole[]) {
             
             if (!token) throw ErrUnauthorized
 
-            const {roles, uid} = await sessionService.verifyAccess(token)
+            const {roles, uid} = await authService.verifyAccess({accessToken: token})
 
             if (rolesRequired.length === 0) {
                 return {currentUser: {uid, roles}}

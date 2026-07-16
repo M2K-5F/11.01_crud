@@ -3,7 +3,7 @@ import { HashMap } from "@domain/common/value-objects/hash-map";
 import type { Answer, Question } from "@domain/content/question";
 import { UserRole } from "@domain/identity/user";
 import { dependencies } from "@index/../injection";
-import { authFilter } from "@presentation/auth/middlewares/auth.middleware";
+import { authFilter } from "@presentation/common/auth.middleware";
 import { ErrNotFound } from "@shared/error";
 import { Opt, Str } from "@shared/typebox";
 import Elysia, { t } from "elysia";

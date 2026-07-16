@@ -10,23 +10,12 @@ export type RegisterUserCMD = {
     password: string
 }
 
-export type AuthUserCMD = {
-    name: string,
-    password: string,
-}
-
-
-export type GetRolesCMD = {
-    uid: ID<User>
-}
-
 export type AddRoleCMD = {
     roleName: "teacher" | "student",
     uid: ID<User>
 }
 
 const ErrUserNameExists = new DomainError("USER_NAME_EXISTS")
-const ErrAuthorization = new DomainError("AUTH_FAILED")
 
 
 export class IdentityService {
@@ -52,29 +41,6 @@ export class IdentityService {
 
             return {uid: user.id}
         })
-    }
-
-    async authorize(cmd: AuthUserCMD) {
-        return await this.txmanager.begin(async uow => {
-            const user = await uow.users.getByName(UserUsername.from(cmd.name))
-            if (!user) throw ErrAuthorization
-            
-            if (!await user.authenticate(cmd.password, this.hashStrategy)) throw ErrAuthorization
-
-            return {
-                uid: user.id, 
-                roles: user.roles
-            }
-        })
-    }
-
-    async getRoles(cmd: GetRolesCMD) {
-        const user = await this.txmanager.begin(tx => tx.users.getByID(cmd.uid))
-        if (!user) throw ErrNotFound
-
-        return {
-            roles: user.roles
-        }
     }
 
 

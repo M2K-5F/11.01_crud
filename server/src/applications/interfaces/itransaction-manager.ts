@@ -2,6 +2,7 @@ import type { Entity, ID } from "@domain/common/abstractions"
 import type { Course, CourseTitle } from "@domain/content/course"
 import type { Question } from "@domain/content/question"
 import type { Topic } from "@domain/content/topic"
+import type { Session } from "@domain/identity/session"
 import type { User, UserUsername } from "@domain/identity/user"
 import type { Enrollment } from "@domain/learning/course-enrollment"
 import type { Updatable } from "@shared/lib"
@@ -12,6 +13,7 @@ export interface ITransactionWorkUnit {
     readonly topics: ITopicRepository
     readonly questions: IQuestionRepository
     readonly enrolls: IEnrollmentRepository
+    readonly sessions: ISessionRepository
 }
 
 export interface ITransactionManager {
@@ -52,3 +54,5 @@ export interface IEnrollmentRepository extends IRepository<Enrollment> {
 
     listByCourseForUpdate(courseID: ID<Course>): Promise<Array<Updatable<Enrollment>>>
 }
+
+export interface ISessionRepository extends IRepository<Session> {}

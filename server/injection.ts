@@ -1,15 +1,14 @@
 import Elysia from "elysia";
-import { TokenSigner } from "@presentation/auth/service/token.signer";
 import { Pool } from "@m2k-5f/pgtx";
 import { IdentityService } from "@applications/services/identity.service";
 import { BCryptHashStrategy } from "./src/infra/security/bcrypt-hash-strategy";
 import { CourseManagementService } from "@applications/services/content.manage.service";
-import { TokenStorage } from "@presentation/auth/store/token.storage";
-import { SessionService } from "@presentation/auth/service/token.service";
 import { types } from "pg";
 import { TransactionManager } from "@infra/write";
 import { ReadService } from "./src/infra/read";
 import LearningService from "@applications/services/learning.service";
+import { TokenSigner } from "@infra/security/jwt-token-signer";
+import { AuthService } from "@applications/services/auth.service";
 
 export const getDependencies = async () => {
     types.setTypeParser(20, (val) => parseInt(val, 10))
@@ -42,17 +41,16 @@ export const getDependencies = async () => {
 
     const readService = new ReadService(queriesPool)
 
-    const sessionStorage = new TokenStorage(sessionsPool)
     const signer = await TokenSigner.newWithKeys()
 
-    const sessionService = new SessionService(sessionStorage, signer)
+    const authService = new AuthService(txm, new BCryptHashStrategy(), signer)
 
     
     return {
         querier: queriesPool,
         identityService,
         courseManagementService,
-        sessionService,
+        authService,
         readService,
         learningService,
     }

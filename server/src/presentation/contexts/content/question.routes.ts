@@ -1,5 +1,5 @@
 import Elysia, { t } from "elysia";
-import { authFilter } from "../../auth/middlewares/auth.middleware";
+import { authFilter } from "../../common/auth.middleware";
 import { dependencies } from "@index/../injection";
 import { UserRole } from "@domain/identity/user";
 import { ID } from "@domain/common/abstractions";

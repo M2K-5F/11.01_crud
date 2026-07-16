@@ -4,7 +4,7 @@ import type { UserRead } from "@contracts";
 
 type LoginDTO = {
     password: string
-    name: string
+    username: string
 }
 
 type RegisterDTO = {
@@ -15,8 +15,8 @@ type RegisterDTO = {
 
 
 export const userApi = {
-    getCurrent: () => api.get<UserRead>('/identity/auth/me'),
+    getCurrent: () => api.get<UserRead>('/identity/users/me'),
     logout: () => api.post('/identity/auth/logout'),
-    login: (data: NoInfer<LoginDTO>) => api.post<{access: string, id: string}>('/identity/auth/login', data),
+    login: (data: NoInfer<LoginDTO>) => api.post<{accessToken: string, uid: string}>('/identity/auth/login', data),
     register: (data: NoInfer<RegisterDTO>) => api.post<UserRead>('/identity/users', data)
 }

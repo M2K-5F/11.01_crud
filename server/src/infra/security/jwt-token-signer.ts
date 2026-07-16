@@ -1,9 +1,11 @@
 import { importPKCS8, importSPKI, jwtVerify, SignJWT } from "jose"
 import { UserRole, type User, type UserRoleType } from "@domain/identity/user"
 import { ID } from "@domain/common/abstractions"
-import type { Session } from "../entities"
+import type { IAccessTokenSigner, IRefreshTokenSigner, Session } from "@domain/identity/session"
 
-export class TokenSigner {
+type ITokenSigner = IAccessTokenSigner & IRefreshTokenSigner 
+
+export class TokenSigner implements ITokenSigner {
     private constructor(
         private accessPub: CryptoKey,
         private accessPri: CryptoKey,
@@ -27,10 +29,10 @@ export class TokenSigner {
         )
     }
 
-    async signAccess(userID: ID<User>, roles: UserRole[]) {
-        const token = await new SignJWT({roles: roles.map(r => r.asString())})
+    async signAccess(user: User) {
+        const token = await new SignJWT({roles: user.roles.map(r => r.asString())})
         .setProtectedHeader({ alg: 'ES256' })
-        .setSubject(userID.asString())
+        .setSubject(user.id.asString())
         .setExpirationTime(Bun.env.ACCESS_TTL)
         .setIssuedAt()
         .sign(this.accessPri)
@@ -38,12 +40,12 @@ export class TokenSigner {
         return token
     }
 
-    async signRefresh(userID: ID<User>, sessionID: ID<Session>) {
-        const token = await new SignJWT({sessionID: sessionID.asString()})
+    async signRefresh(session: Session) {
+        const token = await new SignJWT({sessionID: session.id.asString()})
         .setProtectedHeader({ alg: 'ES256' })
         .setIssuedAt()
         .setExpirationTime(Bun.env.SESSION_TTL)
-        .setSubject(userID.asString())
+        .setSubject(session.userID.asString())
         .sign(this.refreshPri)
 
         return token
