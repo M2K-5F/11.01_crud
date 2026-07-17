@@ -53,6 +53,7 @@ export interface EnrollmentRead {
     progress: number
     topicEnrollments: TopicEnrollmentRead[]
     topicsCount: number
+    username: string
 }
 
 

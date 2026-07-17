@@ -16,7 +16,7 @@ export const CourseTopicsPage = () => {
 
     const [isTopicCreateDialogOpen, setTopicCreateDialogOpen] = useState<boolean>(false)
 
-    const {data, error, onTopicActivate, onTopicArchive, onTopicSelect} = useCourseTopicsPageVM({courseID: courseID!})
+    const {data, error, onTopicActivate, onTopicArchive, onCourseStatsSelect, onTopicSelect} = useCourseTopicsPageVM({courseID: courseID!})
 
 
     if (!data) return error
@@ -38,7 +38,7 @@ export const CourseTopicsPage = () => {
             </div>
 
             <div className="flex justify-center gap-4">
-                <Button size='xs' variant="outline" color='secondary' onClick={() => console.log('nav to stats')}>
+                <Button size='xs' variant="outline" color='secondary' onClick={onCourseStatsSelect}>
                     <BarChart3 className="h-4 w-4 mr-2" />
                     Статистика курса
                 </Button>

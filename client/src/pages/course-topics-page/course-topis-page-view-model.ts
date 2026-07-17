@@ -1,6 +1,7 @@
 import { contentApi } from "@/entities/content/api"
 import { composeKeys } from "@/shared/lib/composed-key"
 import { QueryKeys } from "@/shared/lib/query-keys"
+import { Routes } from "@/shared/lib/routes-constants"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Bind } from "fluent-future"
 import { useNavigate } from "react-router-dom"
@@ -50,13 +51,16 @@ export const useCourseTopicsPageVM = ({courseID}: CourseTopicsPageVM) => {
 
     const onTopicArchive = (topicID: string) => () => topicArchiveMutate(topicID)
 
-    const onTopicSelect = (topicID: string) => () => navigate(`/topic/${topicID}`)
+    const onTopicSelect = (topicID: string) => () => navigate(Routes.topicEditPage(topicID))
+
+    const onCourseStatsSelect = () => navigate(Routes.courseStaticticsPage(courseID))
 
     return {
         data, 
         error,
         onTopicActivate, 
         onTopicArchive,
-        onTopicSelect
+        onTopicSelect,
+        onCourseStatsSelect
     }
 }

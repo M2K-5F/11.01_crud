@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useCoursePageVM } from './course-page-view-model';
 import { Spinner } from '@/shared/ui/spinner';
 import { ErrorFallback } from '@/shared/ui/error-fallback';
@@ -9,9 +9,8 @@ import { List, LogIn } from 'lucide-react';
 
 export const CoursePage = () => {
     const { courseID } = useParams<{ courseID: string }>()
-    const navigate = useNavigate()
 
-    const {data,  error, onCourseEnroll, isPending} = useCoursePageVM({courseID: courseID!})
+    const {data,  error, onCourseEnroll, isPending, onEnrollmentSelect} = useCoursePageVM({courseID: courseID!})
 
     if (!data) {
         return error
@@ -43,7 +42,7 @@ export const CoursePage = () => {
                 </CardHeader>
                 <CardContent>
                     {enrollment
-                        ?   <Button onClick={() => navigate(`/enrollment/${enrollment.id}`)}>Перейти к прохождению</Button>
+                        ?   <Button onClick={onEnrollmentSelect(enrollment.id)}>Перейти к прохождению</Button>
                         :   <Button
                                 onClick={onCourseEnroll}
                                 disabled={isPending}

@@ -2,6 +2,7 @@ import { useGuardedCurrentUser } from "@/entities/identity/providers/current-use
 import { learningApi } from "@/entities/learning/api"
 import { composeKeys } from "@/shared/lib/composed-key"
 import { QueryKeys } from "@/shared/lib/query-keys"
+import { Routes } from "@/shared/lib/routes-constants"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 
@@ -14,7 +15,7 @@ export const useEnrolledCoursesSectionVM = () => {
         queryFn: () => learningApi.getEnrollmentsByUser(user.id),
     })
 
-    const onEnrollmentSelect = (enrollmentID: string) => () => navigate(`/enrollment/${enrollmentID}`)
+    const onEnrollmentSelect = (enrollmentID: string) => () => navigate(Routes.enrollmentPage(enrollmentID))
 
     return {
         enrollments: data,

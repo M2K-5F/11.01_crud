@@ -1,3 +1,4 @@
+import { Routes } from "@/shared/lib/routes-constants"
 import { ThemeSwitcher } from "@/shared/ui/theme-switcher"
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group"
 import { Outlet, useNavigate } from "react-router-dom"
@@ -11,8 +12,8 @@ export const AuthWidget = () => {
                 <div className="max-sm:scale-100 h-fit max-w-95 flex-col flex items-center gap-2">
                     <div className="grid grid-cols-3 w-full items-center justify-items-center">
                         <ToggleGroup className="col-start-2" value={''} type='single'>
-                            <ToggleGroupItem onClick={() => navigate('login')} value="auth">Авторизация</ToggleGroupItem>
-                            <ToggleGroupItem onClick={() => navigate('register')} value="reg">Регистрация</ToggleGroupItem>
+                            <ToggleGroupItem onClick={() => navigate(Routes.loginPage)} value="auth">Авторизация</ToggleGroupItem>
+                            <ToggleGroupItem onClick={() => navigate(Routes.registerPage)} value="reg">Регистрация</ToggleGroupItem>
                         </ToggleGroup>
                         <ThemeSwitcher/>
                     </div>

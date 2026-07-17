@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bind } from 'fluent-future';
 import { composeKeys } from '@/shared/lib/composed-key';
 import { useGuardedCurrentUser } from '@/entities/identity/providers/current-user-provider';
+import { Routes } from '@/shared/lib/routes-constants';
 
 type CoursePageVMProps = {
     courseID: string
@@ -44,9 +45,12 @@ export const useCoursePageVM = ({ courseID }: CoursePageVMProps) => {
             ),
 
             toast.success('Вы подписались на курс')
-            navigate(`/enrollment/${enrollment.id}`)
+            navigate(Routes.enrollmentPage(enrollment.id))
         }
     })
+
+
+    const onEnrollmentSelect = (enrollmentID: string) => () => navigate(Routes.enrollmentPage(enrollmentID))
 
 
     return {
@@ -54,5 +58,6 @@ export const useCoursePageVM = ({ courseID }: CoursePageVMProps) => {
         isPending,
         data,
         error,
+        onEnrollmentSelect
     }
 }

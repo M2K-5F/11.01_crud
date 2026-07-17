@@ -31,7 +31,7 @@ export class AuthService {
             const user = await uow.users.getByName(UserUsername.from(cmd.username))
             if (!user) throw ErrAuthorizationFailed
 
-            user.authenticate(UserRawPassword.from(cmd.password), this.passwordHashStrategy)
+            await user.authenticate(UserRawPassword.from(cmd.password), this.passwordHashStrategy)
 
             const session = Session.new(user.id)
 

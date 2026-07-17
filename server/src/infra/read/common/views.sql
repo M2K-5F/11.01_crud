@@ -89,7 +89,7 @@ FROM questions;
 
 
 
-CREATE OR REPLACE VIEW course_enrollments_rs AS 
+CREATE OR REPLACE VIEW enrollments_r AS 
 SELECT 
     id,
     val(e.data->'_userID') AS "userID",
@@ -105,6 +105,11 @@ SELECT
         from topics
         where data->'_byCourse' = e.data->'_courseID'
     ) as "topicsCount",
+    (
+        select val(data->'_username')
+        from users
+        where data->'_id' = e.data->'_userID'
+    ) as username,
     (
         SELECT coalesce(
             jsonb_agg(

@@ -13,6 +13,7 @@ import { EnrollmentPage } from "@/pages/enroll-topics-page/enroll-topics-page-vi
 import { CoursePage } from "@/pages/course-page/course-page-view";
 import { TopicQuestionsPage } from "@/pages/topic-questions-page/topic-questions-page-view";
 import { TopicPassingPage } from "@/pages/topic-passing-page/topic-passing-page-view"
+import { CourseStatsPage } from "@/pages/course-stats-page/course-stats-page-view";
 
 export const RegisteredRoutes = () => 
 <Routes>
@@ -35,35 +36,39 @@ export const RegisteredRoutes = () =>
         <Route path="/" element={<Homepage />} />
 
 
-        <Route path="/edit-course/:courseID" element={
+        <Route path="/courses/:courseID/edit" element={
             <TeacherGuard>
                 <CourseTopicsPage/>
             </TeacherGuard>
         } />
 
+        <Route path="/courses/:courseID/stats" element={
+            <TeacherGuard>
+                <CourseStatsPage />
+            </TeacherGuard>
+        }/>
 
-        <Route path="/topic/:topicID" element={
+        <Route path="/courses/:courseID"  element={<CoursePage />} />
+
+
+        <Route path="/topics/:topicID/edit" element={
             <TeacherGuard>
                 <TopicQuestionsPage />
             </TeacherGuard>
         } />
-
-
-        <Route path="/enrollment/:enrollmentID" element={
-            <StudentGuard>
-                <EnrollmentPage />
-            </StudentGuard>
-        } />
-
-
-        <Route path="/course/:courseID"  element={<CoursePage />} />
-
-        <Route path="/topic-pass/:topicID" element={
+        
+        <Route path="/topics/:topicID/passing" element={
             <StudentGuard>
                 <TopicPassingPage />
             </StudentGuard>
         } />
 
+
+        <Route path="/enrollments/:enrollmentID" element={
+            <StudentGuard>
+                <EnrollmentPage />
+            </StudentGuard>
+        } />
     </Route>
     
     <Route path="*" element={<Navigate to={'/'} replace />} />

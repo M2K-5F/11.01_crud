@@ -16,7 +16,7 @@ export const learningApi = {
     completeTopic: ({topicID, questions}: compteteTopicDTO) => api.post<EnrollmentRead>(`/learning/topics/${topicID}/complete`, questions),
     getEnrollmentsByUser: (userID: string) => api.get<EnrollmentRead[]>('/learning/enrollments', {userID}),
     getEnrollmentByID: (enrollmentID: string) => api.get<EnrollmentRead>(`/learning/enrollments/${enrollmentID}`),
-    getEnrollmentsByCourse: (courseID: string) => api.get<EnrollmentRead>(`/learning/enrollments`, {courseID}),
+    getEnrollmentsByCourse: (courseID: string) => api.get<EnrollmentRead[]>(`/learning/enrollments`, {courseID}),
     getUserEnrollmentByCourse: (courseID: string, userID: string) => api.get<EnrollmentRead[]>('/learning/enrollments', {userID, courseID})
         .map(arr=>arr[0])
         .recoverIf(err=>err.status===404, null)

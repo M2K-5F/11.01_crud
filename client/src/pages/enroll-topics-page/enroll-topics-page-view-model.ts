@@ -2,6 +2,7 @@ import { contentApi } from "@/entities/content/api"
 import { learningApi } from "@/entities/learning/api"
 import { composeKeys } from "@/shared/lib/composed-key"
 import { QueryKeys } from "@/shared/lib/query-keys"
+import { Routes } from "@/shared/lib/routes-constants"
 import { useQuery } from "@tanstack/react-query"
 import { Bind } from "fluent-future"
 import { useNavigate } from "react-router-dom"
@@ -34,7 +35,7 @@ export const useEnrollmentPageVM = ({enrollmentID}: EnrollmentPageVMProps) => {
     })
 
 
-    const onTopicSelect = (topicID: string) => () => navigate(`/topic-pass/${topicID}`)
+    const onTopicSelect = (topicID: string) => () => navigate(Routes.topicPassingPage(topicID))
 
 
     return {

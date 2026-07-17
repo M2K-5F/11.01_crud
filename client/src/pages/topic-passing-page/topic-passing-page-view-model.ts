@@ -5,6 +5,7 @@ import { QueryKeys } from '@/shared/lib/query-keys';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { composeKeys } from '@/shared/lib/composed-key';
+import { Routes } from '@/shared/lib/routes-constants';
 
 type TopicPassingPageVMProps = {
     topicID: string
@@ -33,7 +34,7 @@ export const useTopicPassingPageVM = ({ topicID }: TopicPassingPageVMProps) => {
                 QueryKeys.enrollmentsMe
             )
 
-            navigate(`/enrollment/${enrollment.id}`)
+            navigate(Routes.enrollmentPage(enrollment.id))
         },
         onError: () => {
             toast.error('Не удалось отправить ответы')

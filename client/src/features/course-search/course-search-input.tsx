@@ -8,6 +8,7 @@ import { contentApi } from '@/entities/content/api';
 import { QueryKeys } from '@/shared/lib/query-keys';
 import { CourseSearchResult } from './course-search-result';
 import { Spinner } from '@/shared/ui/spinner';
+import { Routes } from '@/shared/lib/routes-constants';
 
 export const CourseSearch = () => {
     const [query, setQuery] = useState('')
@@ -35,7 +36,7 @@ export const CourseSearch = () => {
     const handleSelect = (courseId: string) => {
         setQuery('')
         setIsOpen(false)
-        navigate(`/course/${courseId}`)
+        navigate(Routes.coursePage(courseId))
     }
 
     return (

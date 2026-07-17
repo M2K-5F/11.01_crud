@@ -2,6 +2,7 @@ import { contentApi } from "@/entities/content/api"
 import { useGuardedCurrentUser } from "@/entities/identity/providers/current-user-provider"
 import { composeKeys } from "@/shared/lib/composed-key"
 import { QueryKeys } from "@/shared/lib/query-keys"
+import { Routes } from "@/shared/lib/routes-constants"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
@@ -35,7 +36,7 @@ export const useCreatedCoursesSectionVM = () => {
         },
     })
 
-    const onCourseSelect = (courseID: string)=> ()=> navigate(`/edit-course/${courseID}`)
+    const onCourseSelect = (courseID: string)=> ()=> navigate(Routes.courseEditPage(courseID))
     const onCourseArchive = (courseID: string)=> ()=> archive(courseID)
     const onCourseActivate = (courseID: string)=> ()=> activate(courseID)
 
