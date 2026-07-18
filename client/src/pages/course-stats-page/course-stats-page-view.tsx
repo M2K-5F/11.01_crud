@@ -8,6 +8,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Badge } from "@/shared/ui/badge"
 import { Progress } from "@/shared/ui/progress"
 import type { FC } from "react"
+import type { TopicEnrollmentRead } from "@contracts"
+import { sorted } from "@/shared/lib/utils"
 
 export const CourseStatsPage = () => {
     const { courseID } = useParams()
@@ -53,35 +55,29 @@ export const CourseStatsPage = () => {
                     </CardContent>
                 </Card>
 
-                <Accordion defaultValue="students" type="single" collapsible>
-                    <AccordionItem value="students">
-                        <AccordionTrigger className="hover:no-underline">
-                            <div className="flex items-center gap-3">
-                                <h2 className="text-xl font-semibold">Студенты</h2>
-                                <Badge variant="outline">{data.students.length}</Badge>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                            <div className="space-y-3 mt-2">
-                                {data.students
-                                    .sort((a, b) => b.percentage - a.percentage)
-                                    .map(student => <TopicStatsCard student={student}/>)}
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
+                <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-semibold">Студенты</h2>
+                    <Badge variant="outline">{data.students.length}</Badge>
+                </div>
+                <div className="space-y-3 mt-2">
+                    {data.students
+                        .sort((a, b) => b.percentage - a.percentage)
+                        .map(student => 
+                            <StudentStatsCard key={student.userID} student={student}/>
+                        )}
+                </div>
             </div>
         </div>
     )
 }
 
 
-const TopicStatsCard: FC<{ student: StudentStatsType }> = ({ student }) => (
+const StudentStatsCard: FC<{ student: StudentStatsType }> = ({ student }) => (
     <Card>
-        <Accordion type="single" collapsible>
-            <AccordionItem value={student.userID} className="border-none">
-                <CardContent className="p-4">
-                    <AccordionTrigger className="hover:no-underline py-0">
+        <CardContent className="p-4">
+            <Accordion type='single' collapsible>
+                <AccordionItem value={student.userID} >
+                    <AccordionTrigger className="py-0">
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-3">
                                 <User className="h-4 w-4 text-muted-foreground" />
@@ -92,7 +88,7 @@ const TopicStatsCard: FC<{ student: StudentStatsType }> = ({ student }) => (
                             </Badge>
                         </div>
                     </AccordionTrigger>
-                    <AccordionContent className="space-y-3 pt-3">
+                    <AccordionContent className="space-y-3 z-10 pt-3">
                         <div>
                             <p className="text-xs text-muted-foreground mb-1">Курс</p>
                             <Progress value={student.percentage} />
@@ -104,31 +100,35 @@ const TopicStatsCard: FC<{ student: StudentStatsType }> = ({ student }) => (
                         <div className="border-t pt-3">
                             <p className="text-xs font-medium mb-2">По темам</p>
                             <div className="space-y-2">
-                                {student.topicEnrollments
-                                    .sort((a, b) => a.number - b.number)
-                                    .map(t => {
-                                        const pct = (t.completedQuestions / t.questionCount * 100) || 0
-
-                                        return (
-                                            <div key={t.id}>
-                                                <div className="flex items-center justify-between mb-0.5">
-                                                    <p className="text-xs">
-                                                        Тема {t.number}
-                                                        {t.isCompleted && " ✓"}
-                                                    </p>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {t.completedQuestions}/{t.questionCount} Вопросов
-                                                    </span>
-                                                </div>
-                                                <Progress value={pct} className="h-1.5" />
-                                            </div>
-                                        )
-                                    })}
+                                {sorted(student.topicEnrollments, 'number')
+                                    .map(t => 
+                                        <StudentTopicStatsCard topicEnrollment={t}/>
+                                    )}
                             </div>
                         </div>
                     </AccordionContent>
-                </CardContent>
-            </AccordionItem>
-        </Accordion>
+                </AccordionItem>
+            </Accordion>    
+        </CardContent>
     </Card>
 )
+
+
+const StudentTopicStatsCard: FC<{topicEnrollment: TopicEnrollmentRead}> = ({topicEnrollment}) => {
+    const percent = (topicEnrollment.completedQuestions / topicEnrollment.questionCount * 100) || 0
+
+    return (
+            <div key={topicEnrollment.id}>
+                <div className="flex items-center justify-between mb-0.5">
+                    <p className="text-xs">
+                        Тема {topicEnrollment.number}
+                        {topicEnrollment.isCompleted && " ✓"}
+                    </p>
+                    <span className="text-xs text-muted-foreground">
+                        {topicEnrollment.completedQuestions}/{topicEnrollment.questionCount} Вопросов
+                    </span>
+                </div>
+                <Progress value={percent} className="h-1.5" />
+            </div>
+        )
+}

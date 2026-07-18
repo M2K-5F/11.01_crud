@@ -1,7 +1,7 @@
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { contentApi } from '@/entities/content/api';
+import { contentApi, type CreateQuestionDTO } from '@/entities/content/api';
 import {
     Dialog,
     DialogContent,
@@ -16,6 +16,7 @@ import { QueryKeys } from '@/shared/lib/query-keys';
 import { ErrorMessage } from '@/shared/ui/form-error-message';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';
+import type { ApiError } from '@/shared/errors';
 
 
 const formShema = z.object({
@@ -62,7 +63,7 @@ const useCreateQuestionDialogVM = ({topicID, onOpenChange}: CreateQuestionDialog
     })
 
 
-    const { mutate, isPending } = useMutation({
+    const { mutate, isPending } = useMutation<void, ApiError, CreateQuestionDTO>({
         mutationFn: contentApi.createQuestion,
         onSuccess: () => {
             toast.success('Вопрос создан')
@@ -70,10 +71,11 @@ const useCreateQuestionDialogVM = ({topicID, onOpenChange}: CreateQuestionDialog
                 QueryKeys.topicQuestions(topicID),
                 QueryKeys.topic(topicID)
             )
+
             control._reset()
             onOpenChange(false)
         },
-        onError: (error) => {
+        onError: error => {
             toast.error('Ошибка', { description: error.message })
         },
     })
@@ -109,7 +111,6 @@ const useCreateQuestionDialogVM = ({topicID, onOpenChange}: CreateQuestionDialog
 
 
 export const CreateQuestionDialog = ({ topicID, open, onOpenChange }: CreateQuestionDialogProps) => {
-
     const {
         answers, 
         errors, 
@@ -120,6 +121,7 @@ export const CreateQuestionDialog = ({ topicID, open, onOpenChange }: CreateQues
         control, 
         getAnswerError
     } = useCreateQuestionDialogVM({topicID, onOpenChange})
+
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -165,8 +167,8 @@ export const CreateQuestionDialog = ({ topicID, open, onOpenChange }: CreateQues
                                 >
                                     <div className="flex flex-col gap-3">
                                         <Input
-                                        placeholder="Текст ответа"
-                                        {...control.register(`answers.${index}.text`)}
+                                            placeholder="Текст ответа"
+                                            {...control.register(`answers.${index}.text`)}
                                         />
                                         <ErrorMessage error={getAnswerError(index)} />
 

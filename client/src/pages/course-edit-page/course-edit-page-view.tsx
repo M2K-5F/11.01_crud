@@ -5,18 +5,17 @@ import { ErrorFallback } from "@/shared/ui/error-fallback";
 import { Spinner } from "@/shared/ui/spinner";
 import { BarChart3 } from "lucide-react";
 import { useState } from "react";
-import { useCourseTopicsPageVM } from "./course-topis-page-view-model";
 import { useParams } from "react-router-dom";
-import "react-daisyui"
 import { Button } from "@/shared/ui/button";
+import { useCourseEditPageVM } from "./course-edit-page-view-model";
 
 
-export const CourseTopicsPage = () => {
+export const CourseEditPage = () => {
     const {courseID} = useParams()
 
     const [isTopicCreateDialogOpen, setTopicCreateDialogOpen] = useState<boolean>(false)
 
-    const {data, error, onTopicActivate, onTopicArchive, onCourseStatsSelect, onTopicSelect} = useCourseTopicsPageVM({courseID: courseID!})
+    const {data, error, onTopicActivate, onTopicArchive, onCourseStatsSelect, onTopicSelect} = useCourseEditPageVM({courseID: courseID!})
 
 
     if (!data) return error

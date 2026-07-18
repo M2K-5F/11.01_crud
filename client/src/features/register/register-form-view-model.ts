@@ -3,61 +3,61 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import type { ApiError } from "@/shared/errors"
 import { userApi } from "@/entities/identity/api"
+import z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import type { UserRead } from "@contracts"
 
 
-export type RegisterForm = {
-    name: string,
-    telegramLink: string,
-    password: string,
-    passwordRepeat: string
-}
+const registerForm = z.object({
+    name: z.string()
+        .nonempty("Это поле обязательно")
+        .min(8, "Слишком короткое имя")
+        .max(32, "Слишком длинное имя"),
+
+    telegramLink: z.string()
+        .nonempty("Это поле обязательно")
+        .min(13, "Слишком короткая ссылка"),
+
+    password: z.string()
+        .nonempty("Это поле обязательно")
+        .min(8, "Слишком короткий пароль"),
+
+    passwordRepeat: z.string()
+        .nonempty("Это поле обязательно")
+        .min(8, "Слишком короткий пароль")
+})
+.refine(data=>data.password === data.passwordRepeat, {
+    error: "Пароли не совпадают",
+    path: ['passwordRepeat']
+})
+
+
+type RegisterForm = z.infer<typeof registerForm>
 
 
 export const useRegisterFormMV = () => {
-    const {register, handleSubmit, setError, getValues, formState: {errors}} = useForm<RegisterForm>()
-
-    const fields = {
-        name: register('name', {
-            required: "Это поле обязательно",
-            minLength: {value: 8, message: "Слишком короткое имя"},
-            maxLength: {value: 32, message: "Слишком длинное имя"}
-        }),
-
-        telegramLink: register('telegramLink', {
-            required: "Это поле обязательно",
-            minLength: {value: 13, message: "Слишком короткая ссылка"}
-        }),
-
-        password: register("password", {
-            required: "Это поле обязательно",
-            minLength: {value: 8, message: "Слишком короткий пароль"}
-        }),
-
-        repeatPassword: register('passwordRepeat', {
-            required: "Это поле обязательно",
-            minLength: {value: 8, message: "Слишком короткий пароль"},
-            validate: val => val === getValues('password') || "Пароли не совпадают"
-        })
-    }
-
-
-    const {isPending, mutate} = useMutation({
-        mutationFn: ({passwordRepeat, ...data}: RegisterForm) => 
-            userApi.register(data),
-
-        onSuccess: user => 
-            toast(`Пользователь с именем ${user.username} зарегистрирован.`),
-
-        onError: (err: ApiError) => 
-            setError("root", {message: err.message})
+    const {control, formState: {errors}} = useForm({
+        resolver: zodResolver(registerForm)
     })
 
-    const handler = handleSubmit((data) => mutate(data))
+
+    const {isPending, mutate} = useMutation<UserRead, ApiError, RegisterForm>({
+        mutationFn: ({passwordRepeat, ...data}) =>
+            userApi.register(data),
+
+        onSuccess: user =>
+            toast(`Пользователь с именем ${user.username} зарегистрирован.`),
+
+        onError: err =>
+            control.setError("root", {message: err.message})
+    })
+
+    const onSubmit = control.handleSubmit((data) => mutate(data))
 
     return {
         errors,
-        fields,
-        handler,
+        onSubmit,
+        control,
         isPending
     }
 }

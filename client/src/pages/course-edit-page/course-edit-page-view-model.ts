@@ -13,7 +13,7 @@ type CourseTopicsPageVM = {
 }
 
 
-export const useCourseTopicsPageVM = ({courseID}: CourseTopicsPageVM) => {
+export const useCourseEditPageVM = ({courseID}: CourseTopicsPageVM) => {
     const client = useQueryClient()
     const navigate = useNavigate()
 

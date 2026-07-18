@@ -6,14 +6,14 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./layouts/app-layout";
 import { GuestGuard } from "./guards/guest-guard";
 import { AuthGuard } from "./guards/auth-guard";
-import { CourseTopicsPage } from "@/pages/course-topics-page/course-topic-page-view";
 import { TeacherGuard } from "./guards/teacher-guard";
 import { StudentGuard } from "./guards/student-guard";
-import { EnrollmentPage } from "@/pages/enroll-topics-page/enroll-topics-page-view";
+import { EnrollmentPage } from "@/pages/enrollment-page/enrollment-page-view";
 import { CoursePage } from "@/pages/course-page/course-page-view";
-import { TopicQuestionsPage } from "@/pages/topic-questions-page/topic-questions-page-view";
 import { TopicPassingPage } from "@/pages/topic-passing-page/topic-passing-page-view"
 import { CourseStatsPage } from "@/pages/course-stats-page/course-stats-page-view";
+import { CourseEditPage } from "@/pages/course-edit-page/course-edit-page-view";
+import { TopicEditPage } from "@/pages/topic-edit-page/topic-edit-page-view";
 
 export const RegisteredRoutes = () => 
 <Routes>
@@ -38,7 +38,7 @@ export const RegisteredRoutes = () =>
 
         <Route path="/courses/:courseID/edit" element={
             <TeacherGuard>
-                <CourseTopicsPage/>
+                <CourseEditPage/>
             </TeacherGuard>
         } />
 
@@ -53,7 +53,7 @@ export const RegisteredRoutes = () =>
 
         <Route path="/topics/:topicID/edit" element={
             <TeacherGuard>
-                <TopicQuestionsPage />
+                <TopicEditPage />
             </TeacherGuard>
         } />
         

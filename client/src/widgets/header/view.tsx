@@ -1,5 +1,6 @@
 import { UserProfile } from "@/entities/identity/ui/user-profile"
 import { CourseSearch } from "@/features/course-search/course-search-input"
+import { Routes } from "@/shared/lib/routes-constants"
 import { Link } from "react-router-dom"
 
 export const Header = () => {
@@ -7,7 +8,7 @@ export const Header = () => {
         <header className="border-b border-border bg-card sticky top-0 z-50">
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
 
-                <Link to='/' className="flex items-center gap-2" >
+                <Link to={Routes.homepage} className="flex items-center gap-2" >
                     <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-sm">
                         🎻
                     </div>

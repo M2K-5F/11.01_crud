@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import {
     Card,
     CardHeader,
@@ -28,8 +27,9 @@ import { useParams } from "react-router-dom";
 import { Spinner } from "@/shared/ui/spinner";
 import { ErrorFallback } from "@/shared/ui/error-fallback";
 import { EnrollmentTopicCard } from "@/entities/learning/ui/enrollment-topic-card";
-import { useEnrollmentPageVM } from "./enroll-topics-page-view-model";
+import { useEnrollmentPageVM } from "./enrollment-page-view-model";
 import { useClipboard } from "@/shared/hooks/useClipboard";
+import { sorted } from "@/shared/lib/utils";
 
 
 
@@ -44,8 +44,8 @@ export const EnrollmentPage = () => {
             ?   <ErrorFallback message={error.message} />
             :   <Spinner />
     
-
     const enrollmentProgress = (data.enrollment.progress / data.course.topicsCount || 0) * 100
+
 
     return (
         <div className="p-6 h-full">
@@ -79,7 +79,7 @@ export const EnrollmentPage = () => {
 
                                     <div className="w-fit flex flex-col max-md:hidden gap-2">
                                         <Button 
-                                        onClick={() => copy(`${window.location.host}/course/${data.course.id}`)}
+                                        onClick={() => copy(`${window.location.host}/courses/${data.course.id}`)}
                                         variant="outline" 
                                         className="flex items-center gap-2"
                                         >
@@ -136,10 +136,9 @@ export const EnrollmentPage = () => {
                         </AccordionTrigger>
                         <AccordionContent>
                             <div className="space-y-3 mt-2 overflow-y-scroll">
-                                {data.topics
-                                    .sort((a,b) => a.number-b.number)
+                                {sorted(data.topics, 'number')
                                     .map((topic, index) => 
-                                        <Fragment key={topic.id}>
+                                        <>
                                             {index > 0 && 
                                                 <div className="p-0 m-0 ml-3.5 flex justify-center items-center w-fit h-7.5 overflow-hidden">
                                                     <GitCommitVerticalIcon size={40} />
@@ -147,10 +146,11 @@ export const EnrollmentPage = () => {
                                             }
                                             <EnrollmentTopicCard
                                                 topic={topic}
+                                                key={topic.id}
                                                 enrollment={data.enrollment}
                                                 onSelect={onTopicSelect(topic.id)}
                                             />
-                                        </Fragment>
+                                        </>
                                 )}
                             </div>
                         </AccordionContent>

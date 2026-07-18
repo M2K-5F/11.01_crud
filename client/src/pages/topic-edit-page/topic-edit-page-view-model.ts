@@ -8,7 +8,7 @@ type TopicQuestionsPageVMPropsType = {
     topicID: string
 }
 
-export const useTopicQuestionsPageVM = ({topicID}: TopicQuestionsPageVMPropsType) => {
+export const useTopicEditPageVM = ({topicID}: TopicQuestionsPageVMPropsType) => {
 
     const {data, error} = useQuery({
         queryKey: composeKeys(

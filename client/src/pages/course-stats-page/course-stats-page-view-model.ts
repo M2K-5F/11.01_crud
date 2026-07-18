@@ -21,6 +21,7 @@ export type StudentStatsType = {
     topicEnrollments: TopicEnrollmentRead[]
 }
 
+
 export const useCourseStatsPageVM = ({ courseID }: CourseStatsPageVMProps) => {
     const { data, error } = useQuery({
         queryKey: composeKeys(

@@ -2,7 +2,7 @@ export interface UserRead {
     id: string
     username: string
     telegramLink: string
-  roles: ("Student" | "Teacher" )[]
+    roles: ("Student" | "Teacher" )[]
 }
 
 

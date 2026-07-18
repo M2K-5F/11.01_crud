@@ -1,25 +1,23 @@
-// pages/topic-questions-page/ui/topic-questions-page.tsx
 import {  useParams } from 'react-router-dom';
 import { Spinner } from '@/shared/ui/spinner';
 import { ErrorFallback } from '@/shared/ui/error-fallback';
 import { Card, CardContent, } from '@/shared/ui/card';
 import { HelpCircle } from 'lucide-react';
-import { useTopicQuestionsPageVM } from './topic-questions-page-view-model';
 import { QuestionCard } from '@/entities/content/ui/question-card';
 import { CreateQuestionDialogButton } from '@/features/сreate-question/create-question-dialog-button';
 import { useState } from 'react';
 import { CreateQuestionDialog } from '@/features/сreate-question/create-question-dialog';
+import { useTopicEditPageVM } from './topic-edit-page-view-model';
 
-export const TopicQuestionsPage = () => {
+export const TopicEditPage = () => {
     const { topicID } = useParams()
     const [isDialogOpen, setDialogOpen] = useState<boolean>(false)
 
-    const { data, error } = useTopicQuestionsPageVM({topicID: topicID!})
+    const { data, error } = useTopicEditPageVM({topicID: topicID!})
 
     if (!data) return error
         ?   <ErrorFallback message={error.message} />
         :   <Spinner />
-
 
 
     return (

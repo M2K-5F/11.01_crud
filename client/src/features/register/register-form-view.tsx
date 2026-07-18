@@ -8,8 +8,8 @@ import { Spinner } from "@/shared/ui/spinner"
 
 export const RegisterForm = () => {
     const {
-        fields,
-        handler, 
+        control, 
+        onSubmit,
         errors,
         isPending
     } = useRegisterFormMV()
@@ -23,31 +23,31 @@ export const RegisterForm = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handler} className="flex flex-col gap-y-4">
+                <form onSubmit={onSubmit} className="flex flex-col gap-y-4">
                     <div className="grid gap-1">
                         <Label htmlFor="name">Имя пользователя:</Label>
-                        <Input {...fields.name} /> 
+                        <Input {...control.register('name')} /> 
                         <ErrorMessage error={errors.name} />
                     </div>
 
                     <div className="grid gap-1">
                         <Label htmlFor="telegram_link">Ссылка на телеграм:</Label>
-                        <Input {...fields.telegramLink}/>
-                        <ErrorMessage error={errors.telegram_link} />
+                        <Input {...control.register('telegramLink')}/>
+                        <ErrorMessage error={errors.telegramLink} />
                     </div>
             
                     <div className="grid gap-x-2 grid-cols-2 items-baseline">
                     
                         <div className="grid gap-1">
                             <Label>Пароль:</Label>
-                            <Input {...fields.password} />
+                            <Input {...control.register('password')} />
                             <ErrorMessage error={errors.password} />
                         </div>
                     
                         <div className="grid gap-1">
                             <Label>Повтор пароля:</Label>
-                            <Input {...fields.repeatPassword}/>
-                            <ErrorMessage error={errors.password_repeat} />
+                            <Input {...control.register('passwordRepeat')}/>
+                            <ErrorMessage error={errors.passwordRepeat} />
                         </div>
                     
                     </div>
