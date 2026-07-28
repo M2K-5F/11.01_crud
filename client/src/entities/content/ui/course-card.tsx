@@ -6,13 +6,13 @@ import { Badge } from "@/shared/ui/badge"
 import type { CourseRead } from "@contracts"
 
 
-
 type CourseCardProps = {
     course: CourseRead,
     onArchive: () => void
     onActivate: () => void
     onOpen: () => void
 }
+
 
 export const CourseCard: FC<CourseCardProps> = ({course, onActivate, onArchive, onOpen}) => {
     const isActive = course.status === 'active'
@@ -63,7 +63,6 @@ export const CourseCard: FC<CourseCardProps> = ({course, onActivate, onArchive, 
                         <ArchiveRestore className="h-4 w-4" />
                     </Button>
                 }
-
             </div>
             
             <p className="text-sm text-wrap text-muted-foreground mb-3 line-clamp-3">

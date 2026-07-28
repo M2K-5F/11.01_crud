@@ -1,35 +1,36 @@
 import Elysia from "elysia";
-import { Pool } from "@m2k-5f/pgtx";
+import { Pool, setTypeParser, sql, } from "@m2k-5f/pgtx";
 import { IdentityService } from "@applications/services/identity.service";
 import { BCryptHashStrategy } from "./src/infra/security/bcrypt-hash-strategy";
 import { CourseManagementService } from "@applications/services/content.manage.service";
-import { types } from "pg";
 import { TransactionManager } from "@infra/write";
 import { ReadService } from "./src/infra/read";
 import LearningService from "@applications/services/learning.service";
 import { TokenSigner } from "@infra/security/jwt-token-signer";
 import { AuthService } from "@applications/services/auth.service";
+import { env } from "bun";
 
 export const getDependencies = async () => {
-    types.setTypeParser(20, (val) => parseInt(val, 10))
+    setTypeParser(20, (val) => parseInt(val, 10))
 
     const persistensePool = new Pool({
-        connectionString: Bun.env.PERSISTENSE_DSN,
-        max: 20,
-        // enableLogs: true
-    })
-
-    const sessionsPool = new Pool({
-        connectionString: Bun.env.SESSION_DB_DSN,
-        max: 3,
-        enableLogs: true
+        port: env.PG_PORT,
+        host: env.PG_HOST,
+        password: env.PG_PWD,
+        user: env.PG_USER,
+        database: env.PG_DB,
+        max: 30,
+        logLevel: 'notice'
     })
 
     const queriesPool = new Pool({
-        connectionString: Bun.env.QUERY_DB_DSN,
-        max: 100,
-        
-        // enableLogs: true
+        port: env.PG_PORT,
+        host: env.PG_HOST,
+        password: env.PG_PWD,
+        user: env.PG_USER,
+        database: env.PG_DB,
+        max: 10,
+        logLevel: 'notice'
     })
 
     const txm = new TransactionManager(persistensePool)

@@ -45,7 +45,7 @@ export const enrollmentRoutes = new Elysia()
             topicID: ID.from(topicPlainID)
         })
 
-        return await readService.question.allBy({topicID: topicID.asString()})
+        return readService.question.allBy({topicID: topicID.asString()})
     }
 )
 

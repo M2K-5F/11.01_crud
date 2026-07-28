@@ -94,7 +94,7 @@ export const courseRoutes = new Elysia()
         readService,
         query
     }) => {
-        return await readService.course.allBy(query)
+        return readService.course.allBy(query)
     },
     {
         query: Obj({
@@ -110,7 +110,7 @@ export const courseRoutes = new Elysia()
         query: {q},
         readService
     }) => { 
-        return await readService.course.searchCourses(q)
+        return readService.course.searchCourses(q)
     },
     {
         query: Obj({

@@ -3,9 +3,11 @@ import { Badge } from '@/shared/ui/badge';
 import { CheckCircle, Circle } from 'lucide-react';
 import type { QuestionRead } from '@contracts';
 
+
 type QuestionCardProps = {
     question: QuestionRead
 }
+
 
 export const QuestionCard = ({ question }: QuestionCardProps) => {
     const correctAnswersCount = question
@@ -39,23 +41,26 @@ export const QuestionCard = ({ question }: QuestionCardProps) => {
             
             <CardContent className="pt-0">
                 <div className="flex flex-wrap flex-col gap-2">
-                    {question.answers.slice(0, 3).map((answer) => (
-                        <div
-                            key={answer.id}
-                            className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full w-fit"
-                        >
-                            {answer.isCorrect
-                                ?   <CheckCircle className="h-3 w-3 text-green-600" />
-                                :   <Circle className="h-3 w-3" />
-                            }
-                            <span className="truncate max-w-32">{answer.text}</span>
-                        </div>
-                    ))}
-                    {question.answers.length > 3 && (
+                    {question.answers
+                        .slice(0, 3)
+                        .map((answer) => 
+                            <div
+                                key={answer.id}
+                                className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full w-fit"
+                            >
+                                {answer.isCorrect
+                                    ?   <CheckCircle className="h-3 w-3 text-green-600" />
+                                    :   <Circle className="h-3 w-3" />
+                                }
+                                <span className="truncate max-w-32">{answer.text}</span>
+                            </div>
+                        )
+                    }
+                    {question.answers.length > 3 && 
                         <Badge variant="outline" className="text-xs">
                             +{question.answers.length - 3}
                         </Badge>
-                    )}
+                    }
                 </div>
             </CardContent>
         </Card>

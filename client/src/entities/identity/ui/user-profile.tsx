@@ -6,11 +6,12 @@ import { Badge } from "@/shared/ui/badge"
 import { LogOut, Shield, User } from "lucide-react"
 import { ThemeSwitcher } from "@/shared/ui/theme-switcher"
 import { CopyableSpan } from "@/shared/ui/copyable-span"
+import { Routes } from "@/shared/lib/routes-constants"
 
 export const UserProfile = () => {
     const navigate = useNavigate()
     const { user, logout } = useGuardedCurrentUser()
-    
+
 
     const getInitials = (name: string) => {
         return name
@@ -20,6 +21,7 @@ export const UserProfile = () => {
             .toUpperCase()
             .slice(0, 2)
     }
+
 
     return (
         <DropdownMenu>
@@ -47,29 +49,27 @@ export const UserProfile = () => {
                     <CopyableSpan value={user.telegramLink} />
 
                     <div className="flex flex-wrap gap-2 mt-1">
-                        {user.roles.map((role) => role === 'Student'
-                            ?   (<Badge 
-                                    key={role} 
-                                    variant='destructive'
-                                    className="text-xs"
-                                >
-                                    <div className="flex items-center gap-1">
-                                        <User className="w-4 h-4" />
-                                        Студент
-                                    </div>
-                                </Badge>
-                            )
-                            :  (<Badge 
-                                    key={role} 
-                                    variant='default'
-                                    className="text-xs"
-                                >
-                                    <div className="flex items-center gap-1">
-                                        <Shield className="w-4 h-4" /> 
-                                        Преподаватель
-                                    </div>
-                                </Badge>
-                            )
+                        {user.roles.map(role => role === 'Student'
+                        ?   <Badge 
+                                key={role} 
+                                variant='destructive'
+                                className="text-xs"
+                            >
+                                <div className="flex items-center gap-1">
+                                    <User className="w-4 h-4" />
+                                    Студент
+                                </div>
+                            </Badge>
+                        :  <Badge 
+                                key={role} 
+                                variant='default'
+                                className="text-xs"
+                            >
+                                <div className="flex items-center gap-1">
+                                    <Shield className="w-4 h-4" /> 
+                                    Преподаватель
+                                </div>
+                            </Badge>  
                         )}
                     </div>
                 </DropdownMenuLabel>
@@ -78,7 +78,7 @@ export const UserProfile = () => {
 
                 <DropdownMenuItem 
                     className="cursor-pointer py-3 text-red-600 focus:text-red-600"
-                    onClick={() => logout().tap(() => navigate('/identity/login'))}
+                    onClick={() => logout().tap(() => navigate(Routes.loginPage))}
                 >
                     <LogOut className="w-4 h-4 mr-2" />
                     <span>Выйти</span>

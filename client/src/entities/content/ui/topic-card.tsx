@@ -6,12 +6,14 @@ import clsx from "clsx";
 import { Archive, ArchiveRestore, BookOpen, FileText } from "lucide-react";
 import type { FC } from "react";
 
+
 type TopicCardProps = {
     topic: TopicRead
     onArchive: () => void
     onActivate: () => void
     onOpen: () => void
 }
+
 
 export const TopicCard: FC<TopicCardProps> = ({ topic, onActivate, onArchive, onOpen }) => {
     const isActive = topic.status === "active"

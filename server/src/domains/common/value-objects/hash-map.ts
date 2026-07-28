@@ -44,7 +44,6 @@ export class HashMap<K, V> extends ValueObject<Record<string, V>> {
 }
 
 
-
 function getHash(value: any) {
     if (typeof value !== 'object') return JSON.stringify(value)
 

@@ -29,3 +29,5 @@ export const ErrUnauthorized = new UnauthorizedError("Не авторизова�
 export class ForbiddenError extends AppError {}
 
 export const ErrForbidden = new ForbiddenError("Доступ запрещен")
+
+export class InternalError extends AppError {}

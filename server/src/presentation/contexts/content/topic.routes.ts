@@ -84,7 +84,7 @@ export const topicRoutes = new Elysia()
         readService,
         query
     }) => {
-        return await readService.topics.allBy(query)
+        return readService.topics.allBy(query)
     }, 
     {
         query: Obj({
