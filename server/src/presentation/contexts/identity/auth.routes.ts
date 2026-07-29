@@ -1,7 +1,6 @@
 import Elysia, { t } from "elysia";
 import { ErrUnauthorized } from "@shared/error";
 import { dependencies } from "@index/../injection";
-import { authFilter } from "@presentation/common/auth.middleware";
 
 export const authRoutes = new Elysia()
 .use(dependencies)

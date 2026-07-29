@@ -2,7 +2,6 @@ import { ID } from "@domain/common/abstractions";
 import { dependencies } from "@index/../injection";
 import { authFilter } from "@presentation/common/auth.middleware";
 import { ErrNotFound } from "@shared/error";
-import { Obj, Str } from "@shared/typebox";
 import Elysia, { t } from "elysia";
 
 export const userRoutes = new Elysia()
@@ -21,8 +20,8 @@ export const userRoutes = new Elysia()
 
             return await readService.user.firstBy({id: uid.asString()})
         }, {
-            body: Obj({
-                name: Str,
+            body: t.Object({
+                name: t.String(),
                 telegramLink: t.String(),
                 password: t.String()
             }),
@@ -49,11 +48,15 @@ export const userRoutes = new Elysia()
 
             return await readService.user.firstBy({id: uid.asString()})
         }, {
-            body: Obj({
-                roleName: t.Union([t.Literal('student'), t.Literal('teacher')] as const),
+            body: t.Object({
+                roleName: t.Union([
+                    t.Literal('student'), 
+                    t.Literal('teacher')
+                ] as const),
             })
         }
     )
+    
 
     .get("/users/:userPlainID", 
         async ({

@@ -4,7 +4,6 @@ import { dependencies } from "@index/../injection";
 import { UserRole } from "@domain/identity/user";
 import { ID } from "@domain/common/abstractions";
 import { ErrNotFound } from "@shared/error";
-import { Obj, Opt, Str } from "@shared/typebox";
 
 export const questionRoutes = new Elysia()
 .use(dependencies)
@@ -43,15 +42,14 @@ export const questionRoutes = new Elysia()
 
 .get('/questions', 
     async ({
-        currentUser: {uid},
         readService,
         query
     }) => {
         return readService.question.allBy(query)
     }, {
-        query: Obj({
-            topicID: Opt(Str),
-            createdBy: Opt(Str)
+        query: t.Object({
+            topicID: t.Optional(t.String()),
+            createdBy: t.Optional(t.String())
         })
     }
 )

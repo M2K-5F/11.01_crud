@@ -3,7 +3,6 @@ import { authFilter } from "../../common/auth.middleware";
 import { dependencies } from "@index/../injection";
 import { ErrNotFound } from "@shared/error";
 import { ID } from "@domain/common/abstractions";
-import { Obj, Opt, Str } from "@shared/typebox";
 
 export const courseRoutes = new Elysia()
 .use(dependencies)
@@ -97,9 +96,9 @@ export const courseRoutes = new Elysia()
         return readService.course.allBy(query)
     },
     {
-        query: Obj({
-            createdBy: Opt(Str),
-            title: Opt(Str)
+        query: t.Object({
+            createdBy: t.Optional(t.String()),
+            title: t.Optional(t.String())
         })
     }
 )
@@ -113,8 +112,8 @@ export const courseRoutes = new Elysia()
         return readService.course.searchCourses(q)
     },
     {
-        query: Obj({
-            q: Str
+        query: t.Object({
+            q: t.String()
         })
     }
 )

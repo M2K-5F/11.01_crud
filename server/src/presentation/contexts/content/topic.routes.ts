@@ -4,7 +4,6 @@ import { authFilter } from "../../common/auth.middleware";
 import { UserRole } from "@domain/identity/user";
 import { ErrNotFound } from "@shared/error";
 import { ID } from "@domain/common/abstractions";
-import { Obj, Opt, Str } from "@shared/typebox";
 
 export const topicRoutes = new Elysia()
 .use(dependencies)
@@ -19,7 +18,7 @@ export const topicRoutes = new Elysia()
         params: {coursePlainID},
         body,
     }) => {
-        const {topicID, courseID} = await courseManagementService.createTopic({
+        const {topicID} = await courseManagementService.createTopic({
             uid,
             ...body,
             courseID: ID.from(coursePlainID),
@@ -33,7 +32,10 @@ export const topicRoutes = new Elysia()
         body: t.Object({
             title: t.String(),
             description: t.String(),
-            accessType: t.Union([t.Literal('free'), t.Literal('afterPrevious')] as const)
+            accessType: t.Union([
+                t.Literal('free'), 
+                t.Literal('afterPrevious')
+            ] as const)
         })
     }
 )
@@ -87,9 +89,9 @@ export const topicRoutes = new Elysia()
         return readService.topics.allBy(query)
     }, 
     {
-        query: Obj({
-            courseID: Opt(Str),
-            createdBy: Opt(Str)
+        query: t.Object({
+            courseID: t.Optional(t.String()),
+            createdBy: t.Optional(t.String())
         })
     }
 )

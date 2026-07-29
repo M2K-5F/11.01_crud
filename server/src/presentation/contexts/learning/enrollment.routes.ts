@@ -5,7 +5,6 @@ import { UserRole } from "@domain/identity/user";
 import { dependencies } from "@index/../injection";
 import { authFilter } from "@presentation/common/auth.middleware";
 import { ErrNotFound } from "@shared/error";
-import { Opt, Str } from "@shared/typebox";
 import Elysia, { t } from "elysia";
 
 export const enrollmentRoutes = new Elysia()
@@ -92,8 +91,8 @@ export const enrollmentRoutes = new Elysia()
         return readService.enroll.allBy(query)
     }, {
         query: t.Object({
-            courseID: Opt(Str),
-            userID: Opt(Str)
+            courseID: t.Optional(t.String()),
+            userID: t.Optional(t.String())
         })
     }
 )
