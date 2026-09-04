@@ -1,4 +1,4 @@
-import { Future, Reject, Resolve } from "fluent-future"
+import { Err, Future, Ok } from "fluent-future"
 import { ApiError } from "../errors"
 
 
@@ -70,12 +70,12 @@ export class ApiClient {
             method: 'post',
             credentials: 'include',
         })
-        .andThen(res => res.ok
-            ?    parseJson(res)
-                    .tap(data => sessionStorage.setItem("access", data.accessToken))
-            :   Reject(new ApiError(401, "REFRESH_FAILED", "refresh failed"))
-                    .tapErr(this.removeBearer)
-
+        .andThen(res => 
+            res.ok
+                ?    parseJson(res)
+                        .tap(data => sessionStorage.setItem("access", data.accessToken))
+                :   Err(new ApiError(401, "REFRESH_FAILED", "refresh failed"))
+                        .tapErr(this.removeBearer)
         )
     }
 
@@ -84,13 +84,13 @@ export class ApiClient {
         const { queryUrl, init } = this._prepareParams(url, params)
 
         return this._fetchWithRefresh(queryUrl, init)
-            .map(res => ({res}))
             .bind({
-                data: res => parseJson(res.res)
+                data: response => parseJson(response),
+                response: response => response
             })
             .throwIf(
-                ({res}) => !res.ok,
-                ({res, data}) => new ApiError(res.status, data.code, data.message)
+                ({response}) => !response.ok,
+                ({response, data}) => new ApiError(response.status, data.code, data.message)
             )
             .tapErr(err => {
                 const handler = this._errorHandlers.get(err.status)
@@ -137,7 +137,7 @@ export class ApiClient {
     private _fetchWithRefresh(url: string, params: QueryParams) {
         return fetchFuture(url, params)
             .andThen(res => {
-                if (res.status !== 401) return Resolve(res)
+                if (res.status !== 401) return Ok(res)
 
                 return this._refreshToken()
                     .tap(() => {

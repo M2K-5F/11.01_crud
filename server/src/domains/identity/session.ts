@@ -6,9 +6,9 @@ import type { Updatable } from "@shared/lib"
 import { UnauthorizedError } from "@shared/error"
 
 
-export const ErrSessionNotFound = new UnauthorizedError("Сессия не найдена")
-export const ErrRefreshTokenInvalid = new UnauthorizedError("Refresh токен невалиден")
-export const ErrTokenExpired = new UnauthorizedError("token expired")
+export const ErrSessionNotFound = new UnauthorizedError("SESSION_NOT_FOUND", "Сессия не найдена")
+export const ErrRefreshTokenInvalid = new UnauthorizedError("INVAlID_REFRESH_TOKEN", "Refresh токен невалиден")
+export const ErrTokenExpired = new UnauthorizedError("ACCESS_TOKEN_EXPIRED", "token expired")
 
 
 export interface IRefreshTokenSigner {
@@ -28,9 +28,9 @@ export class RefreshToken extends ValueObject<string> {
         return new RefreshToken(await signStrategy.signRefresh(session))
     }
 
-    verify(signStrategy: IRefreshTokenSigner) {
+    async verify(signStrategy: IRefreshTokenSigner) {
         try {
-            return signStrategy.verifyRefresh(this._value)
+            return await signStrategy.verifyRefresh(this._value)
         }
         catch {
             throw ErrRefreshTokenInvalid

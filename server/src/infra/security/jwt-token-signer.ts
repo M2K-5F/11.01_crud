@@ -2,32 +2,18 @@ import { importPKCS8, importSPKI, jwtVerify, SignJWT } from "jose"
 import { UserRole, type User, type UserRoleType } from "@domain/identity/user"
 import { ID } from "@domain/common/abstractions"
 import type { IAccessTokenSigner, IRefreshTokenSigner, Session } from "@domain/identity/session"
+import { readFileSync } from 'fs'
+import crypto from 'crypto'
 
 type ITokenSigner = IAccessTokenSigner & IRefreshTokenSigner 
 
 export class TokenSigner implements ITokenSigner {
-    private constructor(
-        private accessPub: CryptoKey,
-        private accessPri: CryptoKey,
-        private refreshPub: CryptoKey,
-        private refreshPri: CryptoKey,
+    constructor(
+        private accessPub: crypto.KeyObject,
+        private accessPri: crypto.KeyObject,
+        private refreshPub: crypto.KeyObject,
+        private refreshPri: crypto.KeyObject,
     ) {}
-
-    static async newWithKeys() {
-        const [aPub, aPri, rPub, rPri] = await Promise.all([
-            Bun.file(Bun.env.ACCESS_PUB).text(),
-            Bun.file(Bun.env.ACCESS_PRIVATE).text(),
-            Bun.file(Bun.env.REFRESH_PUB).text(),
-            Bun.file(Bun.env.REFRESH_PRIVATE).text()
-        ])
-
-        return new TokenSigner(
-            await importSPKI(aPub, 'ES256'),
-            await importPKCS8(aPri, 'ES256'),
-            await importSPKI(rPub, 'ES256'),
-            await importPKCS8(rPri, 'ES256')
-        )
-    }
 
     async signAccess(user: User) {
         const token = await new SignJWT({roles: user.roles.map(r => r.asString())})

@@ -8,7 +8,7 @@ import type { Updatable } from "@shared/lib"
 import { Serializable } from "nucleus-mold"
 import { HashMap } from "@domain/common/value-objects/hash-map"
 
-export const ErrTopicEnrollmentNotDefined = new DomainError('TOPIC_ENROLLMENT_NOT_DEFINED')
+export const ErrTopicEnrollmentNotDefined = new DomainError('TOPIC_ENROLLMENT_NOT_DEFINED', 'TOPIC_ENROLLMENT_NOT_DEFINED')
 
 
 @Serializable()
@@ -65,9 +65,8 @@ export class Enrollment extends Entity {
 
         const passed = prerequisites.every(req => {
             const enroll = this._topicEnrollments.get(req)
-            if (!enroll) return false
 
-            return enroll.isCompleted()
+            return enroll ? enroll.isCompleted() : false
         })
         
         return passed

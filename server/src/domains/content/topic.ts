@@ -6,10 +6,10 @@ import { Status } from "@domain/common/value-objects/active-status"
 import type { Updatable } from "@shared/lib"
 import { Serializable } from "nucleus-mold"
 
-export const ErrTopicArchived = new DomainError("TOPIC_ARCHIVED")
-export const ErrTopicActive = new DomainError("TOPIC_ACTIVE")
-export const ErrTopicTitleLength = new DomainError("TOPIC_TITLE_LENGTH")
-export const ErrTopicDescriptionLength = new DomainError("TOPIC_DESCRIPTION_LENGTH")
+export const ErrTopicArchived = new DomainError("TOPIC_ARCHIVED", "TOPIC_ARCHIVED")
+export const ErrTopicActive = new DomainError("TOPIC_ACTIVE", "TOPIC_ACTIVE")
+export const ErrTopicTitleLength = new DomainError("TOPIC_TITLE_LENGTH", "TOPIC_TITLE_LENGTH")
+export const ErrTopicDescriptionLength = new DomainError("TOPIC_DESCRIPTION_LENGTH", "TOPIC_DESCRIPTION_LENGTH")
 
 
 @Serializable()

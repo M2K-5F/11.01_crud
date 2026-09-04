@@ -1,5 +1,5 @@
 import type { ITransactionManager } from "@applications/interfaces/itransaction-manager"
-import type { ID } from "@domain/common/abstractions"
+import { ID } from "@domain/common/abstractions"
 import TelegramLink from "@domain/common/value-objects/telegram-link"
 import { User, UserHashedPassword, UserRawPassword, UserRole, UserUsername, type PasswordHashStrategy } from "@domain/identity/user"
 import { DomainError, ErrNotFound } from "@shared/error"
@@ -12,10 +12,10 @@ export type RegisterUserCMD = {
 
 export type AddRoleCMD = {
     roleName: "teacher" | "student",
-    uid: ID<User>
+    uid: string
 }
 
-const ErrUserNameExists = new DomainError("USER_NAME_EXISTS")
+const ErrUserNameExists = new DomainError("USER_NAME_EXISTS", "USER_NAME_EXISTS")
 
 
 export class IdentityService {
@@ -25,28 +25,35 @@ export class IdentityService {
     ) {}
 
 
-    async register(cmd: RegisterUserCMD) {
-        return await this.txmanager.begin(async uow => {
-            const rawPassword = UserRawPassword.from(cmd.password)
-
-            if (await uow.users.checkNameExists(UserUsername.from(cmd.name))) throw ErrUserNameExists
+    register(cmd: RegisterUserCMD) {
+        return this.txmanager.begin(async uow => {
+            if (await uow.users.checkNameExists(UserUsername.from(cmd.name))) 
+                throw ErrUserNameExists
             
             const user = User.register(
                 UserUsername.from(cmd.name),
                 TelegramLink.from(cmd.telegramLink),
-                UserHashedPassword.from(await rawPassword.hash(this.hashStrategy))
+                UserHashedPassword.from(
+                    await UserRawPassword.from(cmd.password)
+                        .hash(this.hashStrategy)
+                )
             )
 
             await uow.users.save(user)
 
-            return {uid: user.id}
+            return {
+                uid: user.id.asString()
+            }
         })
     }
 
 
-    async addRole(cmd: AddRoleCMD) {
+    addRole(cmd: AddRoleCMD) {
         return this.txmanager.begin(async uow => {
-            const user = await uow.users.getByIDForUpdate(cmd.uid)
+            const user = await uow.users.getByIDForUpdate(
+                ID.from(cmd.uid)
+            )
+
             if (!user) throw ErrNotFound
 
             user.addRole(
@@ -58,7 +65,7 @@ export class IdentityService {
             await uow.users.save(user)
 
             return {
-                uid: user.id
+                uid: user.id.asString()
             }
         })
     }

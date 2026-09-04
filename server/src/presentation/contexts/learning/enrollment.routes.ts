@@ -1,78 +1,57 @@
-import { ID } from "@domain/common/abstractions";
-import { HashMap } from "@domain/common/value-objects/hash-map";
-import type { Answer, Question } from "@domain/content/question";
+import { learningService, reader } from "@composition";
 import { UserRole } from "@domain/identity/user";
-import { dependencies } from "@index/../injection";
 import { authFilter } from "@presentation/common/auth.middleware";
 import { ErrNotFound } from "@shared/error";
 import Elysia, { t } from "elysia";
 
 export const enrollmentRoutes = new Elysia()
-.use(dependencies)
 .use(authFilter(UserRole.Student))
 
 
-.post('/courses/:coursePlainID/enrollments' , 
+.post('/courses/:courseID/enrollments' , 
     async ({
         currentUser: {uid},
-        learningService,
-        readService,
-        params: {coursePlainID}
+        params: {courseID}
     }) => {
         const {enrollmentID} = await learningService.enrollCourse({
-            courseID: ID.from(coursePlainID),
+            courseID,
             uid
         })
 
-        const enrollment = await readService.enroll.firstBy({id: enrollmentID.asString()})
-        if (!enrollment) throw ErrNotFound
-
-        return enrollment
+        return reader.enroll.firstBy({id: enrollmentID})
     }
 )
 
 
-.post('/topics/:topicPlainID/start', 
+.post('/topics/:topicID/start', 
     async ({
-        learningService,
         currentUser: {uid},
-        params: {topicPlainID},
-        readService
+        params: {topicID}
     }) => {
-        const { topicID } = await learningService.startTopic({
+        await learningService.startTopic({
             uid,
-            topicID: ID.from(topicPlainID)
+            topicID
         })
 
-        return readService.question.allBy({topicID: topicID.asString()})
+        return reader.question.allBy({topicID: topicID})
     }
 )
 
 
-.post('/topics/:topicPlainID/complete', 
+.post('/topics/:topicID/complete', 
     async ({
-        learningService,
-        readService,
         body,
         currentUser: {uid},
-        params: {topicPlainID}
+        params: {topicID}
     }) => {
         const { enrollmentID } = await learningService.completeTopic({
-            topicID: ID.from(topicPlainID),
+            topicID,
             uid,
-            questionAnswers: HashMap.fromEntries(body.map(({id, selectedAnswers}) => [
-                ID.from<Question>(id),
-                selectedAnswers.map(ID.from<Answer>)
-            ]))
+            questionAnswers: body
         })
 
-        const enrollment = await readService.enroll.firstBy({id: enrollmentID.asString()})
-
-        if (!enrollment) throw ErrNotFound
-
-        return enrollment
-    }, 
-    {
+        return reader.enroll.firstBy({id: enrollmentID})
+    }, {
         body: t.Array(
             t.Object({
                 id: t.String(),
@@ -86,9 +65,8 @@ export const enrollmentRoutes = new Elysia()
 .get('/enrollments', 
     async ({
         query,
-        readService,
     }) => {
-        return readService.enroll.allBy(query)
+        return reader.enroll.allBy(query)
     }, {
         query: t.Object({
             courseID: t.Optional(t.String()),
@@ -98,13 +76,12 @@ export const enrollmentRoutes = new Elysia()
 )
 
 
-.get("/enrollments/:enrollmentPlainID",
+.get("/enrollments/:enrollmentID",
     async ({
-        params: {enrollmentPlainID},
-        readService
+        params: {enrollmentID},
     }) => {
-        const enrollment = await readService.enroll.firstBy({
-            id: enrollmentPlainID,
+        const enrollment = await reader.enroll.firstBy({
+            id: enrollmentID,
         })
         if (!enrollment) throw ErrNotFound
 

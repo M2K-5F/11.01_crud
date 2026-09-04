@@ -1,24 +1,17 @@
-import { ID } from "@domain/common/abstractions";
-import { dependencies } from "@index/../injection";
+import { identityService, reader } from "@composition";
 import { authFilter } from "@presentation/common/auth.middleware";
 import { ErrNotFound } from "@shared/error";
 import Elysia, { t } from "elysia";
 
 export const userRoutes = new Elysia()
-.use(
-    new Elysia()
-    .use(dependencies)
-
-
+.group('', g => g
     .post("/users", 
         async ({
-            body,
-            identityService,
-            readService
+            body
         }) => {
             const {uid} = await identityService.register(body)
 
-            return await readService.user.firstBy({id: uid.asString()})
+            return reader.user.firstBy({id: uid})
         }, {
             body: t.Object({
                 name: t.String(),
@@ -28,25 +21,22 @@ export const userRoutes = new Elysia()
         }
     )
 )
-.use(
-    new Elysia()
-    .use(dependencies)
-    .use(authFilter())
-    
 
-    .post("/users/:userPlainID/addrole",
+
+.group('', g => g
+    .use(authFilter())
+
+    .post("/users/:userID/addrole",
         async ({
-            identityService,
             body: {roleName},
-            params: {userPlainID},
-            readService
+            params: {userID},
         }) => {
-            const {uid} = await identityService.addRole({
+            await identityService.addRole({
                 roleName,
-                uid: ID.from(userPlainID)
+                uid: userID
             })
 
-            return await readService.user.firstBy({id: uid.asString()})
+            return reader.user.firstBy({id: userID})
         }, {
             body: t.Object({
                 roleName: t.Union([
@@ -58,12 +48,12 @@ export const userRoutes = new Elysia()
     )
     
 
-    .get("/users/:userPlainID", 
+    .get("/users/:userID", 
         async ({
-            params: {userPlainID},
-            readService
+            params: {userID},
         }) => {
-            const user = await readService.user.firstBy({id: userPlainID})
+            const user = await reader.user.firstBy({id: userID})
+
             if (!user) throw ErrNotFound
 
             return user
@@ -74,9 +64,9 @@ export const userRoutes = new Elysia()
     .get("/users/me",
         async ({
             currentUser: {uid},
-            readService
         }) => {
-            const user = await readService.user.firstBy({id: uid.asString()})
+            const user = await reader.user.firstBy({id: uid})
+            
             if (!user) throw ErrNotFound
 
             return user

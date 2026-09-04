@@ -1,33 +1,26 @@
 import Elysia, { t } from "elysia";
-import { dependencies } from "@index/../injection";
 import { authFilter } from "../../common/auth.middleware";
-import { UserRole } from "@domain/identity/user";
 import { ErrNotFound } from "@shared/error";
 import { ID } from "@domain/common/abstractions";
+import { courseManagementService, reader } from "@composition";
 
 export const topicRoutes = new Elysia()
-.use(dependencies)
 .use(authFilter())
 
 
-.post("/courses/:coursePlainID/topics", 
+.post("/courses/:courseID/topics", 
     async ({
-        courseManagementService,
         currentUser: {uid},
-        readService,
-        params: {coursePlainID},
+        params: {courseID},
         body,
     }) => {
         const {topicID} = await courseManagementService.createTopic({
             uid,
             ...body,
-            courseID: ID.from(coursePlainID),
+            courseID
         })
 
-        const topic = await readService.topics.firstBy({id: topicID.asString()})
-        if( !topic) throw ErrNotFound
-
-        return topic
+        return reader.topics.firstBy({id: topicID})
     }, {
         body: t.Object({
             title: t.String(),
@@ -41,52 +34,41 @@ export const topicRoutes = new Elysia()
 )
 
 
-.post("/topics/:topicPlainID/activate", 
+.post("/topics/:topicID/activate", 
     async ({
-        params: {topicPlainID},
-        courseManagementService,
+        params: {topicID},
         currentUser: {uid},
-        readService
     }) => {
-        const {topicID} = await courseManagementService.activateTopic({
+        await courseManagementService.activateTopic({
             uid,
-            topicID: ID.from(topicPlainID)
+            topicID
         })
 
-        const topic = await readService.topics.firstBy({id: topicID.asString()})
-        if( !topic) throw ErrNotFound
-
-        return topic
+        return reader.topics.firstBy({id: topicID})
     }
 )
 
 
-.post("/topics/:topicPlainID/archive",
+.post("/topics/:topicID/archive",
     async ({
-        params: {topicPlainID},
-        courseManagementService,
+        params: {topicID},
         currentUser: {uid},
-        readService
     }) => {
-        const {topicID} = await courseManagementService.archiveTopic({
+        await courseManagementService.archiveTopic({
             uid,
-            topicID: ID.from(topicPlainID)
+            topicID
         })
 
-        const topic = await readService.topics.firstBy({id: topicID.asString()})
-        if( !topic) throw ErrNotFound
-
-        return topic
+        return reader.topics.firstBy({id: topicID})
     }
 )
 
 
 .get("/topics", 
     async ({
-        readService,
         query
     }) => {
-        return readService.topics.allBy(query)
+        return reader.topics.allBy(query)
     }, 
     {
         query: t.Object({
@@ -97,13 +79,12 @@ export const topicRoutes = new Elysia()
 )
 
 
-.get('/topics/:topicPlainID',
+.get('/topics/:topicID',
     async ({
-        params: {topicPlainID},
-        readService
+        params: {topicID},
     }) => {
-        const topic = await readService.topics.firstBy({
-            id: topicPlainID
+        const topic = await reader.topics.firstBy({
+            id: topicID
         })
 
         if (!topic) throw ErrNotFound

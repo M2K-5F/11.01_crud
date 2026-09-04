@@ -7,10 +7,10 @@ import { Serializable } from "nucleus-mold"
 import { HashMap } from "@domain/common/value-objects/hash-map"
 
 
-export const ErrAnswerLength = new DomainError("ANSWER_TEXT_LENGTH")
-export const ErrQuestionTextLength = new DomainError("QUESTION_TEXT_LENGTH")
-export const ErrQuestionAnswersCount = new DomainError("QUESTION_ANSWERS_COUNT")
-export const ErrQuestionNoCorrectAnswer = new DomainError("QUESTION_NO_CORRECT_ANSWER")
+export const ErrAnswerLength = new DomainError("ANSWER_TEXT_LENGTH", "ANSWER_TEXT_LENGTH")
+export const ErrQuestionTextLength = new DomainError("QUESTION_TEXT_LENGTH", "QUESTION_TEXT_LENGTH")
+export const ErrQuestionAnswersCount = new DomainError("QUESTION_ANSWERS_COUNT", "QUESTION_ANSWERS_COUNT")
+export const ErrQuestionNoCorrectAnswer = new DomainError("QUESTION_NO_CORRECT_ANSWER", "QUESTION_NO_CORRECT_ANSWER")
 
 
 @Serializable()

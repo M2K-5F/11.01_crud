@@ -22,16 +22,17 @@
       "@shared/*": ["./src/shared/*"],
       "@presentation/*": ["./src/presentation/*"],
       "@infra/*": ["./src/infra/*"],
-      "@index/*": ["./src/*"]
+      "@index/*": ["./src/*"],
+      "@composition": ["./composition.ts"]
     }
   },
 
   "include": [
     "src/**/*",
     "index.ts",
-    "injection.ts",
+    "composition.ts",
     "env.d.ts",
-    "../contracts.ts"
+    "../contracts.ts",
   ],
   "watchOptions": {
     "watchFile": "useFsEvents",

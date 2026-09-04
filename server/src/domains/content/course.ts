@@ -7,8 +7,8 @@ import { Serializable } from "nucleus-mold"
 
 const ErrCourseTitleLength = new DomainError("COURSE_TITLE_LENGTH", "Название курса должно быть от 8 до 64 символов в длину")
 const ErrCourseDescriptionLength = new DomainError("COURSE_DESCRIPTION_LENGTH", "Описание курса должно быть от 8 до 128 символов в длину")
-const ErrCourseArchived = new DomainError("COURSE_ARCHIVED")
-const ErrCourseActive = new DomainError("COURSE_ACTIVE")
+const ErrCourseArchived = new DomainError("COURSE_ARCHIVED", "COURSE_ARCHIVED")
+const ErrCourseActive = new DomainError("COURSE_ACTIVE", "COURSE_ACTIVE")
 
 
 @Serializable()

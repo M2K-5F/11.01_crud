@@ -1,21 +1,19 @@
 import Elysia, { t } from "elysia";
 import { ErrUnauthorized } from "@shared/error";
-import { dependencies } from "@index/../injection";
+import { authService } from "@composition";
 
 export const authRoutes = new Elysia()
-.use(dependencies)
 
 
 .post("/auth/login", 
     async ({
         body, 
-        cookie: { refresh }, 
-        authService, 
+        cookie: { refresh }
     }) => {
         const {refreshToken, accessToken, uid} = await authService.authorize(body)
 
         refresh?.set({
-            value: refreshToken.asString(),
+            value: refreshToken,
             httpOnly: true,
             secure: false,
             sameSite: 'lax',
@@ -23,7 +21,9 @@ export const authRoutes = new Elysia()
             path: '/'
         })
 
-        return {accessToken: accessToken.asString(), uid: uid.asString()}
+        return {
+            accessToken, uid
+        }
     }, {
         body: t.Object({
             username: t.String(),
@@ -35,15 +35,14 @@ export const authRoutes = new Elysia()
 
 .post('/auth/refresh',
     async ({
-        cookie: { refresh },
-        authService
+        cookie: { refresh }
     }) => {
         if (!refresh.value) throw ErrUnauthorized
 
         const {refreshToken, accessToken} = await authService.refreshTokens({refreshToken: refresh.value})
 
         refresh.set({
-            value: refreshToken.asString(),
+            value: refreshToken,
             httpOnly: true,
             secure: false,
             sameSite: 'lax',
@@ -51,7 +50,9 @@ export const authRoutes = new Elysia()
             path: '/'
         })
 
-        return {accessToken: accessToken.asString()}
+        return {
+            accessToken
+        }
     }, {
         cookie: t.Object({
             refresh: t.Optional(t.String())
@@ -68,7 +69,9 @@ export const authRoutes = new Elysia()
 
         refresh.remove()
 
-        return {message: "Successful logout"}
+        return {
+            message: "Successful logout"
+        }
     }, {
         cookie: t.Object({
             refresh: t.Optional(t.String())

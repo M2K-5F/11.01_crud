@@ -1,6 +1,8 @@
 export abstract class AppError extends Error {
+    abstract status: number
     constructor(
-        override message: string
+        readonly code: string,
+        message: string,
     ) {
         super(message)
         this.name = this.constructor.name
@@ -8,26 +10,24 @@ export abstract class AppError extends Error {
 }
 
 export class DomainError extends AppError {
-    constructor(
-        readonly code: string,
-        readonly detail: string = "исключение домена"
-    ) {
-        super(detail)
-    }
+    status = 400
 }
 
-export class NotFoundError extends AppError {}
+export class NotFoundError extends AppError {
+    status = 404
 
-export const ErrNotFound = new NotFoundError("resourse not found")
+}
 
-export class ValidationError extends AppError {}
+export const ErrNotFound = new NotFoundError("NOT_FOUND", "Resourse not found")
 
-export class UnauthorizedError extends AppError {}
+export class UnauthorizedError extends AppError {
+    status = 401
+}
 
-export const ErrUnauthorized = new UnauthorizedError("Не авторизован")
+export const ErrUnauthorized = new UnauthorizedError("ERR_UNAUTHORIZED", "Unauthorized")
 
-export class ForbiddenError extends AppError {}
+export class ForbiddenError extends AppError {
+    status = 403
+}
 
-export const ErrForbidden = new ForbiddenError("Доступ запрещен")
-
-export class InternalError extends AppError {}
+export const ErrForbidden = new ForbiddenError("ERR_FORBIDDEN", "forbidden")

@@ -7,7 +7,7 @@ import { Serializable } from "nucleus-mold";
 
 export const ErrUsernameLength = new DomainError("USERNAME_LENGTH", "длина имени должна быть от 8 до 32 символов")
 export const ErrPasswordLength = new DomainError("PASSWORD_LENGTH", "Пароль должен быть длиннее 8 символов")
-export const ErrAuthorizationFailed = new DomainError("AUTHORIZATION_FAILED")
+export const ErrAuthorizationFailed = new DomainError("AUTHORIZATION_FAILED", "AUTHORIZATION_FAILED")
 
 
 @Serializable()

@@ -1,6 +1,5 @@
-import { ValidationError } from "@shared/error";
 import { Serializable } from "nucleus-mold";
-
+import { randomBytes } from "crypto";
 
 export abstract class ValueObject<T> {
     protected _value: T
@@ -14,25 +13,15 @@ export abstract class ValueObject<T> {
 }
 
 
-export const ErrInvalidIdFormat = new ValidationError("Invalid identificator format")
-
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-
 @Serializable()
 export class ID<T extends Entity> extends ValueObject<string> {
     declare protected __brand: T
 
     static generate<T extends Entity>(): ID<T> {
-        return new ID(crypto.randomUUID())
+        return new ID(randomBytes(16).toString('base64url'))
     }
 
     static from<T extends Entity>(plain: string): ID<T> {
-        if (!UUID_REGEX.test(plain)) {
-            throw ErrInvalidIdFormat
-        }
-        
         return new ID<T>(plain)
     }
 

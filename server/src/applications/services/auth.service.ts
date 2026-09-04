@@ -1,7 +1,6 @@
 import type { ITransactionManager } from "@applications/interfaces/itransaction-manager";
-import type { ID } from "@domain/common/abstractions";
 import { AccessToken, ErrRefreshTokenInvalid, ErrSessionNotFound, RefreshToken, Session, type IAccessTokenSigner, type IRefreshTokenSigner } from "@domain/identity/session";
-import { ErrAuthorizationFailed, User, UserRawPassword, UserUsername, type PasswordHashStrategy } from "@domain/identity/user";
+import { ErrAuthorizationFailed, UserRawPassword, UserUsername, type PasswordHashStrategy } from "@domain/identity/user";
 
 
 type AuthorizeCMD = {
@@ -28,10 +27,16 @@ export class AuthService {
 
     async authorize(cmd: AuthorizeCMD) {
         return this.txmanager.begin(async uow => {
-            const user = await uow.users.getByName(UserUsername.from(cmd.username))
+            const user = await uow.users.getByName(
+                UserUsername.from(cmd.username)
+            )
+
             if (!user) throw ErrAuthorizationFailed
 
-            await user.authenticate(UserRawPassword.from(cmd.password), this.passwordHashStrategy)
+            await user.authenticate(
+                UserRawPassword.from(cmd.password), 
+                this.passwordHashStrategy
+            )
 
             const session = Session.new(user.id)
 
@@ -43,19 +48,26 @@ export class AuthService {
 
             const accessToken = await AccessToken.generate(user, this.tokenSigner)
 
-            return {refreshToken, accessToken, uid: user.id}
+            return {
+                refreshToken: refreshToken.asString(), 
+                accessToken: accessToken.asString(), 
+                uid: user.id.asString()
+            }
         })  
     }
 
 
     async refreshTokens(cmd: RefreshTokensCMD) {
-        const {uid, sessionID} = await RefreshToken.from(cmd.refreshToken).verify(this.tokenSigner)
+        const {uid, sessionID} = await RefreshToken.from(cmd.refreshToken)
+            .verify(this.tokenSigner)
 
         return this.txmanager.begin(async uow => {
             const session = await uow.sessions.getByIDForUpdate(sessionID)
+            
             if (!session) throw ErrSessionNotFound
 
-            if (!session.refreshToken?.equals(RefreshToken.from(cmd.refreshToken))) throw ErrRefreshTokenInvalid
+            if (!session.refreshToken?.equals(RefreshToken.from(cmd.refreshToken))) 
+                throw ErrRefreshTokenInvalid
 
             session.updateActivity()
 
@@ -70,13 +82,21 @@ export class AuthService {
 
             await uow.sessions.save(session)
 
-            return {refreshToken, accessToken}
+            return {
+                refreshToken: refreshToken.asString(), 
+                accessToken: accessToken.asString()
+            }
         })
     }
 
 
-    verifyAccess(cmd: VerifyAccessTokenCMD) {
+    async verifyAccess(cmd: VerifyAccessTokenCMD) {
         const accessToken = AccessToken.from(cmd.accessToken)
-        return accessToken.verify(this.tokenSigner)
+        const {uid, roles} = await accessToken.verify(this.tokenSigner)
+
+        return {
+            uid: uid.asString(),
+            roles: roles.map(r => r.asString())
+        }
     }
 }

@@ -5,7 +5,7 @@
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
-    "tsx": "^4.23.0"
+    "tsx": "^4.23.9"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
@@ -16,10 +16,10 @@
   "dependencies": {
     "@elysiajs/cors": "^1.4.2",
     "@elysiajs/swagger": "^1.3.1",
-    "@m2k-5f/pgtx": "^2.1.0",
+    "@m2k-5f/pgtx": "^2.7.3",
     "elysia": "^1.4.29",
-    "fluent-future": "^1.3.2",
-    "jose": "^6.2.3",
+    "fluent-future": "^1.3.3",
+    "jose": "^6.2.8",
     "nucleus-mold": "^1.0.3"
   }
 }
